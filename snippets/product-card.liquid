@@ -1,0 +1,1969 @@
+{% comment %}
+  Product Card Snippet
+  Features:
+  - Product image with color variant switching
+  - Product badges (New, Best Seller)
+  - Wishlist heart icon (optional)
+  - Star rating
+  - Product name and price
+  - Color swatches with image switching
+  - Size selection grid that appears on plus icon click
+  - Add to cart functionality
+
+  Parameters:
+  - show_wishlist: boolean (default: true) - Show/hide wishlist heart icon
+{% endcomment %}
+
+<div
+  class="product-card relative  w-full flex flex-col  h-full max-w-full"
+  x-data="productCard{{ product.id }}()"
+  {% if wishlist_mode %}
+    data-wishlist-card data-handle="{{ product.handle }}"
+  {% endif %}
+  {% if product.options contains 'Talla' %}
+    @mouseenter="isDesktop && (showSizeSelector = true)"
+    @mouseleave="isDesktop && (showSizeSelector = false)"
+  {% endif %}
+>
+  <!-- Product Image Container -->
+  <div class="relative {% if mobile_layout %}aspect-[3/4]{% else %}aspect-[3/4.5]{% endif %} w-full overflow-hidden  max-w-full">
+    <!-- Unified Product Image Carousel (handles 1, 2, or many images) -->
+    <div class="h-full" x-show="currentImages && currentImages.length >= 1" x-cloak>
+      <div
+        class="product-image-carousel group block!important swiper-product-images-{{ product.id }}-{{ section.id }} w-full h-full"
+        data-section-id="{{ section.id }}"
+        data-carousel-type="product-images"
+        id="product-images-carousel-{{ product.id }}-{{ section.id }}"
+        style="touch-action: pan-y; overscroll-behavior: contain;"
+      >
+        <div class="swiper-wrapper h-full" @mouseenter="imageHovered = true" @mouseleave="imageHovered = false">
+          <!-- Build slides: overlay for first two, then remaining singles -->
+          <template
+            x-for="
+              (slide, index) in (() => {
+                const imgs = currentImages || [];
+                // Mobile: always render all images as single slides (first eager)
+                if (!isDesktop) {
+                  return imgs.map((src, i) => ({ type: 'single', src, eager: i === 0 }));
+                }
+                // Desktop: overlay behavior for first two
+                if (imgs.length <= 1) {
+                  return imgs.length === 1
+                    ? [{ type: 'single', src: imgs[0], eager: true }]
+                    : [];
+                }
+                const slides = [{ type: 'overlay', srcA: imgs[0], srcB: imgs[1], eager: true }];
+                for (let i = 2; i < imgs.length; i++) {
+                  slides.push({ type: 'single', src: imgs[i], eager: false });
+                }
+                return slides;
+              })()
+            "
+            :key="slide.type === 'overlay' ? 'overlay' : slide.src"
+          >
+            <div class="swiper-slide w-full h-full " @click="window.location.href = '{{ product.url }}'">
+              <template x-if="slide.type === 'overlay'">
+                <div class="relative w-full h-full">
+                  <img
+                    :src="slide.srcA"
+                    alt="{{ product.title }} - Image 1"
+                    class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none"
+                    width="1800"
+                    height="1800"
+                    :loading="slide.eager ? 'eager' : 'lazy'"
+                  >
+                  <img
+                    :src="slide.srcB"
+                    alt="{{ product.title }} - Image 2"
+                    :class="imageHovered ? 'opacity-100' : 'opacity-0'"
+                    class="absolute inset-0 w-full h-full object-cover z-20 transition-opacity duration-300 ease-in-out pointer-events-none"
+                    width="1800"
+                    height="1800"
+                    loading="lazy"
+                  >
+                </div>
+              </template>
+              <template x-if="slide.type === 'single'">
+                <img
+                  :src="slide.src || '{{ product.featured_image | image_url: width: 1800 }}'"
+                  alt="{{ product.title }}"
+                  class="w-full h-full object-cover pointer-events-none"
+                  width="1800"
+                  height="1800"
+                  :loading="slide.eager ? 'eager' : 'lazy'"
+                >
+              </template>
+            </div>
+          </template>
+        </div>
+
+        <!-- Navigation Arrows -->
+        <div
+          :class="isDesktop ? 'hidden group-hover:block' : 'block'"
+          class="absolute inset-0 pointer-events-none"
+          @mouseenter.stop="imageHovered = false"
+          @mouseleave.stop
+        >
+          <button
+            class="product-prev absolute  flex items-center justify-start  left-3 top-1/2 -translate-y-1/2 w-10 h-10 md:w-10 md:h-10  md:opacity-0 group-hover:opacity-100  duration-300 z-10 pointer-events-auto cursor-pointer touch-manipulation"
+            data-carousel-id="product-images-carousel-{{ product.id }}-{{ section.id }}"
+            type="button"
+          >
+            <svg
+              class="w-5 h-5 md:w-5 md:h-5 text-black drop-shadow-md"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <button
+            class="product-next absolute  flex items-center justify-end right-3 top-1/2 -translate-y-1/2 w-10 h-10 md:w-10 md:h-10  md:opacity-0 group-hover:opacity-100  duration-300 z-10 pointer-events-auto cursor-pointer touch-manipulation"
+            data-carousel-id="product-images-carousel-{{ product.id }}-{{ section.id }}"
+            type="button"
+          >
+            <svg
+              class="w-5 h-5 md:w-5 md:h-5 text-black drop-shadow-md"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {% if wishlist_mode != true and show_wishlist != false %}
+      <!-- Wishlist Heart Button -->
+      <button
+        class="absolute top-3 right-3 z-10 wishlist-toggle text-black/70  "
+        :class="isInWishlist ? 'text-red-800 fill-red-800  ' : 'fill-transparent '"
+        @click.stop.prevent="toggleWishlistHandle('{{ product.handle }}')"
+        aria-pressed="isInWishlist"
+        aria-label="Toggle wishlist"
+        title="Añadir a la lista de deseos"
+        type="button"
+      >
+        {% render 'heart-icon', class: 'w-5 h-5' %}
+      </button>
+    {% endif %}
+
+    <!-- Product Badges -->
+    {% if show_badges and product.tags.size > 0 %}
+      <div class="absolute top-3 left-3 flex gap-1 z-10">
+        {% for tag in product.tags %}
+          {% assign tag_lower = tag | downcase %}
+          {% if tag_lower contains 'nuevo' %}
+            <span class="bg-white/70 backdrop-blur-sm  text-black py-2 px-3 body-xs font-medium">
+              {{- 'nuevo' | upcase -}}
+            </span>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Price Overlay - positioned in bottom left corner -->
+    {% if show_price_overlay %}
+      <div class="absolute left-2 bottom-2  z-10">
+        <span class="body-xs lg:body-sm font-semibold text-black"> ${{ product.price | money_without_currency }} </span>
+      </div>
+    {% endif %}
+
+    <!-- Size Selector Plus Button - positioned in bottom right corner (NOT in bundle mode) -->
+    {% if product.options contains 'Talla' and wishlist_mode != true and bundle_mode != true %}
+      <button
+        class="absolute right-2 bottom-2 w-8 h-8 lg:hidden  flex items-center justify-center text-gray-600 hover:text-gray-800  duration-200  z-10"
+        @click.stop.prevent="handlePlusClick"
+        @mouseenter="isDesktop && (showSizeSelector = true)"
+        type="button"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+      </button>
+    {% endif %}
+
+    <!-- Bundle Mode Add Button (only show when bundle is not complete) -->
+    {% if bundle_mode == true %}
+      <button
+        class="absolute right-2 bottom-2 w-8 h-8 bg-primary hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white flex items-center justify-center rounded-full shadow-lg transition-all duration-200 z-30"
+        @click.stop.prevent="addToBundleClick"
+        :disabled="window.bundleBuilderInstance && window.bundleBuilderInstance.isBundleComplete"
+        type="button"
+        title="Añadir al bundle"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+      </button>
+    {% endif %}
+
+    <!-- Size Selector Grid - Only show if "Talla" is in product options AND not in bundle mode -->
+    {% if product.options contains 'Talla' and bundle_mode != true %}
+      <div
+        x-show="showSizeSelector && isDesktop"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 transform"
+        x-transition:enter-end="opacity-100 transform"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 transform"
+        x-transition:leave-end="opacity-0 transform"
+        @click.outside="isDesktop ? (showSizeSelector = false) : null"
+        class="size-selector-hover absolute bottom-0 left-0 right-0 z-10 bg-white/90 backdrop-blur-sm border border-gray-200 hidden lg:block"
+      >
+        <div class="flex justify-center items-center p-3">
+          <div class="flex gap-1 flex-wrap">
+            {% comment %} Get all unique sizes and check their availability for selected color {% endcomment %}
+            {% assign unique_sizes = '' %}
+
+            {% comment %} First pass: collect all unique sizes {% endcomment %}
+            {% for variant in product.variants %}
+              {% assign size_name = '' %}
+              {% for option in variant.options %}
+                {% assign is_size = true %}
+                {% for product_option in product.options_with_values %}
+                  {% if product_option.name == 'Color' %}
+                    {% for color_value in product_option.values %}
+                      {% if option == color_value %}
+                        {% assign is_size = false %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                {% endfor %}
+                {% if is_size %}
+                  {% assign size_name = option %}
+                  {% break %}
+                {% endif %}
+              {% endfor %}
+
+              {% unless unique_sizes contains size_name %}
+                {% assign unique_sizes = unique_sizes | append: size_name | append: ',' %}
+              {% endunless %}
+            {% endfor %}
+
+            {% comment %} Second pass: render size buttons with availability check {% endcomment %}
+            {% assign sizes_array = unique_sizes | split: ',' %}
+            {% for size_name in sizes_array %}
+              {% if size_name != blank %}
+                {% comment %} Find variant that matches current selected color and this size {% endcomment %}
+                {% for variant in product.variants %}
+                  {% assign variant_size = '' %}
+
+                  {% comment %} Extract color and size from variant options {% endcomment %}
+                  {% for option in variant.options %}
+                    {% assign is_color = false %}
+                    {% for product_option in product.options_with_values %}
+                      {% if product_option.name == 'Color' %}
+                        {% for color_value in product_option.values %}
+                          {% if option == color_value %}
+                            {% assign is_color = true %}
+                            {% break %}
+                          {% endif %}
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}
+
+                    {% unless is_color %}
+                      {% assign variant_size = option %}
+                    {% endunless %}
+                  {% endfor %}
+
+                  {% comment %} Check if this variant matches current size {% endcomment %}
+                  {% if variant_size == size_name %}
+                    {% comment %} For now, check if variant is available - color matching will be handled by Alpine.js {% endcomment %}
+                    {% if variant.available %}
+                      {% break %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+
+                <button
+                  class="relative body-sm font-semibold transition-all duration-200 bg-transparent border border-transparent hover:border-black rounded-full w-min flex items-center justify-center gap-1"
+                  x-bind:class="
+                                      [
+                      isSizeAvailable('{{ size_name }}') ? 'text-gray-900' : 'opacity-40 cursor-not-allowed',
+                      isSizeAvailable('{{ size_name }}') ? 'aspect-square w-full' : 'w-full h-8 pl-2 pr-3'
+                    ]
+                  "
+                  @click="handleSizeClick('{{ size_name }}')"
+                  x-bind:disabled="!isSizeAvailable('{{ size_name }}')"
+                >
+                  {% comment %} Bell icon for sold out sizes {% endcomment %}
+                  <div x-show="!isSizeAvailable('{{ size_name }}')" class="flex-shrink-0 text-black opacity-100">
+                    {% render 'bell-icon', class: 'w-3 h-3' %}
+                  </div>
+                  <span x-bind:class="!isSizeAvailable('{{ size_name }}') ? 'opacity-50' : ''">{{ size_name }}</span>
+                </button>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      {%- comment -%} Mobile Bottom Drawer for Size Selection (NOT in bundle mode) {%- endcomment -%}
+      {% if bundle_mode != true %}
+        <div
+          x-ref="mobileBackdrop"
+          x-show="showSizeSelector && !isDesktop && isInitialized"
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0"
+          x-transition:enter-end="opacity-100"
+          x-transition:leave="transition ease-in duration-200"
+          x-transition:leave-start="opacity-100"
+          x-transition:leave-end="opacity-0"
+          class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          @click="closeMobileDrawer()"
+          x-cloak
+        ></div>
+
+        <div
+          x-ref="mobileDrawer"
+          x-show="showSizeSelector && !isDesktop && isInitialized"
+          x-transition:enter="transition transform ease-out duration-300"
+          x-transition:enter-start="opacity-0 translate-y-full"
+          x-transition:enter-end="opacity-100 translate-y-0"
+          x-transition:leave="transition transform ease-in duration-200"
+          x-transition:leave-start="opacity-100 translate-y-0"
+          x-transition:leave-end="opacity-0 translate-y-full"
+          class="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-2xl lg:hidden w-[100dvw] mobile-drawer"
+          x-cloak
+        >
+          <div class="p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="body font-semibold">Añadir a la cesta</h4>
+              <button class="p-2" @click="closeMobileDrawer()" aria-label="Close">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="space-y-1">
+              {% comment %} Build sizes again for mobile list {% endcomment %}
+              {% assign unique_sizes = '' %}
+              {% for variant in product.variants %}
+                {% assign size_name = '' %}
+                {% for option in variant.options %}
+                  {% assign is_size = true %}
+                  {% for product_option in product.options_with_values %}
+                    {% if product_option.name == 'Color' %}
+                      {% for color_value in product_option.values %}
+                        {% if option == color_value %}
+                          {% assign is_size = false %}
+                          {% break %}
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                  {% endfor %}
+                  {% if is_size %}
+                    {% assign size_name = option %}
+                    {% break %}
+                  {% endif %}
+                {% endfor %}
+                {% unless unique_sizes contains size_name %}
+                  {% assign unique_sizes = unique_sizes | append: size_name | append: ',' %}
+                {% endunless %}
+              {% endfor %}
+
+              {% assign sizes_array = unique_sizes | split: ',' %}
+              {% for size_name in sizes_array %}
+                {% if size_name != blank %}
+                  <button
+                    class="w-full text-left py-4 px-4 border-b border-gray-100 body font-semibold"
+                    :class="isSizeAvailable('{{ size_name }}') ? 'text-gray-900' : 'text-gray-400 cursor-not-allowed'"
+                    @click="isSizeAvailable('{{ size_name }}') && handleSizeClick('{{ size_name }}')"
+                  >
+                    {{ size_name }}
+                  </button>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {% unless hide_info %}
+    <div class="product-information {% if mobile_layout %}py-2 px-1{% else %}py-4 px-2{% endif %} w-full   flex flex-col justify-start z-10">
+      <!-- Bundle Mode: Color and Size Selectors -->
+      {% if bundle_mode == true %}
+        <!-- Color Selector -->
+        {% for product_option in product.options_with_values %}
+          {% if product_option.name == 'Color' %}
+            <div class="relative w-full mb-2" x-data="colorCarouselBundle{{ product.id }}()">
+              <!-- Unified: Always show carousel for colors on all breakpoints -->
+              <div class="relative overflow-hidden">
+                <div class="touch-pan-x relative">
+                  <!-- Carousel Container -->
+                  <div class="overflow-hidden color-carousel-container relative">
+                    <!-- Dynamic fade overlays -->
+                    <div
+                      class="absolute left-0 top-0 bottom-0 w-8 z-10 pointer-events-none transition-opacity duration-300"
+                      style="background: linear-gradient(to right, white 0%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0.3) 80%, transparent 100%);"
+                      x-ref="leftFade"
+                    ></div>
+                    <div
+                      class="absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none transition-opacity duration-300"
+                      style="background: linear-gradient(to left, white 0%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0.3) 80%, transparent 100%);"
+                      x-ref="rightFade"
+                    ></div>
+
+                    <!-- Previous Arrow - Absolutely positioned -->
+                    <button
+                      class="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center transition-all duration-200 touch-manipulation rounded-full z-20"
+                      x-ref="prevButton"
+                      @click.stop="slidePrev()"
+                      @touchstart.stop
+                      x-show="!isAtBeginning"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 scale-90"
+                      x-transition:enter-end="opacity-100 scale-100"
+                      x-transition:leave="transition ease-in duration-200"
+                      x-transition:leave-start="opacity-100 scale-100"
+                      x-transition:leave-end="opacity-0 scale-90"
+                    >
+                      <svg
+                        class="w-5 h-5 text-black drop-shadow-md"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        stroke-width="2.5"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                      </svg>
+                    </button>
+
+                    <!-- Next Arrow - Absolutely positioned -->
+                    <button
+                      class="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center transition-all duration-200 touch-manipulation rounded-full z-20"
+                      x-ref="nextButton"
+                      @click.stop="slideNext()"
+                      @touchstart.stop
+                      x-show="!isAtEnd"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 scale-90"
+                      x-transition:enter-end="opacity-100 scale-100"
+                      x-transition:leave="transition ease-in duration-200"
+                      x-transition:leave-start="opacity-100 scale-100"
+                      x-transition:leave-end="opacity-0 scale-90"
+                    >
+                      <svg
+                        class="w-5 h-5 text-black drop-shadow-md"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        stroke-width="2.5"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                      </svg>
+                    </button>
+
+                    <div
+                      class="color-swatches-carousel swiper-color-bundle-{{ product.id }} w-full p-1"
+                      data-carousel-id="color-carousel-bundle-{{ product.id }}"
+                      x-ref="colorCarousel"
+                    >
+                      <div class="swiper-wrapper">
+                        {% for product_option_value in product_option.values %}
+                          {% comment %} Find a variant with this color to get its image {% endcomment %}
+                          {% assign color_variant = null %}
+                          {% for variant in product.variants %}
+                            {% for option in variant.options %}
+                              {% if option == product_option_value %}
+                                {% assign color_variant = variant %}
+                                {% break %}
+                              {% endif %}
+                            {% endfor %}
+                            {% if color_variant %}
+                              {% break %}
+                            {% endif %}
+                          {% endfor %}
+
+                          <div class="swiper-slide ">
+                            <button
+                              @click="selectColor('{{ product_option_value }}', '{{ color_variant.featured_image | image_url: width: 600 }}', {{ color_variant.id }})"
+                              class="w-4 h-4 rounded-sm border-1 transition-colors"
+                              :class="selectedColor === '{{ product_option_value }}' ? 'ring-1 ring-offset-1 ring-black border-transparent' : 'border-gray-300 hover:border-gray-400'"
+                              {% if product_option_value.swatch.color %}
+                                style="background-color: {{ product_option_value.swatch.color }};"
+                              {% else %}
+                                style="background-image: url({{ product_option_value.swatch.image | image_url: width: 600 }}); background-size: cover; background-position: center;"
+                              {% endif %}
+                              title="{{ product_option_value }}"
+                            ></button>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        <!-- Size Selector -->
+        {% if product.options contains 'Talla' %}
+          <div class="flex flex-wrap items-center gap-1 mb-2">
+            {% comment %} Get all unique sizes {% endcomment %}
+            {% assign unique_sizes = '' %}
+            {% for variant in product.variants %}
+              {% assign size_name = '' %}
+              {% for option in variant.options %}
+                {% assign is_size = true %}
+                {% for product_option in product.options_with_values %}
+                  {% if product_option.name == 'Color' %}
+                    {% for color_value in product_option.values %}
+                      {% if option == color_value %}
+                        {% assign is_size = false %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                {% endfor %}
+                {% if is_size %}
+                  {% assign size_name = option %}
+                  {% break %}
+                {% endif %}
+              {% endfor %}
+              {% unless unique_sizes contains size_name %}
+                {% assign unique_sizes = unique_sizes | append: size_name | append: ',' %}
+              {% endunless %}
+            {% endfor %}
+
+            {% assign sizes_array = unique_sizes | split: ',' %}
+            {% for size_name in sizes_array %}
+              {% if size_name != blank %}
+                <button
+                  @click="isSizeAvailable('{{ size_name }}') && handleSizeClick('{{ size_name }}')"
+                  class="px-2 py-1 text-xs border rounded transition-colors relative"
+                  :class="
+                    isSizeAvailable('{{ size_name }}') ?
+                    (selectedSize === '{{ size_name }}' ? 'bg-black text-white border-black' : 'border-gray-300 text-gray-700 hover:border-gray-400') :
+                    'border-gray-200 text-gray-400 cursor-not-allowed'
+                  "
+                  :disabled="!isSizeAvailable('{{ size_name }}')"
+                >
+                  {{ size_name }}
+                  <!-- Diagonal line for sold out sizes -->
+                  <div
+                    x-show="!isSizeAvailable('{{ size_name }}')"
+                    class="absolute inset-0 pointer-events-none flex items-center justify-center"
+                  >
+                    <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <line x1="0" y1="0" x2="100" y2="100"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            class="text-gray-400"/>
+                    </svg>
+                  </div>
+                </button>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% else %}
+        <!-- Regular Mode: Color swatches only -->
+        <div class="flex items-center justify-between">
+          {% for product_option in product.options_with_values %}
+            {% if product_option.name == 'Color' %}
+              <div class="relative w-3/5" x-data="colorCarouselRegular{{ product.id }}()">
+                <!-- Unified: Always show carousel for colors on all breakpoints -->
+
+                <div class="touch-pan-x relative">
+                  <!-- Carousel Container -->
+                  <div class="color-carousel-container relative">
+                    <!-- Dynamic fade overlays -->
+                    <div
+                      class="absolute left-0 top-0 bottom-0 w-8 z-10 pointer-events-none transition-opacity duration-300"
+                      style="background: linear-gradient(to right, white 0%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0.3) 80%, transparent 100%);"
+                      x-ref="leftFade"
+                    ></div>
+                    <div
+                      class="absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none transition-opacity duration-300"
+                      style="background: linear-gradient(to left, white 0%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0.3) 80%, transparent 100%);"
+                      x-ref="rightFade"
+                    ></div>
+
+                    <!-- Previous Arrow - Absolutely positioned -->
+                    <button
+                      class="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center transition-all duration-200 touch-manipulation rounded-full z-20"
+                      x-ref="prevButton"
+                      @click.stop="slidePrev()"
+                      @touchstart.stop
+                      x-show="!isAtBeginning"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 scale-90"
+                      x-transition:enter-end="opacity-100 scale-100"
+                      x-transition:leave="transition ease-in duration-200"
+                      x-transition:leave-start="opacity-100 scale-100"
+                      x-transition:leave-end="opacity-0 scale-90"
+                    >
+                      <svg
+                        class="w-5 h-5 text-black drop-shadow-md"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        stroke-width="2.5"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                      </svg>
+                    </button>
+
+                    <!-- Next Arrow - Absolutely positioned -->
+                    <button
+                      class="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center transition-all duration-200 touch-manipulation rounded-full z-20"
+                      x-ref="nextButton"
+                      @click.stop="slideNext()"
+                      @touchstart.stop
+                      x-show="!isAtEnd"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 scale-90"
+                      x-transition:enter-end="opacity-100 scale-100"
+                      x-transition:leave="transition ease-in duration-200"
+                      x-transition:leave-start="opacity-100 scale-100"
+                      x-transition:leave-end="opacity-0 scale-90"
+                    >
+                      <svg
+                        class="w-5 h-5 text-black drop-shadow-md"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        stroke-width="2.5"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                      </svg>
+                    </button>
+
+                    <div
+                      class="color-swatches-carousel swiper-color-regular-{{ product.id }} w-full p-1"
+                      data-carousel-id="color-carousel-regular-{{ product.id }}"
+                      x-ref="colorCarousel"
+                    >
+                      <div class="swiper-wrapper">
+                        {% for product_option_value in product_option.values %}
+                          {% comment %} Find a variant with this color to get its image {% endcomment %}
+                          {% assign color_variant = null %}
+                          {% for variant in product.variants %}
+                            {% for option in variant.options %}
+                              {% if option == product_option_value %}
+                                {% assign color_variant = variant %}
+                                {% break %}
+                              {% endif %}
+                            {% endfor %}
+                            {% if color_variant %}
+                              {% break %}
+                            {% endif %}
+                          {% endfor %}
+
+                          <div class="swiper-slide ">
+                            <button
+                              @click="selectColor('{{ product_option_value }}', '{{ color_variant.featured_image | image_url: width: 600 }}', {{ color_variant.id }})"
+                              class="w-4 h-4 rounded border-1 transition-colors"
+                              :class="selectedColor === '{{ product_option_value }}' ? 'ring-1 ring-offset-1 ring-black border-transparent' : 'border-gray-300 hover:border-gray-400'"
+                              {% if product_option_value.swatch.color %}
+                                style="background-color: {{ product_option_value.swatch.color }};"
+                              {% else %}
+                                style="background-image: url({{ product_option_value.swatch.image | image_url: width: 600 }}); background-size: cover; background-position: center;"
+                              {% endif %}
+                              title="{{ product_option_value }}"
+                            ></button>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+          {% comment %} Check if product has ratings before showing rating section {% endcomment %}
+          {% assign ratings_metafield = product.metafields.custom.ratings %}
+          {% assign has_ratings = false %}
+          {% if ratings_metafield and ratings_metafield.value %}
+            {% assign total_rating = 0 %}
+            {% assign count = 0 %}
+            {% for rating_item in ratings_metafield.value %}
+              {% assign rating_value = 0 %}
+              {% if rating_item.rating and rating_item.rating.value %}
+                {% assign rating_value = rating_item.rating.value | plus: 0 %}
+              {% elsif rating_item.rating %}
+                {% assign rating_value = rating_item.rating | plus: 0 %}
+              {% elsif rating_item.fields and rating_item.fields.rating and rating_item.fields.rating.value %}
+                {% assign rating_value = rating_item.fields.rating.value | plus: 0 %}
+              {% endif %}
+              {% if rating_value > 0 and rating_value <= 5 %}
+                {% assign total_rating = total_rating | plus: rating_value %}
+                {% assign count = count | plus: 1 %}
+              {% endif %}
+            {% endfor %}
+            {% if count > 0 %}
+              {% assign has_ratings = true %}
+            {% endif %}
+          {% endif %}
+
+          {% if show_rating and has_ratings %}
+            <div class="flex items-center gap-1 w-full justify-end">
+              {% if mobile_layout %}
+                {% render 'product-rating',
+                  product: product,
+                  size: 'sm',
+                  color: 'text-[#f3a000]',
+                  show_rating_value: true,
+                  show_review_count: true,
+                  single_star_mode: true
+                %}
+              {% else %}
+                {% render 'product-rating',
+                  product: product,
+                  size: 'md',
+                  color: 'text-[#f3a000]',
+                  show_rating_value: true,
+                  show_review_count: true,
+                  single_star_mode: true
+                %}
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <!-- Product Name and Price -->
+      <div class="flex flex-col {% if mobile_layout %}gap-1{% else %}gap-1 lg:flex-row{% endif %} items-start  justify-between">
+        <!-- Product Title Section -->
+        <div class="flex flex-col {% if mobile_layout %}gap-1{% else %}gap-2{% endif %} items-start justify-start">
+          <p class="{% if mobile_layout %}body-xs lg:body-sm{% else %}body-sm lg:body{% endif %} font-semibold ">
+            {{ product.title }}
+          </p>
+
+          <!-- Color Circles - Using product.options_with_values for proper swatch access -->
+          <!-- Pattern: product_option.name == "Color" then product_option_value.swatch.color -->
+        </div>
+
+        <!-- Price Section -->
+        <div class="flex {% if mobile_layout %}flex-col{% else %}lg:flex-row-reverse{% endif %} gap-2 items-end">
+          <span class="{% if mobile_layout %}body-xs lg:body-sm{% else %}body-sm lg:body{% endif %} font-semibold"
+            >${{ product.price | money_without_currency -}}
+          </span>
+          {% if product.compare_at_price > product.price %}
+            <span class="{% if mobile_layout %}body-xs lg:body-sm{% else %}body-sm lg:body{% endif %} text-black/40 line-through">
+              ${{ product.compare_at_price | money_without_currency }}
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endunless %}
+  {% if wishlist_mode %}
+    <div class="mt-2 space-y-2 px-2 product-information">
+      <button
+        type="button"
+        class="w-full text-sm text-gray-600 underline"
+        @click.stop.prevent="
+          (function(evt){try{const KEY='wishlist_v1';const raw=localStorage.getItem(KEY)||'[]';const list=JSON.parse(raw);const handle='{{ product.handle }}';const i=list.indexOf(handle);if(i>=0){list.splice(i,1);localStorage.setItem(KEY, JSON.stringify(list));}
+            var el = evt && evt.currentTarget;while(el && !el.hasAttribute('data-wishlist-card')){el = el.parentElement;}if(!el){el = document.querySelector('[data-wishlist-card][data-handle=\''+handle+'\']');}
+            var container = el;while(container && !container.hasAttribute('data-wishlist-container')){container = container.parentElement;}
+            if(container){container.style.display='none';container.remove();}
+            var remaining = document.querySelectorAll('[data-wishlist-container]').length;var empty = document.getElementById('wishlist-empty');if(remaining===0 && empty){empty.classList.remove('hidden');}
+          }catch(e){}})(event)
+        "
+      >
+        Remover
+      </button>
+    </div>
+  {% endif %}
+  <!-- Product Information -->
+</div>
+
+<script>
+  // Guard: ensure a global isDesktop exists to avoid ReferenceError during Alpine init
+  if (typeof window !== 'undefined' && typeof window.isDesktop === 'undefined') {
+    window.isDesktop = window.innerWidth >= 1024;
+    window.addEventListener('resize', function() { window.isDesktop = window.innerWidth >= 1024; });
+  }
+  function productCard{{ product.id }}() {
+    return {
+      productId: {{ product.id }},
+      {% comment %}Find the first color option dynamically{% endcomment %}
+      {% assign first_color = '' %}
+      {% assign first_color_variant = null %}
+      {% for product_option in product.options_with_values %}
+        {% for product_option_value in product_option.values %}
+          {% if product_option_value.swatch %}
+            {% assign first_color = product_option_value %}
+            {% comment %}Find a variant with this color{% endcomment %}
+            {% for variant in product.variants %}
+              {% for option in variant.options %}
+                {% if option == first_color %}
+                  {% assign first_color_variant = variant %}
+                  {% break %}
+                {% endif %}
+              {% endfor %}
+              {% if first_color_variant %}{% break %}{% endif %}
+            {% endfor %}
+            {% break %}
+          {% endif %}
+        {% endfor %}
+        {% if first_color != '' %}{% break %}{% endif %}
+      {% endfor %}
+
+      selectedVariantId: {{ first_color_variant.id | default: product.selected_or_first_available_variant.id }},
+      selectedVariantImage: null,
+      selectedColor: '{{ first_color | default: product.selected_or_first_available_variant.option1 }}',
+      selectedSize: null,
+      showSizeSelector: false,
+      isDesktop: window.innerWidth >= 1024,
+      isInitialized: false,
+      isInWishlist: false,
+      currentImages: [],
+      totalSlides: 0,
+      currentSlide: 0,
+      imageHovered: false,
+
+      // Variant data with metafields (same as product page)
+      variantData: [
+        {% for variant in product.variants %}
+          {
+            id: {{ variant.id }},
+            options: [{% for option in variant.options %}'{{ option }}'{% unless forloop.last %}, {% endunless %}{% endfor %}],
+            color: {% comment %}Find the color option dynamically{% endcomment %}
+            {% assign color_value = '' %}
+            {% for product_option in product.options_with_values %}
+              {% for product_option_value in product_option.values %}
+                {% if product_option_value.swatch %}
+                  {% for variant_option in variant.options %}
+                    {% if variant_option == product_option_value %}
+                      {% assign color_value = variant_option %}
+                      {% break %}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+                {% if color_value != '' %}{% break %}{% endif %}
+              {% endfor %}
+              {% if color_value != '' %}{% break %}{% endif %}
+            {% endfor %}
+            '{{ color_value | default: variant.option1 }}',
+            gallery: [
+              {% if variant.metafields.custom.variant_gallery.value %}
+                {% for image in variant.metafields.custom.variant_gallery.value %}
+                  '{{ image | image_url: width: 800 }}'{% unless forloop.last %},{% endunless %}
+                {% endfor %}
+              {% endif %}
+            ]
+          }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ],
+
+      // Fallback product images
+      productImages: [
+        {% for image in product.images %}
+          '{{ image | image_url: width: 800 }}'{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ],
+
+      init() {
+
+        // Update isDesktop on window resize
+        window.addEventListener('resize', () => {
+          this.isDesktop = window.innerWidth >= 1024;
+        });
+
+        // Ensure size selector is hidden by default on desktop
+        if (this.isDesktop) {
+          this.showSizeSelector = false;
+        }
+        
+        // Ensure mobile drawer starts in proper state and mark as initialized
+        this.$nextTick(() => {
+          if (!this.isDesktop) {
+            this.showSizeSelector = false;
+          }
+          this.isInitialized = true;
+        });
+
+        // Initialize other components
+        this.initializeColorSelection();
+        this.initializeGallery();
+        this.initializeCarousel();
+
+        // Initialize wishlist state from LocalStorage
+        this.isInWishlist = this.isProductInWishlist('{{ product.handle }}');
+      },
+
+
+
+      selectColor(color, imageUrl, variantId) {
+        this.selectedColor = color;
+        
+        // In bundle mode, handle variant ID updates properly
+        const bundleMode = {{ bundle_mode | default: false | json }};
+        if (bundleMode) {
+          if (this.selectedSize) {
+            // Check if the selected size is still available for the new color
+            if (!this.isSizeAvailable(this.selectedSize)) {
+              // Reset size selection if it's not available for the new color
+              this.selectedSize = null;
+              this.selectedVariantId = variantId; // Use the color variant
+            } else {
+              // Update variant ID to match both color and size
+              const matchingVariant = this.findVariantBySizeAndColor(this.selectedSize, color);
+              if (matchingVariant) {
+                this.selectedVariantId = matchingVariant;
+              } else {
+                this.selectedVariantId = variantId;
+              }
+            }
+          } else {
+            // No size selected, just use the color variant
+            this.selectedVariantId = variantId;
+          }
+        } else {
+          // Regular mode
+          this.selectedVariantId = variantId;
+          // Update gallery for selected color (same as product page)
+          this.updateGalleryForColor(color);
+        }
+      },
+
+      // === CORE DATA METHODS ===
+
+      getVariants() {
+        return [
+          {% for variant in product.variants %}
+            {
+              id: {{ variant.id }},
+              options: [{% for option in variant.options %}'{{ option }}'{% unless forloop.last %}, {% endunless %}{% endfor %}],
+              available: {{ variant.available | json }},
+              inventory_quantity: {{ variant.inventory_quantity | default: 0 }},
+              inventory_policy: '{{ variant.inventory_policy | default: "deny" }}'
+            }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ];
+      },
+
+      getFirstColorWithSwatch() {
+        const productOptions = [
+          {% for product_option in product.options_with_values %}
+            {
+              values: [
+                {% for product_option_value in product_option.values %}
+                  { value: '{{ product_option_value }}', hasSwatch: {{ product_option_value.swatch | json }} }{% unless forloop.last %},{% endunless %}
+                {% endfor %}
+              ]
+            }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ];
+
+        for (const option of productOptions) {
+          for (const value of option.values) {
+            if (value.hasSwatch) return value.value;
+          }
+        }
+        return null;
+      },
+
+      hasColorVariants() {
+        return !!this.getFirstColorWithSwatch();
+      },
+
+      // === GALLERY METHODS (same as product page) ===
+
+      // Check if product has color variants (updated version)
+      hasColorVariantsForGallery() {
+        // Check if there are multiple different colors in variants
+        const uniqueColors = [...new Set(this.variantData.map(v => v.color))];
+        return uniqueColors.length > 1;
+      },
+
+      // Get images for a specific color
+      getImagesForColor(color) {
+        // If product doesn't have color variants, always use product images
+        if (!this.hasColorVariantsForGallery()) {
+          return this.productImages;
+        }
+
+        // Find the first variant with this color that has gallery images
+        const variantWithGallery = this.variantData.find(variant =>
+          variant.color === color && variant.gallery.length > 0
+        );
+
+        if (variantWithGallery && variantWithGallery.gallery.length > 0) {
+          return variantWithGallery.gallery;
+        }
+
+        // Fallback to product images
+        return this.productImages;
+      },
+
+      // Update gallery for selected color
+      updateGalleryForColor(color) {
+        this.currentImages = this.getImagesForColor(color);
+        this.totalSlides = this.currentImages.length;
+        this.currentSlide = 0;
+
+        // Update carousel after Alpine.js updates the DOM
+        this.updateCarousel();
+      },
+
+      // Update carousel after image changes
+      updateCarousel() {
+        if (this.carouselSwiper) {
+          // Wait for Alpine.js to update the DOM
+          this.$nextTick(() => {
+            this.carouselSwiper.update();
+            this.carouselSwiper.slideTo(0);
+          });
+        }
+      },
+
+      // Initialize gallery
+      initializeGallery() {
+        if (this.hasColorVariantsForGallery()) {
+          // Product has color variants - use variant-specific images
+          const firstColor = this.selectedColor || (this.variantData.length > 0 ? this.variantData[0].color : null);
+          if (firstColor) {
+            this.updateGalleryForColor(firstColor);
+          }
+        } else {
+          // Product has no color variants - always use product images
+          this.currentImages = this.productImages;
+          this.totalSlides = this.currentImages.length;
+        }
+      },
+
+      // === VARIANT MATCHING ABSTRACTION ===
+
+      findVariant(size, colorRequired = true) {
+        const variants = this.getVariants();
+        const hasColors = this.hasColorVariants();
+
+        return variants.find(variant => {
+          const matchesSize = variant.options.includes(size);
+          const matchesColor = !hasColors || !colorRequired || variant.options.includes(this.selectedColor);
+          return matchesSize && matchesColor;
+        });
+      },
+
+      findAvailableVariant(size) {
+        const variant = this.findVariant(size, true);
+        return variant && variant.available ? variant : null;
+      },
+
+      // === SIMPLIFIED PUBLIC METHODS ===
+
+      isSizeAvailable(size) {
+        return !!this.findAvailableVariant(size);
+      },
+
+      getSizeStock(size) {
+        const variant = this.findVariant(size, true);
+
+        if (!variant) {
+          return { available: false, stock: 0, policy: 'deny', variantId: null };
+        }
+
+        return {
+          available: variant.available,
+          stock: variant.inventory_quantity,
+          policy: variant.inventory_policy,
+          variantId: variant.id
+        };
+      },
+
+      // === UTILITY METHODS ===
+
+      getAllSizes() {
+        const variants = this.getVariants();
+        const allOptions = variants.map(v => v.options).flat();
+
+        if (!this.hasColorVariants()) {
+          return [...new Set(allOptions)];
+        }
+
+        // Filter out colors to get only sizes
+        return [...new Set(allOptions.filter(option => option !== this.selectedColor))];
+      },
+
+
+      handleSizeClick(size) {
+        if (!this.isSizeAvailable(size)) return;
+
+        const variant = this.findAvailableVariant(size);
+        if (variant) {
+          // In bundle mode, just update selection without adding to bundle
+          const bundleMode = {{ bundle_mode | default: false | json }};
+          if (bundleMode) {
+            this.selectedSize = size;
+            
+            // Update variant ID to match color and size combination
+            const productOptions = {{ product.options | json }};
+            const hasColor = productOptions.includes('Color');
+            
+            if (hasColor && this.selectedColor) {
+              const targetVariantId = this.findVariantBySizeAndColor(size, this.selectedColor);
+              if (targetVariantId) {
+                this.selectedVariantId = targetVariantId;
+              } else {
+                this.selectedVariantId = variant.id;
+              }
+            } else {
+              this.selectedVariantId = variant.id;
+            }
+          } else {
+            // Regular mode - proceed with normal flow
+            this.selectSize(size, variant.id);
+          }
+        }
+      },
+
+      handlePlusClick() {
+
+        // Check if product has Talla option using the product data
+        const productOptions = {{ product.options | json }};
+        const hasTalla = productOptions.includes('Talla');
+        const hasColor = productOptions.includes('Color');
+
+        if (hasTalla) {
+          // If product has sizes, open size selector (only on mobile, desktop uses hover)
+          if (!this.isDesktop) {
+            this.openMobileDrawer();
+          } else {
+            // On desktop, ensure size selector is visible when plus is clicked
+            this.showSizeSelector = true;
+          }
+        } else {
+          // If no sizes, add to cart directly
+          this.addToCart(this.selectedVariantId);
+        }
+      },
+
+      addToBundleClick() {
+        // Check if bundle is complete
+        if (window.bundleBuilderInstance && window.bundleBuilderInstance.isBundleComplete) {
+          return;
+        }
+
+        // Check if product has Talla option using the product data
+        const productOptions = {{ product.options | json }};
+        const hasTalla = productOptions.includes('Talla');
+        const hasColor = productOptions.includes('Color');
+
+        // In bundle mode, we don't use overlays - user must select from inline selectors
+        if (hasTalla && !this.selectedSize) {
+          // Show message that user needs to select size
+          this.showBundleSizeMessage();
+          return;
+        }
+
+        if (hasColor && !this.selectedColor) {
+          // Show message that user needs to select color
+          this.showBundleColorMessage();
+          return;
+        }
+
+        // All required selections made, add to bundle
+        this.addToBundle();
+      },
+
+      addToBundle(variantId = null, size = null) {
+        const bundleProduct = {
+          id: {{ product.id }},
+          handle: '{{ product.handle }}',
+          title: '{{ product.title | escape }}',
+          variantId: variantId || this.selectedVariantId,
+          price: this.getVariantPrice(variantId || this.selectedVariantId),
+          image: this.selectedVariantImage || '{{ product.featured_image | image_url: width: 400 }}',
+          selectedColor: this.selectedColor,
+          selectedSize: size || this.selectedSize,
+          url: '{{ product.url }}'
+        };
+
+        // Dispatch event to parent bundle builder
+        this.$dispatch('bundle:add-product', bundleProduct);
+        
+        // Show success feedback
+        this.showBundleAddedFeedback();
+      },
+
+      getVariantPrice(variantId) {
+        const variants = this.getVariants();
+        const variant = variants.find(v => v.id == variantId);
+        return variant ? variant.price || {{ product.price }} : {{ product.price }};
+      },
+
+      showBundleAddedFeedback() {
+        // Simple feedback - could be enhanced with toast notifications
+        const button = this.$el.querySelector('[title="Añadir al bundle"]');
+        if (button) {
+          const originalHTML = button.innerHTML;
+          button.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          `;
+          button.classList.add('bg-green-600');
+          button.classList.remove('bg-primary', 'hover:bg-blue-700');
+          
+          setTimeout(() => {
+            button.innerHTML = originalHTML;
+            button.classList.remove('bg-green-600');
+            button.classList.add('bg-primary', 'hover:bg-blue-700');
+          }, 1500);
+        }
+      },
+
+      showBundleSizeMessage() {
+        // Highlight size selector area
+        const sizeSelector = this.$el.querySelector('.flex.flex-wrap.items-center.gap-1');
+        if (sizeSelector) {
+          sizeSelector.classList.add('animate-pulse', 'bg-red-50', 'border', 'border-red-200', 'rounded', 'p-1');
+          setTimeout(() => {
+            sizeSelector.classList.remove('animate-pulse', 'bg-red-50', 'border', 'border-red-200', 'rounded', 'p-1');
+          }, 2000);
+        }
+      },
+
+      showBundleColorMessage() {
+        // Highlight color selector area
+        const colorSelector = this.$el.querySelector('.flex.flex-wrap.items-center.gap-1');
+        if (colorSelector) {
+          colorSelector.classList.add('animate-pulse', 'bg-red-50', 'border', 'border-red-200', 'rounded', 'p-1');
+          setTimeout(() => {
+            colorSelector.classList.remove('animate-pulse', 'bg-red-50', 'border', 'border-red-200', 'rounded', 'p-1');
+          }, 2000);
+        }
+      },
+
+      toggleSizeSelector() {
+        // Backward compatibility: toggle appropriate UI depending on device
+        if (!this.isDesktop) {
+          if (this.showSizeSelector) {
+            this.closeMobileDrawer();
+          } else {
+            this.openMobileDrawer();
+          }
+        } else {
+          this.showSizeSelector = !this.showSizeSelector;
+        }
+      },
+
+      openMobileDrawer() {
+        // Show viewport-level drawer
+        this.showSizeSelector = true;
+        // Ensure drawer/backdrop are appended to body for viewport-relative positioning
+        this.$nextTick(() => {
+          const backdrop = this.$refs.mobileBackdrop;
+          const drawer = this.$refs.mobileDrawer;
+          if (backdrop && backdrop.parentElement !== document.body) {
+            document.body.appendChild(backdrop);
+          }
+          if (drawer && drawer.parentElement !== document.body) {
+            document.body.appendChild(drawer);
+          }
+        });
+      },
+
+      closeMobileDrawer() {
+        // Simply hide overlay without changing scroll position
+        this.showSizeSelector = false;
+        // Optionally move nodes back to component root if needed
+        const backdrop = this.$refs.mobileBackdrop;
+        const drawer = this.$refs.mobileDrawer;
+        const rootEl = this.$el;
+        if (backdrop && backdrop.parentElement === document.body) {
+          rootEl.appendChild(backdrop);
+        }
+        if (drawer && drawer.parentElement === document.body) {
+          rootEl.appendChild(drawer);
+        }
+      },
+
+      selectSize(size, variantId) {
+        this.selectedSize = size;
+        this.selectedVariantId = variantId;
+
+        // Check if product has Color option using the product data
+        const productOptions = {{ product.options | json }};
+        const hasColor = productOptions.includes('Color');
+
+        // Check if we're in bundle mode
+        const bundleMode = {{ bundle_mode | default: false | json }};
+
+        if (bundleMode) {
+          // In bundle mode, just update the selection - don't add to bundle yet
+          if (hasColor) {
+            // Find the variant that matches both size and color
+            const currentColor = this.selectedColor;
+            const targetVariantId = this.findVariantBySizeAndColor(size, currentColor);
+            if (targetVariantId) {
+              this.selectedVariantId = targetVariantId;
+            }
+          }
+          // Don't add to bundle automatically - wait for plus button click
+        } else {
+          // Regular mode - add to cart immediately
+          if (hasColor) {
+            // If product has colors, we need to find the variant with current color and selected size
+            const currentColor = this.selectedColor;
+            // Find the variant that matches both size and color
+            const targetVariantId = this.findVariantBySizeAndColor(size, currentColor);
+            
+            if (targetVariantId) {
+              this.addToCart(targetVariantId);
+            } else {
+              this.addToCart(variantId);
+            }
+          } else {
+            // If no colors, just add the selected variant
+            this.addToCart(variantId);
+          }
+        }
+
+        this.showSizeSelector = false;
+        if (!this.isDesktop) {
+          this.closeMobileDrawer();
+        }
+      },
+
+
+
+      async addToCart(variantId) {
+        try {
+          const response = await fetch('/cart/add.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              items: [{
+                id: variantId,
+                quantity: 1
+              }]
+            })
+          });
+
+                    if (response.ok) {
+            // Trigger cart update event
+            this.$dispatch('cart:updated');
+
+            // Open cart drawer
+            this.$dispatch('cart:open');
+
+          }
+        } catch (error) {
+          console.error('Error adding to cart:', error);
+        }
+      },
+
+
+
+      findVariantByColor(color) {
+        // Get all variants from the product with their options
+        const variants = [
+          {% for variant in product.variants %}
+            {
+              id: {{ variant.id }},
+              options: [{% for option in variant.options %}'{{ option }}'{% unless forloop.last %}, {% endunless %}{% endfor %}]
+            }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ];
+
+        // Find variant that matches the color
+        const targetVariant = variants.find(variant =>
+          variant.options.includes(color)
+        );
+
+        return targetVariant ? targetVariant.id : null;
+      },
+
+      findVariantBySizeAndColor(size, color) {
+        // Get all variants from the product with their options
+        const variants = [
+          {% for variant in product.variants %}
+            {
+              id: {{ variant.id }},
+              options: [{% for option in variant.options %}'{{ option }}'{% unless forloop.last %}, {% endunless %}{% endfor %}]
+            }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ];
+
+        // Find variant that matches both size and color
+        const targetVariant = variants.find(variant =>
+          variant.options.includes(size) && variant.options.includes(color)
+        );
+
+        return targetVariant ? targetVariant.id : null;
+      },
+
+      // === WISHLIST (LocalStorage) ===
+      getWishlist() {
+        try {
+          const raw = localStorage.getItem('wishlist_v1');
+          return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+          return [];
+        }
+      },
+
+      setWishlist(list) {
+        try {
+          localStorage.setItem('wishlist_v1', JSON.stringify(list));
+        } catch (e) {
+          // ignore
+        }
+      },
+
+      isProductInWishlist(handle) {
+        const list = this.getWishlist();
+        return list.includes(String(handle));
+      },
+
+      toggleWishlistHandle(handle) {
+        const list = this.getWishlist();
+        const idx = list.indexOf(String(handle));
+        if (idx >= 0) {
+          list.splice(idx, 1);
+          this.isInWishlist = false;
+        } else {
+          list.push(String(handle));
+          this.isInWishlist = true;
+        }
+        this.setWishlist(list);
+        this.$dispatch('wishlist:updated', { handles: list });
+      },
+
+      // === INITIALIZATION ===
+
+      initializeColorSelection() {
+        if (!this.hasColorVariants()) {
+          return;
+        }
+
+        const firstColor = this.getFirstColorWithSwatch();
+        if (firstColor && firstColor !== this.selectedColor) {
+          this.selectedColor = firstColor;
+        }
+      },
+
+      initializeCarousel() {
+
+        this.$nextTick(() => {
+          const carouselElement = this.$el.querySelector('.product-image-carousel');
+          if (carouselElement && typeof Swiper !== 'undefined') {
+            const carouselId = carouselElement.id;
+
+            // Check if this carousel is already initialized
+            if (carouselElement.swiper) {
+              return;
+            }
+
+            // Create swiper instance
+            const swiperInstance = new Swiper(carouselElement, {
+              slidesPerView: 1,
+              spaceBetween: 0,
+              allowTouchMove: true,
+              resistanceRatio: 0,
+              nested: true,
+              grabCursor: false,
+              touchRatio: 1,
+              touchAngle: 45,
+              simulateTouch: true,
+              touchStartPreventDefault: false,
+              touchStartForcePreventDefault: false,
+              touchMoveStopPropagation: false,
+              autoHeight: false,
+              centeredSlides: false,
+              loop: false,
+              navigation: {
+                nextEl: carouselElement.querySelector('.product-next'),
+                prevEl: carouselElement.querySelector('.product-prev'),
+              }
+            });
+
+            // Function to update arrow states
+            const updateArrowStates = () => {
+              const prevArrow = carouselElement.querySelector('.product-prev');
+              const nextArrow = carouselElement.querySelector('.product-next');
+
+              if (prevArrow) {
+                if (swiperInstance.isBeginning) {
+                  prevArrow.style.opacity = '0';
+                  prevArrow.style.pointerEvents = 'none';
+                  prevArrow.style.visibility = 'hidden';
+                } else {
+                  prevArrow.style.opacity = '';
+                  prevArrow.style.pointerEvents = '';
+                  prevArrow.style.visibility = '';
+                }
+              }
+
+              if (nextArrow) {
+                if (swiperInstance.isEnd) {
+                  nextArrow.style.opacity = '0';
+                  nextArrow.style.pointerEvents = 'none';
+                  nextArrow.style.visibility = 'hidden';
+                } else {
+                  nextArrow.style.opacity = '';
+                  nextArrow.style.pointerEvents = '';
+                  nextArrow.style.visibility = '';
+                }
+              }
+            };
+
+            // Set initial state and add event listeners
+            swiperInstance.on('slideChange', () => {
+              this.currentSlide = swiperInstance.activeIndex;
+              updateArrowStates();
+            });
+            swiperInstance.on('reachBeginning', updateArrowStates);
+            swiperInstance.on('reachEnd', updateArrowStates);
+
+            // Initial state update
+            setTimeout(updateArrowStates, 100);
+
+            // Add touch event listeners for mobile
+            const prevArrow = carouselElement.querySelector('.product-prev');
+            const nextArrow = carouselElement.querySelector('.product-next');
+
+            if (prevArrow) {
+              prevArrow.addEventListener('touchstart', () => {
+                if (!swiperInstance.isBeginning) {
+                  swiperInstance.slidePrev();
+                }
+              });
+            }
+
+            if (nextArrow) {
+              nextArrow.addEventListener('touchstart', () => {
+                if (!swiperInstance.isEnd) {
+                  swiperInstance.slideNext();
+                }
+              });
+            }
+
+            // Add click event to go to product page (only if not clicking on controls)
+            carouselElement.addEventListener('click', (e) => {
+              // Check if click is on navigation buttons or size selector
+              if (e.target.closest('.product-prev') ||
+                  e.target.closest('.product-next') ||
+                  e.target.closest('.size-selector-hover') ||
+                  e.target.closest('[data-carousel-id]')) {
+                return; // Don't navigate if clicking on controls
+              }
+
+              // Navigate to product page
+              window.location.href = '{{ product.url }}';
+            });
+
+            // Store the swiper instance on the element and component to avoid conflicts
+            carouselElement.swiper = swiperInstance;
+            this.carouselSwiper = swiperInstance;
+          }
+        });
+      }
+    }
+  }
+
+  // Color carousel functions for bundle mode
+  function colorCarouselBundle{{ product.id }}() {
+    return {
+      swiper: null,
+      isAtBeginning: true,
+      isAtEnd: false,
+      isInitialized: false,
+      
+      init() {
+        this.$nextTick(() => {
+          this.initializeCarousel();
+        });
+      },
+
+      initializeCarousel() {
+        // Initialize on all breakpoints
+        const carouselElement = this.$refs.colorCarousel;
+        if (!carouselElement || typeof Swiper === 'undefined') {
+          // Fallback: show carousel even if Swiper is not available
+          setTimeout(() => {
+            this.isInitialized = true;
+          }, 100);
+          return;
+        }
+
+        // Check if already initialized
+        if (carouselElement.swiper) {
+          this.isInitialized = true;
+          return;
+        }
+
+        // Initialize Swiper
+        this.swiper = new Swiper(carouselElement, {
+          direction: 'horizontal',
+          slidesPerView: 'auto',
+          spaceBetween: 4,
+          loop: false,
+          centeredSlides: false,
+          slidesOffsetBefore: 0,
+          slidesOffsetAfter: 0,
+          grabCursor: false,
+          touchRatio: 1,
+          touchAngle: 45,
+          simulateTouch: true,
+          allowTouchMove: false,
+          touchStartPreventDefault: false,
+          touchMoveStopPropagation: false,
+          preventInteractionOnTransition: false,
+          speed: 300,
+          freeMode: {
+            enabled: false,
+            sticky: false,
+            momentum: true,
+            momentumRatio: 0.6,
+            momentumVelocityRatio: 0.6,
+            momentumBounce: false,
+            minimumVelocity: 0.02
+          },
+          resistance: true,
+          resistanceRatio: 0.85,
+          navigation: {
+            nextEl: this.$refs.nextButton,
+            prevEl: this.$refs.prevButton,
+          },
+          breakpoints: {
+            // Mobile - show 3 slides
+            // Desktop - show 4 slides
+            1024: {
+              spaceBetween: 4,
+            }
+          },
+          on: {
+            init: () => {
+              // Set initial states
+              setTimeout(() => {
+                this.updateCarouselStates();
+                this.isInitialized = true;
+              }, 50);
+            },
+            slideChange: () => {
+              this.updateCarouselStates();
+            },
+            reachBeginning: () => {
+              this.updateCarouselStates();
+            },
+            reachEnd: () => {
+              this.updateCarouselStates();
+            },
+            progress: () => {
+              this.updateCarouselStates();
+            },
+            touchStart: () => {
+              // No need to disable arrows since they hide automatically
+            },
+            touchEnd: () => {
+              // Update states after touch interaction
+              setTimeout(() => {
+                this.updateCarouselStates();
+              }, 100);
+            }
+          }
+        });
+
+        // Store swiper instance
+        carouselElement.swiper = this.swiper;
+      },
+
+      updateCarouselStates() {
+        if (!this.swiper) return;
+
+        // Update Alpine.js reactive states
+        this.isAtBeginning = this.swiper.isBeginning;
+        this.isAtEnd = this.swiper.isEnd;
+
+        const leftFade = this.$refs.leftFade;
+        const rightFade = this.$refs.rightFade;
+
+        // Update fade states
+        if (leftFade) {
+          leftFade.style.opacity = this.swiper.isBeginning ? '0' : '1';
+        }
+
+        if (rightFade) {
+          rightFade.style.opacity = this.swiper.isEnd ? '0' : '1';
+        }
+      },
+
+      slidePrev() {
+        if (this.swiper && !this.swiper.isBeginning) {
+          this.swiper.slidePrev();
+          // States will be updated by the slideChange event
+        }
+      },
+
+      slideNext() {
+        if (this.swiper && !this.swiper.isEnd) {
+          this.swiper.slideNext();
+          // States will be updated by the slideChange event
+        }
+      },
+
+      destroy() {
+        if (this.swiper) {
+          this.swiper.destroy(true, true);
+          this.swiper = null;
+        }
+      }
+    }
+  }
+
+  // Color carousel functions for regular mode
+  function colorCarouselRegular{{ product.id }}() {
+    return {
+      swiper: null,
+      isAtBeginning: true,
+      isAtEnd: false,
+      isInitialized: false,
+      
+      init() {
+        this.$nextTick(() => {
+          this.initializeCarousel();
+        });
+      },
+
+      initializeCarousel() {
+        // Initialize on all breakpoints
+        const carouselElement = this.$refs.colorCarousel;
+        if (!carouselElement || typeof Swiper === 'undefined') {
+          // Fallback: show carousel even if Swiper is not available
+          setTimeout(() => {
+            this.isInitialized = true;
+          }, 100);
+          return;
+        }
+
+        // Check if already initialized
+        if (carouselElement.swiper) {
+          this.isInitialized = true;
+          return;
+        }
+
+        // Initialize Swiper
+        this.swiper = new Swiper(carouselElement, {
+          direction: 'horizontal',
+          slidesPerView: 'auto',
+          spaceBetween: 10,
+          loop: false,
+          centeredSlides: false,
+          slidesOffsetBefore: 0,
+          slidesOffsetAfter: 0,
+          grabCursor: false,
+          touchRatio: 1,
+          touchAngle: 45,
+          simulateTouch: true,
+          allowTouchMove: false,
+          touchStartPreventDefault: false,
+          touchMoveStopPropagation: false,
+          preventInteractionOnTransition: false,
+          speed: 300,
+          freeMode: {
+            enabled: false,
+            sticky: false,
+            momentum: true,
+            momentumRatio: 0.6,
+            momentumVelocityRatio: 0.6,
+            momentumBounce: false,
+            minimumVelocity: 0.02
+          },
+          resistance: true,
+          resistanceRatio: 0.85,
+          navigation: {
+            nextEl: this.$refs.nextButton,
+            prevEl: this.$refs.prevButton,
+          },
+          on: {
+            init: () => {
+              // Set initial states
+              setTimeout(() => {
+                this.updateCarouselStates();
+                this.isInitialized = true;
+              }, 50);
+            },
+            slideChange: () => {
+              this.updateCarouselStates();
+            },
+            reachBeginning: () => {
+              this.updateCarouselStates();
+            },
+            reachEnd: () => {
+              this.updateCarouselStates();
+            },
+            progress: () => {
+              this.updateCarouselStates();
+            },
+            touchStart: () => {
+              // No need to disable arrows since they hide automatically
+            },
+            touchEnd: () => {
+              // Update states after touch interaction
+              setTimeout(() => {
+                this.updateCarouselStates();
+              }, 100);
+            }
+          }
+        });
+
+        // Store swiper instance
+        carouselElement.swiper = this.swiper;
+      },
+
+      updateCarouselStates() {
+        if (!this.swiper) return;
+
+        // Update Alpine.js reactive states
+        this.isAtBeginning = this.swiper.isBeginning;
+        this.isAtEnd = this.swiper.isEnd;
+
+        const leftFade = this.$refs.leftFade;
+        const rightFade = this.$refs.rightFade;
+
+        // Update fade states
+        if (leftFade) {
+          leftFade.style.opacity = this.swiper.isBeginning ? '0' : '1';
+        }
+
+        if (rightFade) {
+          rightFade.style.opacity = this.swiper.isEnd ? '0' : '1';
+        }
+      },
+
+      slidePrev() {
+        if (this.swiper && !this.swiper.isBeginning) {
+          this.swiper.slidePrev();
+          // States will be updated by the slideChange event
+        }
+      },
+
+      slideNext() {
+        if (this.swiper && !this.swiper.isEnd) {
+          this.swiper.slideNext();
+          // States will be updated by the slideChange event
+        }
+      },
+
+      destroy() {
+        if (this.swiper) {
+          this.swiper.destroy(true, true);
+          this.swiper = null;
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  /* Smooth transitions for size selector */
+  .product-card .size-selector-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Size button hover effects */
+  .size-selector-hover button {
+    transition: all 0.2s ease-in-out;
+    min-width: 2rem;
+    min-height: 2rem;
+  }
+
+  .size-selector-hover button:hover:not(:disabled) {
+    background-color: transparent;
+  }
+
+  .size-selector-hover button:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  /* Ensure perfect circles and equal spacing */
+  .size-selector-hover .flex {
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Mobile drawer initial position */
+  .mobile-drawer {
+    transform: translateY(100%);
+  }
+
+  .mobile-drawer[x-show] {
+    transform: translateY(0);
+  }
+
+  /* Color Carousel Improvements */
+  .color-swatches-carousel {
+    overflow: hidden;
+    padding-right: 10px; /* Extra space for last slide */
+  }
+
+  .color-swatches-carousel .swiper-wrapper {
+    align-items: center;
+    transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    padding-right: 20px; /* Ensure last slide is fully visible */
+  }
+
+  .color-swatches-carousel button {
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    will-change: transform;
+  }
+
+  .color-swatches-carousel button:active {
+    transform: scale(0.95);
+  }
+
+  .swiper-slide {
+    width: auto;
+  }
+
+  /* Prevent layout shifts during interaction */
+  .color-swatches-carousel .swiper-slide button {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+
+  /* Enhanced fade effect that adapts to background */
+  .color-carousel-container {
+    position: relative;
+  }
+
+  .color-swatches-carousel:not(.swiper-initialized) .swiper-slide {
+    flex: 0 0 auto;
+    width: auto;
+    height: auto;
+    padding: 0;
+  }
+
+  .color-swatches-carousel:not(.swiper-initialized) .swiper-slide button {
+    width: auto;
+    height: auto;
+    aspect-ratio: auto;
+  }
+
+  /* Hide scrollbar for non-initialized carousel */
+  .color-swatches-carousel:not(.swiper-initialized) .swiper-wrapper {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .color-swatches-carousel:not(.swiper-initialized) .swiper-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide arrows until Swiper is initialized */
+  .color-swatches-carousel:not(.swiper-initialized) .absolute {
+    display: none;
+  }
+</style>

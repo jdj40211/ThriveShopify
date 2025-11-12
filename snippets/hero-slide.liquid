@@ -1,0 +1,92 @@
+{% assign slide_image = slide.image_url | default: slide.image %}
+{% assign is_video = false %}
+{% if slide.media_type == 'video' and slide.video %}
+  {% assign is_video = true %}
+{% endif %}
+
+{% if slide_image or slide.title or slide.description or slide.button_text or is_video %}
+  <div
+    class="absolute top-0 z-5 left-0 right-0 bottom-0 bg-gradient-to-t from-black/60 via-transparent to-black/60 pointer-events-none"
+  ></div>
+  <li
+    class="glide__slide h-full w-full relative"
+    {% if is_video %}
+      data-video-slide="true"
+    {% endif %}
+  >
+    {% if is_video %}
+      <!-- Video Slide -->
+      <video
+        class="h-full w-auto object-cover"
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        data-video-element
+      >
+        {% if slide.video.sources %}
+          {% for source in slide.video.sources %}
+            <source src="{{ source.url }}" type="{{ source.mime_type }}">
+          {% endfor %}
+        {% else %}
+          <source src="{{ slide.video | file_url }}" type="video/mp4">
+        {% endif %}
+        Your browser does not support the video tag.
+      </video>
+    {% elsif slide_image %}
+      <!-- Image Slide -->
+      {% if slide.image_url %}
+        <img
+          src="{{ slide.image_url }}"
+          alt="{{ slide.title | escape }}"
+          class="h-dvh w-dvw object-cover"
+          width="1920"
+          height="1080"
+          loading="lazy"
+        >
+      {% elsif slide.image %}
+        {{
+          slide.image
+          | image_url: width: 1920
+          | image_tag: class: 'h-dvh w-dvw object-cover', alt: slide.title, loading: 'lazy', width: 1920, height: 1080
+        }}
+      {% endif %}
+    {% endif %}
+
+    {% if slide.title or slide.description or slide.button_text %}
+      <div
+        class="hero-slide-content absolute bottom-8 left-4 lg:left-12 text-white flex flex-col gap-7 z-10  lg:text-left"
+      >
+      <div class="flex flex-col gap-3">
+
+        {% if slide.title %}
+          <h1>
+            {{ slide.title }}
+            </h1>
+          {% endif %}
+          
+          {% if slide.description %}
+            <p class="body text-white/90 text-balance lg:text-left max-w-md text-shadow">
+            {{ slide.description }}
+            </p>
+          {% endif %}
+          </div>
+        {% if slide.button_text and slide.button_link %}
+          <a
+            href="{{ slide.button_link }}"
+            class="
+              font-semibold w-fit flex items-center justify-center 
+              {{ slide.button_style }}
+            "
+          >
+            <button>
+              <h6 class="capitalize">
+                {{ slide.button_text }}
+              </h6>
+            </button>
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </li>
+{% endif %}

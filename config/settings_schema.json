@@ -1,0 +1,223 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Skeleton",
+    "theme_version": "0.1.0",
+    "theme_author": "Shopify",
+    "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
+    "theme_support_url": "https://support.shopify.com/"
+  },
+  {
+    "name": "t:general.typography",
+    "settings": [
+      {
+        "type": "header",
+        "content": "t:general.fonts"
+      },
+      {
+        "type": "font_picker",
+        "id": "type_primary_font",
+        "default": "work_sans_n4",
+        "label": "t:general.primary"
+      }
+    ]
+  },
+  {
+    "name": "t:general.layout",
+    "settings": [
+      {
+        "type": "select",
+        "id": "max_page_width",
+        "label": "t:labels.page_width",
+        "options": [
+          {
+            "value": "90rem",
+            "label": "t:options.page_width.narrow"
+          },
+          {
+            "value": "110rem",
+            "label": "t:options.page_width.wide"
+          }
+        ],
+        "default": "90rem"
+      },
+      {
+        "type": "range",
+        "id": "min_page_margin",
+        "min": 10,
+        "max": 100,
+        "step": 1,
+        "unit": "px",
+        "label": "t:labels.page_margin",
+        "default": 20
+      }
+    ]
+  },
+  {
+    "name": "t:general.colors",
+    "settings": [
+      {
+        "type": "color",
+        "id": "primary_color",
+        "default": "#3b2e10",
+        "label": "Primary Color",
+        "info": "Main brand color used throughout the theme"
+      },
+      {
+        "type": "color",
+        "id": "background_color",
+        "default": "#FFFFFF",
+        "label": "t:labels.background"
+      },
+      {
+        "type": "color",
+        "id": "foreground_color",
+        "default": "#333333",
+        "label": "t:labels.foreground"
+      },
+      {
+        "type": "range",
+        "id": "input_corner_radius",
+        "min": 0,
+        "max": 10,
+        "step": 1,
+        "unit": "px",
+        "label": "t:labels.input_corner_radius",
+        "default": 4
+      }
+    ]
+  },
+  {
+    "name": "Header Navigation",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Scroll Behavior"
+      },
+      {
+        "type": "range",
+        "id": "header_scroll_threshold_default",
+        "min": 10,
+        "max": 100,
+        "step": 5,
+        "unit": "vh",
+        "label": "Default Scroll Threshold",
+        "default": 95,
+        "info": "Viewport height percentage for header background change (trigger at this % of screen height)"
+      },
+      {
+        "type": "range",
+        "id": "header_scroll_threshold_home",
+        "min": 10,
+        "max": 100,
+        "step": 5,
+        "unit": "vh",
+        "label": "Home Page Scroll Threshold",
+        "default": 95,
+        "info": "Scroll threshold specifically for the home page (as % of viewport height)"
+      },
+      {
+        "type": "range",
+        "id": "header_scroll_threshold_product",
+        "min": 10,
+        "max": 100,
+        "step": 5,
+        "unit": "vh",
+        "label": "Product Page Scroll Threshold",
+        "default": 95,
+        "info": "Scroll threshold specifically for product pages (as % of viewport height)"
+      },
+      {
+        "type": "range",
+        "id": "header_scroll_threshold_collection",
+        "min": 10,
+        "max": 100,
+        "step": 5,
+        "unit": "vh",
+        "label": "Collection Page Scroll Threshold",
+        "default": 95,
+        "info": "Scroll threshold specifically for collection pages (as % of viewport height)"
+      },
+      {
+        "type": "range",
+        "id": "header_scroll_threshold_page",
+        "min": 10,
+        "max": 100,
+        "step": 5,
+        "unit": "vh",
+        "label": "Static Page Scroll Threshold",
+        "default": 95,
+        "info": "Scroll threshold specifically for static pages (as % of viewport height)"
+      }
+    ]
+  },
+  {
+    "name": "Gallery Layout",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Default Gallery Layout"
+      },
+      {
+        "type": "select",
+        "id": "default_gallery_layout_mobile",
+        "label": "Default Mobile Layout",
+        "options": [
+          {
+            "value": "1",
+            "label": "1 Column"
+          },
+          {
+            "value": "2",
+            "label": "2 Columns"
+          },
+          {
+            "value": "3",
+            "label": "3 Columns"
+          }
+        ],
+        "default": "2",
+        "info": "Choose the default mobile layout for gallery grids"
+      },
+      {
+        "type": "select",
+        "id": "default_gallery_layout_desktop",
+        "label": "Default Desktop Layout",
+        "options": [
+          {
+            "value": "1",
+            "label": "3 Columns"
+          },
+          {
+            "value": "2",
+            "label": "4 Columns"
+          },
+          {
+            "value": "3",
+            "label": "6 Columns"
+          }
+        ],
+        "default": "2",
+        "info": "Choose the default desktop layout for gallery grids"
+      },
+      {
+        "type": "header",
+        "content": "Layout Behavior"
+      },
+      {
+        "type": "checkbox",
+        "id": "gallery_allow_layout_switching",
+        "label": "Allow Layout Switching",
+        "default": true,
+        "info": "Allow users to switch between different layout options using the toggle buttons"
+      },
+      {
+        "type": "checkbox",
+        "id": "gallery_remember_user_preference",
+        "label": "Remember User Preference",
+        "default": true,
+        "info": "Remember the user's layout preference in localStorage"
+      }
+    ]
+  }
+]

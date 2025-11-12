@@ -1,0 +1,488 @@
+{% comment %}
+  Color Selector Snippet
+
+  Usage:
+  {% render 'color-selector',
+    product: product,
+    selected_color_variable: 'selectedColor',
+    click_function: 'selectColor',
+    product_number: nil,
+    show_main_label: false,
+    show_wishlist: false
+  %}
+
+  Parameters:
+  - product: Product object
+  - selected_color_variable: Alpine.js variable name for selected color
+  - click_function: Function name to call on color selection
+  - product_number: For duo selections (1 or 2), nil for single
+  - show_main_label: Show main "Elije un color" label (for single mode)
+  - show_wishlist: Show wishlist button (for single mode)
+{% endcomment %}
+
+{% for product_option in product.options_with_values %}
+  {% if product_option.name == 'Color' %}
+    <div class="flex flex-col gap-2">
+      {% if show_main_label %}
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <p class="body font-semibold">
+              Elije un color
+              {% if product_number %}
+                <p
+                  class="body font-semibold text-black/50"
+                  x-show="{{ selected_color_variable | remove: "'" }}.color"
+                  x-text="{{ selected_color_variable | remove: "'" }}.color"
+                ></p>
+              {% else %}
+                <p
+                  class="body font-semibold text-black/50"
+                  x-show="{{ selected_color_variable }}"
+                  x-text="{{ selected_color_variable }}"
+                ></p>
+              {% endif %}
+            </p>
+          </div>
+          {% if show_wishlist %}
+            <button
+              `
+              class=" text-black/70"
+              :class="isInWishlist ? 'text-red-800 fill-red-800  ' : 'fill-transparent '"
+              @click="toggleWishlist"
+            >
+              {% render 'heart-icon', class: 'w-5 h-5', stroke: 'currentColor' %}
+            </button>
+          {% endif %}
+        </div>
+      {% else %}
+        <label class="text-sm font-medium text-gray-700">
+          Color:
+          {% if product_number %}
+            <span
+              class="ml-2 font-normal text-gray-500"
+              x-show="{{ selected_color_variable | remove: "'" }}.color"
+              x-text="{{ selected_color_variable | remove: "'" }}.color"
+            ></span>
+          {% else %}
+            <span
+              class="ml-2 font-normal text-gray-500"
+              x-show="{{ selected_color_variable }}"
+              x-text="{{ selected_color_variable }}"
+            ></span>
+          {% endif %}
+        </label>
+      {% endif %}
+
+      <!-- Loading placeholder -->
+      <div
+        class="relative w-full"
+        x-data="colorCarousel{{ product.id }}{{ product_number | default: '' }}()"
+      >
+        <!-- Loading state -->
+        <div
+          x-show="!isInitialized"
+          class="flex gap-1 overflow-hidden"
+        >
+          {% for product_option_value in product_option.values limit: 6 %}
+            {% comment %} Find a variant with this color to get its image {% endcomment %}
+            {% assign color_variant = null %}
+            {% for variant in product.variants %}
+              {% for option in variant.options %}
+                {% if option == product_option_value %}
+                  {% assign color_variant = variant %}
+                  {% break %}
+                {% endif %}
+              {% endfor %}
+              {% if color_variant %}
+                {% break %}
+              {% endif %}
+            {% endfor %}
+
+            {% comment %} Only render if there's an image available {% endcomment %}
+            {% if color_variant and color_variant.featured_image or product_option_value.swatch.image %}
+              <div class="flex-shrink-0 w-20 h-25 p-0.5">
+                <div class="w-full h-full bg-gray-200 animate-pulse aspect-[1.5/2]"></div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <!-- Color Swatches Container with expanded width -->
+        <div
+          class="relative w-full"
+          x-show="isInitialized"
+          x-cloak
+        >
+          <!-- Always use carousel for all colors -->
+          <div class="touch-pan-x relative">
+            <!-- Carousel Container -->
+            <div class="overflow-hidden color-carousel-container relative">
+              <!-- Dynamic fade overlays -->
+              <div
+                class="absolute left-0 top-0 bottom-0 w-8 z-10 pointer-events-none transition-opacity duration-300"
+                style="background: linear-gradient(to right, white 0%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0.3) 80%, transparent 100%);"
+                x-ref="leftFade"
+              ></div>
+              <div
+                class="absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none transition-opacity duration-300"
+                style="background: linear-gradient(to left, white 0%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0.3) 80%, transparent 100%);"
+                x-ref="rightFade"
+              ></div>
+
+              <!-- Previous Arrow - Absolutely positioned -->
+              <button
+                class="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center transition-all duration-200 touch-manipulation rounded-full z-20"
+                x-ref="prevButton"
+                @click.stop="slidePrev()"
+                @touchstart.stop
+                x-show="!isAtBeginning"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-90"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-90"
+              >
+                <svg
+                  class="w-5 h-5 text-black drop-shadow-md"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  stroke-width="2.5"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+
+              <!-- Next Arrow - Absolutely positioned -->
+              <button
+                class="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center transition-all duration-200 touch-manipulation rounded-full z-20"
+                x-ref="nextButton"
+                @click.stop="slideNext()"
+                @touchstart.stop
+                x-show="!isAtEnd"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-90"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-90"
+              >
+                <svg
+                  class="w-5 h-5 text-black drop-shadow-md"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  stroke-width="2.5"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+
+              <div
+                class="color-swatches-carousel my-1  swiper-color-{{ product.id }}{{ product_number | default: '' }} w-full"
+                data-carousel-id="color-carousel-{{ product.id }}{{ product_number | default: '' }}"
+                x-ref="colorCarousel"
+              >
+                <div class="swiper-wrapper ">
+                  {% for product_option_value in product_option.values %}
+                    {% comment %} Find a variant with this color to get its image {% endcomment %}
+                    {% assign color_variant = null %}
+                    {% for variant in product.variants %}
+                      {% for option in variant.options %}
+                        {% if option == product_option_value %}
+                          {% assign color_variant = variant %}
+                          {% break %}
+                        {% endif %}
+                      {% endfor %}
+                      {% if color_variant %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+
+                    <div class="swiper-slide flex-shrink-0 p-0.5">
+                      <button
+                        {% if product_number %}
+                          @click="{{ click_function }}({{ product_number }}, '{{ product_option_value }}', {{ color_variant.id }})"
+                          :class="{{ selected_color_variable | remove: "'" }}.color === '{{ product_option_value }}' ? 'border-black border-1' : 'border-gray-200'"
+                        {% else %}
+                          {% if color_variant and color_variant.featured_image %}
+                            @click="{{ click_function }}('{{ product_option_value }}', '{{ color_variant.featured_image | image_url: width: 800 }}', {{ color_variant.id }})"
+                          {% elsif product_option_value.swatch.image %}
+                            @click="{{ click_function }}('{{ product_option_value }}', '{{ product_option_value.swatch.image | image_url: width: 800 }}', {{ color_variant.id }})"
+                          {% else %}
+                            @click="{{ click_function }}('{{ product_option_value }}', '', {{ color_variant.id }})"
+                          {% endif %}
+                          :class="{{ selected_color_variable }} === '{{ product_option_value }}' ? 'border-black border-1' : 'border-black/10 border-1'"
+                        {% endif %}
+                        class="relative transition-all duration-200 overflow-visible w-full aspect-[1.5/2]"
+                        title="{{ product_option_value }}"
+                      >
+                        {% if color_variant and color_variant.featured_image %}
+                          <img
+                            src="{{ color_variant.featured_image | image_url: width: 300 }}"
+                            alt="{{ product_option_value }}"
+                            class="w-full h-full object-cover"
+                            width="300"
+                            height="400"
+                            loading="lazy"
+                          >
+                        {% elsif product_option_value.swatch.image %}
+                          <img
+                            src="{{ product_option_value.swatch.image | image_url: width: 300 }}"
+                            alt="{{ product_option_value }}"
+                            class="w-full h-full object-cover"
+                            width="300"
+                            height="400"
+                            loading="lazy"
+                          >
+                        {% else %}
+                          <div
+                            class="w-full h-full"
+                            style="background-color: {{ product_option_value.swatch.color }};"
+                            aria-label="{{ product_option_value }}"
+                          ></div>
+                        {% endif %}
+                      </button>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endfor %}
+
+<script>
+  function colorCarousel{{ product.id }}{{ product_number | default: '' }}() {
+    return {
+      swiper: null,
+      isAtBeginning: true,
+      isAtEnd: false,
+      isInitialized: false,
+
+      init() {
+        this.$nextTick(() => {
+          this.initializeCarousel();
+        });
+      },
+
+      initializeCarousel() {
+        const carouselElement = this.$refs.colorCarousel;
+        if (!carouselElement || typeof Swiper === 'undefined') {
+          // Fallback: show carousel even if Swiper is not available
+          setTimeout(() => {
+            this.isInitialized = true;
+          }, 100);
+          return;
+        }
+
+        // Check if already initialized
+        if (carouselElement.swiper) {
+          this.isInitialized = true;
+          return;
+        }
+
+        // Initialize Swiper for both mobile and desktop
+        this.swiper = new Swiper(carouselElement, {
+          direction: 'horizontal',
+          slidesPerView: 6.5,
+          spaceBetween: 2,
+          loop: false,
+          centeredSlides: false,
+          slidesOffsetBefore: 0,
+          slidesOffsetAfter: 0,
+          grabCursor: false,
+          touchRatio: 1,
+          touchAngle: 45,
+          simulateTouch: true,
+          allowTouchMove: true,
+          touchStartPreventDefault: false,
+          touchMoveStopPropagation: false,
+          preventInteractionOnTransition: false,
+          speed: 300,
+          freeMode: {
+            enabled: false,
+            sticky: false,
+            momentum: true,
+            momentumRatio: 0.6,
+            momentumVelocityRatio: 0.6,
+            momentumBounce: false,
+            minimumVelocity: 0.02
+          },
+          resistance: true,
+          resistanceRatio: 0.85,
+          navigation: {
+            nextEl: this.$refs.nextButton,
+            prevEl: this.$refs.prevButton,
+          },
+          breakpoints: {
+            // Mobile - show 3 slides
+
+            // Desktop - show 4 slides
+            1024: {
+              spaceBetween: 4,
+              slidesPerView: 6.5,
+            }
+          },
+          on: {
+            init: () => {
+              // Set initial states
+              setTimeout(() => {
+                this.updateCarouselStates();
+                this.isInitialized = true;
+              }, 50);
+            },
+            slideChange: () => {
+              this.updateCarouselStates();
+            },
+            reachBeginning: () => {
+              this.updateCarouselStates();
+            },
+            reachEnd: () => {
+              this.updateCarouselStates();
+            },
+            progress: () => {
+              this.updateCarouselStates();
+            },
+            touchStart: () => {
+              // No need to disable arrows since they hide automatically
+            },
+            touchEnd: () => {
+              // Update states after touch interaction
+              setTimeout(() => {
+                this.updateCarouselStates();
+              }, 100);
+            }
+          }
+        });
+
+        // Store swiper instance
+        carouselElement.swiper = this.swiper;
+      },
+
+      updateCarouselStates() {
+        if (!this.swiper) return;
+
+        // Update Alpine.js reactive states
+        this.isAtBeginning = this.swiper.isBeginning;
+        this.isAtEnd = this.swiper.isEnd;
+
+        const leftFade = this.$refs.leftFade;
+        const rightFade = this.$refs.rightFade;
+
+        // Update fade states
+        if (leftFade) {
+          leftFade.style.opacity = this.swiper.isBeginning ? '0' : '1';
+        }
+
+        if (rightFade) {
+          rightFade.style.opacity = this.swiper.isEnd ? '0' : '1';
+        }
+      },
+
+      slidePrev() {
+        if (this.swiper && !this.swiper.isBeginning) {
+          this.swiper.slidePrev();
+          // States will be updated by the slideChange event
+        }
+      },
+
+      slideNext() {
+        if (this.swiper && !this.swiper.isEnd) {
+          this.swiper.slideNext();
+          // States will be updated by the slideChange event
+        }
+      },
+
+      destroy() {
+        if (this.swiper) {
+          this.swiper.destroy(true, true);
+          this.swiper = null;
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  /* Color Carousel Improvements */
+  .color-swatches-carousel {
+    overflow: hidden;
+    padding-right: 10px; /* Extra space for last slide */
+  }
+
+  .color-swatches-carousel .swiper-wrapper {
+    align-items: center;
+    transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    padding-right: 20px; /* Ensure last slide is fully visible */
+  }
+
+  .color-swatches-carousel .swiper-slide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .color-swatches-carousel button {
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    will-change: transform;
+  }
+
+  .color-swatches-carousel button:active {
+    transform: scale(0.95);
+  }
+
+  /* Prevent layout shifts during interaction */
+  .color-swatches-carousel .swiper-slide button {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+
+  /* Enhanced fade effect that adapts to background */
+  .color-carousel-container {
+    position: relative;
+  }
+
+  /* Fix initial image sizing before Swiper loads */
+  .color-swatches-carousel:not(.swiper-initialized) .swiper-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 2px;
+  }
+
+  .color-swatches-carousel:not(.swiper-initialized) .swiper-slide {
+    flex: 0 0 auto;
+    width: 80px;
+    height: 100px;
+    padding: 2px;
+  }
+
+  .color-swatches-carousel:not(.swiper-initialized) .swiper-slide button {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1.5/2;
+  }
+
+  /* Hide scrollbar for non-initialized carousel */
+  .color-swatches-carousel:not(.swiper-initialized) .swiper-wrapper {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .color-swatches-carousel:not(.swiper-initialized) .swiper-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide arrows until Swiper is initialized */
+  .color-swatches-carousel:not(.swiper-initialized) .absolute {
+    display: none;
+  }
+</style>

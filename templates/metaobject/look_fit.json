@@ -1,0 +1,50 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "look_fit_main": {
+      "type": "look-fit",
+      "blocks": {
+        "look_fit_carousel_7Jb78n": {
+          "type": "look_fit_carousel",
+          "settings": {
+            "title": "Looks Relacionados",
+            "fit_source": "random",
+            "max_fits": 8,
+            "display_type": "carousel",
+            "carousel_slides_mobile": 1.2,
+            "carousel_slides_desktop": 3,
+            "carousel_gap_mobile": 2,
+            "carousel_gap_desktop": 4,
+            "grid_columns_mobile": 2,
+            "grid_columns_desktop": 4,
+            "grid_gap_mobile": 2,
+            "grid_gap_desktop": 4,
+            "text_position": "bottom-left",
+            "aspect_ratio": "portrait"
+          }
+        }
+      },
+      "block_order": [
+        "look_fit_carousel_7Jb78n"
+      ],
+      "name": "Look Fit",
+      "settings": {
+        "autoplay": false,
+        "autoplay_delay": 5000,
+        "products_title": "Consigue El Look",
+        "show_product_count": true
+      }
+    }
+  },
+  "order": [
+    "look_fit_main"
+  ]
+}

@@ -1,0 +1,497 @@
+{% comment %}
+  Image with Text Section
+  Features:
+  - Responsive layout (side-by-side on desktop, column on mobile)
+  - Editable content (title, text, subtitle, rich text, button)
+  - Customizable layout direction (image left/right)
+  - Customizable button styling (background or border)
+  - Customizable image style (windowed or full-width)
+{% endcomment %}
+
+{% if section.settings.image_style == 'full_width' %}
+  <!-- Full Width Layout -->
+  <div class="image-with-text-section lg:py-12 py-10  lg:px-12">
+    <div class="flex flex-col gap-8 lg:gap-12 lg:justify-between lg:flex-row items-center {% if section.settings.layout_direction == 'text_first' %}lg:flex-row-reverse{% endif %}">
+      <!-- Text Content -->
+      <div class="w-full  px-4 lg:px-0 lg:w-1/2 order-2 lg:order-{% if section.settings.layout_direction == 'text_first' %}1{% else %}2{% endif %}">
+        <div class="text-content flex flex-col gap-8">
+          <div class="flex flex-col gap-3">
+            {% if section.settings.title != blank %}
+              <h2 class="font-bold text-gray-900 leading-tight">
+                {{ section.settings.title }}
+              </h2>
+            {% endif %}
+          </div>
+
+          {% if section.settings.rich_text != blank %}
+            <div class="rich-text-content text-gray-700 leading-relaxed body">
+              {{ section.settings.rich_text }}
+            </div>
+          {% endif %}
+
+          <!-- Dynamic Blocks (Icon List) -->
+          {% if section.blocks.size > 0 %}
+            <div class="icon-list-container space-y-4">
+              {% for block in section.blocks %}
+                {% case block.type %}
+                  {% when 'icon_list_item' %}
+                    <div class="icon-list-item flex items-start gap-4" {{ block.shopify_attributes }}>
+                      <!-- Icon -->
+                      {% if block.settings.icon_image %}
+                        <div class="icon-wrapper flex-shrink-0 w-8 h-8">
+                          {{
+                            block.settings.icon_image
+                            | image_url: width: 32
+                            | image_tag: class: 'w-full h-full object-contain', alt: block.settings.title
+                          }}
+                        </div>
+                      {% elsif block.settings.icon_svg %}
+                        <div class="icon-wrapper flex-shrink-0 w-8 h-8 text-primary">
+                          {{ block.settings.icon_svg }}
+                        </div>
+                      {% else %}
+                        <!-- Default icon if none provided -->
+                        <div class="icon-wrapper flex-shrink-0 w-8 h-8 text-primary">
+                          <svg class="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                        </div>
+                      {% endif %}
+
+                      <!-- Content -->
+                      <div class="content-wrapper flex-1">
+                        {% if block.settings.title %}
+                          <h6 class="font-semibold text-gray-900 mb-1">
+                            {{ block.settings.title }}
+                          </h6>
+                        {% endif %}
+                        {% if block.settings.subtitle %}
+                          <p class="text-sm text-gray-600 leading-relaxed">
+                            {{ block.settings.subtitle }}
+                          </p>
+                        {% endif %}
+                      </div>
+                    </div>
+                {% endcase %}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if section.settings.button_text != blank and section.settings.button_link != blank %}
+            <div class="button-container">
+              <a
+                href="{{ section.settings.button_link }}"
+                class="flex items-center justify-center w-fit px-6 h-11 transition-all duration-300 ease-in-out {% if section.settings.button_style == 'border' %}bg-transparent text-black border-1 border-black/50 hover:bg-black hover:text-white{% else %}bg-primary text-white hover:bg-primary/90{% endif %}"
+              >
+                <h6>
+                  {{ section.settings.button_text }}
+                </h6>
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Full Width Image -->
+      <div class="w-full lg:w-1/2  order-1 lg:order-{% if section.settings.layout_direction == 'text_first' %}2{% else %}1{% endif %}">
+        <div class="image-container w-full">
+          {% comment %} Smart Image Selection: Product image > Custom image > Placeholder {% endcomment %}
+          {% assign display_image = null %}
+          {% assign image_alt_text = section.settings.image_alt | default: section.settings.title %}
+
+          {% if template.name == 'product' and product and section.settings.use_product_image %}
+            {% assign display_image = product.featured_image %}
+            {% assign image_alt_text = product.title %}
+          {% elsif section.settings.image %}
+            {% assign display_image = section.settings.image %}
+          {% endif %}
+
+          {% if display_image %}
+            {{
+              display_image
+              | image_url: width: 1200
+              | image_tag: class: 'w-full h-[400px] lg:h-[90dvh] object-cover', alt: image_alt_text, loading: 'lazy'
+            }}
+          {% else %}
+            <div class="w-full aspect-[4/3] bg-gray-200 flex items-center justify-center">
+              <span class="text-gray-400 text-lg">Add an image</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <!-- Windowed Layout -->
+  <div class="image-with-text-section py-12 lg:px-12  ">
+    <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 {% if section.settings.layout_direction == 'text_first' %}lg:flex-row-reverse{% endif %}">
+      <!-- Text Content -->
+      <div class="w-full lg:w-1/2 px-4 lg:px-0 order-2 lg:order-{% if section.settings.layout_direction == 'text_first' %}1{% else %}2{% endif %}">
+        <div class="text-content space-y-6">
+          {% if section.settings.title != blank %}
+            <h2>
+              {{ section.settings.title }}
+            </h2>
+          {% endif %}
+
+          {% if section.settings.rich_text != blank %}
+            <div class=" body-lg">
+              {{ section.settings.rich_text }}
+            </div>
+          {% endif %}
+
+          <!-- Dynamic Blocks (Icon List) -->
+          {% if section.blocks.size > 0 %}
+            <div class="icon-list-container space-y-4">
+              {% for block in section.blocks %}
+                {% case block.type %}
+                  {% when 'icon_list_item' %}
+                    <div class="icon-list-item flex items-start gap-4" {{ block.shopify_attributes }}>
+                      <!-- Icon -->
+                      {% if block.settings.icon_image %}
+                        <div class="icon-wrapper flex-shrink-0 w-8 h-8">
+                          {{
+                            block.settings.icon_image
+                            | image_url: width: 32
+                            | image_tag: class: 'w-full h-full object-contain', alt: block.settings.title
+                          }}
+                        </div>
+                      {% elsif block.settings.icon_svg %}
+                        <div class="icon-wrapper flex-shrink-0 w-8 h-8 text-primary">
+                          {{ block.settings.icon_svg }}
+                        </div>
+                      {% else %}
+                        <!-- Default icon if none provided -->
+                        <div class="icon-wrapper flex-shrink-0 w-8 h-8 text-primary">
+                          <svg class="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                        </div>
+                      {% endif %}
+
+                      <!-- Content -->
+                      <div class="content-wrapper flex-1">
+                        {% if block.settings.title %}
+                          <h6 class="font-semibold text-gray-900 mb-1">
+                            {{ block.settings.title }}
+                          </h6>
+                        {% endif %}
+                        {% if block.settings.subtitle %}
+                          <p class="text-sm text-gray-600 leading-relaxed">
+                            {{ block.settings.subtitle }}
+                          </p>
+                        {% endif %}
+                      </div>
+                    </div>
+                {% endcase %}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if section.settings.button_text != blank and section.settings.button_link != blank %}
+            <div class="button-container pt-4">
+              <a
+                href="{{ section.settings.button_link }}"
+                class="flex items-center justify-center w-fit px-8 h-11 transition-all duration-300 ease-in-out {% if section.settings.button_style == 'border' %}bg-transparent text-black border-2 border-black hover:bg-black hover:text-white{% else %}bg-primary text-white hover:bg-primary/90{% endif %}"
+              >
+                <h6>
+                  {{ section.settings.button_text }}
+                </h6>
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Windowed Image -->
+      <div class="w-full lg:w-1/2 order-1 lg:order-{% if section.settings.layout_direction == 'text_first' %}2{% else %}1{% endif %}">
+        <div class="image-container w-full">
+          {% comment %} Smart Image Selection: Product image > Custom image > Placeholder {% endcomment %}
+          {% assign display_image = null %}
+          {% assign image_alt_text = section.settings.image_alt | default: section.settings.title %}
+
+          {% if template.name == 'product' and product and section.settings.use_product_image %}
+            {% assign display_image = product.featured_image %}
+            {% assign image_alt_text = product.title %}
+          {% elsif section.settings.image %}
+            {% assign display_image = section.settings.image %}
+          {% endif %}
+
+          {% if display_image %}
+            {{
+              display_image
+              | image_url: width: 800
+              | image_tag:
+                class: 'w-full min-h-[330px] lg:min-h-[400px] object-cover object-center',
+                alt: image_alt_text,
+                loading: 'lazy'
+            }}
+          {% else %}
+            <div class="w-full aspect-[4/3] bg-gray-200 flex items-center justify-center">
+              <span class="text-gray-400 text-lg">Add an image</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<style>
+  .image-with-text-section {
+    background-color: {{ section.settings.background_color | default: '#ffffff' }};
+  }
+
+  .text-content h2 {
+    color: {{ section.settings.title_color | default: '#1f2937' }};
+  }
+
+  .text-content h3 {
+    color: {{ section.settings.subtitle_color | default: '#1f2937' }};
+  }
+
+  .text-content p,
+  .rich-text-content {
+    color: {{ section.settings.text_color | default: '#374151' }};
+  }
+
+  .rich-text-content li {
+    list-style: disc;
+    margin-left: 1rem;
+  }
+
+
+
+
+  /* Responsive adjustments */
+  @media screen and (max-width: 1023px) {
+    .image-with-text-section {
+      padding-top: 3rem;
+      padding-bottom: 3rem;
+    }
+  }
+
+  @media screen and (max-width: 767px) {
+    .image-with-text-section {
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+    }
+
+    .text-content h2 {
+      font-size: 2rem;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Image with Text",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "select",
+      "id": "layout_direction",
+      "label": "Layout Direction",
+      "options": [
+        {
+          "value": "image_first",
+          "label": "Image Left, Text Right"
+        },
+        {
+          "value": "text_first",
+          "label": "Text Left, Image Right"
+        }
+      ],
+      "default": "image_first"
+    },
+    {
+      "type": "select",
+      "id": "image_style",
+      "label": "Image Style",
+      "options": [
+        {
+          "value": "windowed",
+          "label": "Windowed (Centered)"
+        },
+        {
+          "value": "full_width",
+          "label": "Full Width"
+        }
+      ],
+      "default": "windowed"
+    },
+    {
+      "type": "header",
+      "content": "Image Settings"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image Alt Text",
+      "info": "Optional alt text for accessibility"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_product_image",
+      "label": "Use Product Image (if on product page)",
+      "default": false,
+      "info": "When enabled, this will use the current product's featured image instead of the selected image above when viewing a product page"
+    },
+    {
+      "type": "header",
+      "content": "Content Settings"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Self-Care Starts With Your Underwear"
+    },
+    {
+      "type": "richtext",
+      "id": "rich_text",
+      "label": "Rich Text Content",
+      "default": "<ul><li>Breathable, non-irritating fabrics that put your health first</li><li>OEKO-TEX® certified materials—clean, non-toxic, always</li><li>An extra-long antimicrobial gusset for everyday protection</li><li>Tested by real women, with over 1,000 five-star reviews</li><li>Recommended by leading female health experts</li></ul>"
+    },
+    {
+      "type": "header",
+      "content": "Button Settings"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Descubrelos"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button Style",
+      "options": [
+        {
+          "value": "background",
+          "label": "Background Color"
+        },
+        {
+          "value": "border",
+          "label": "Border Style"
+        }
+      ],
+      "default": "background"
+    },
+    {
+      "type": "header",
+      "content": "Styling Options"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title Color",
+      "default": "#1f2937"
+    },
+    {
+      "type": "color",
+      "id": "subtitle_color",
+      "label": "Subtitle Color",
+      "default": "#1f2937"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#374151"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "icon_list_item",
+      "name": "Icon List Item",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon_image",
+          "label": "Icon Image",
+          "info": "Upload a custom icon image (32x32px recommended)"
+        },
+        {
+          "type": "html",
+          "id": "icon_svg",
+          "label": "Icon SVG Code",
+          "info": "Alternative: Paste SVG code for the icon. If both image and SVG are provided, image takes priority."
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Feature Title"
+        },
+        {
+          "type": "textarea",
+          "id": "subtitle",
+          "label": "Description",
+          "default": "Feature description goes here"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image with Text",
+      "category": "Content",
+      "settings": {
+        "title": "Self-Care Starts With Your Underwear",
+        "button_text": "Descubrelos",
+        "button_link": "/collections/all",
+        "layout_direction": "image_first",
+        "image_style": "windowed",
+        "button_style": "background",
+        "use_product_image": false
+      },
+      "blocks": [
+        {
+          "type": "icon_list_item",
+          "settings": {
+            "title": "Materiales Premium",
+            "subtitle": "Fabricados con materiales OEKO-TEX® certificados, libres de químicos dañinos"
+          }
+        },
+        {
+          "type": "icon_list_item",
+          "settings": {
+            "title": "Protección Antimicrobiana",
+            "subtitle": "Forro antimicrobiano extendido para protección diaria contra bacterias"
+          }
+        },
+        {
+          "type": "icon_list_item",
+          "settings": {
+            "title": "Transpirable y Cómodo",
+            "subtitle": "Telas que respiran y no irritan, priorizando tu salud íntima"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,14 @@
+{% comment %}
+  CSS Variables Snippet
+  This snippet injects Shopify theme settings as CSS custom properties
+  Usage: {% render 'css-variables' %}
+{% endcomment %}
+
+<style>
+  :root {
+    --shopify-primary-color: {{ settings.primary_color | default: '#3b2e10' }};
+    --shopify-background-color: {{ settings.background_color | default: '#FFFFFF' }};
+    --shopify-foreground-color: {{ settings.foreground_color | default: '#333333' }};
+    --shopify-input-corner-radius: {{ settings.input_corner_radius | default: 4 }}px;
+  }
+</style>

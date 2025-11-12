@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    {% # Inlined CSS Variables %}
+    {% render 'css-variables' %}
+
+    {% # Load and preload the critical CSS %}
+    {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
+    {{ 'styles.css' | asset_url | stylesheet_tag: preload: true }}
+
+    {% # Social, title, etc. %}
+    {% render 'meta-tags' %}
+
+    {{ content_for_header }}
+    <!-- Swiper.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+    <!-- HLS.js for video streaming -->
+    <script defer src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="{{ 'infinite-scroll.js' | asset_url }}" defer="defer"></script>
+  </head>
+
+  <body>
+    {% sections 'header-group' %}
+    <div class="-mt-23">
+      {{ content_for_layout }}
+    </div>
+
+    {% sections 'footer-group' %}
+
+    <!-- Cart Drawer -->
+    {% sections 'cart-drawer-group' %}
+
+    <!-- Search Drawer -->
+    {% sections 'search-drawer-group' %}
+
+    <!-- Swiper.js JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  </body>
+</html>

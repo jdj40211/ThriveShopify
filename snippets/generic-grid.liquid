@@ -1,0 +1,77 @@
+{% comment %}
+  Generic Reusable Grid Snippet
+
+  Parameters:
+  - grid_id: Unique ID for the grid (optional, default: 'grid')
+  - grid_class: Additional CSS classes (optional)
+  - content: The content to be rendered inside grid container
+  - columns_mobile: Mobile columns (default: 2)
+  - columns_desktop: Desktop columns (default: 4)
+  - gap_mobile: Mobile gap between items (default: 4)
+  - gap_desktop: Desktop gap between items (default: 6)
+  - show_title: Whether to show title (default: false)
+  - title: Grid title (optional)
+  - total_items: Total number of items (for analytics/tracking)
+{% endcomment %}
+
+{% assign grid_id = grid_id | default: 'grid' %}
+{% assign grid_class = grid_class | default: '' %}
+{% assign columns_mobile = columns_mobile | default: 2 %}
+{% assign columns_desktop = columns_desktop | default: 4 %}
+{% assign gap_mobile = gap_mobile | default: 4 %}
+{% assign gap_desktop = gap_desktop | default: 6 %}
+{% assign show_title = show_title | default: false %}
+{% assign total_items = total_items | default: 0 %}
+
+<div class="generic-grid-container {{ grid_class }}" data-grid-id="{{ grid_id }}">
+  {% if show_title and title != blank %}
+    <div class="grid-header mb-6">
+      <h3 class="text-2xl font-bold text-gray-900">{{ title }}</h3>
+    </div>
+  {% endif %}
+
+  <div
+    class="generic-grid"
+    style="
+      --grid-columns-mobile: {{ columns_mobile }};
+      --grid-columns-desktop: {{ columns_desktop }};
+      --grid-gap-mobile: {{ gap_mobile }}px;
+      --grid-gap-desktop: {{ gap_desktop }}px;
+    "
+    data-grid-id="{{ grid_id }}"
+    data-total-items="{{ total_items }}"
+  >
+    {{ content }}
+  </div>
+</div>
+
+<style>
+  .generic-grid-container {
+    width: 100%;
+  }
+
+  .generic-grid {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(var(--grid-columns-mobile), minmax(0, 1fr));
+    gap: var(--grid-gap-mobile);
+  }
+
+  .generic-grid > * {
+    width: 100%;
+    height: auto;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+
+  .generic-grid > *:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+  }
+
+  @media (min-width: 1024px) {
+    .generic-grid {
+      grid-template-columns: repeat(var(--grid-columns-desktop), minmax(0, 1fr));
+      gap: var(--grid-gap-desktop);
+    }
+  }
+</style>

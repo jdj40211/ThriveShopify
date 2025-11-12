@@ -1,0 +1,50 @@
+{% comment %}
+  Collection Card Snippet
+  Usage: {% render 'collection-card', collection: collection_object, custom_image: image, custom_video: video, image_source: 'collection_image', text_position: 'bottom-left', aspect_ratio: 'portrait' %}
+
+  Parameters:
+  - collection: Collection object (required)
+  - custom_image: Custom image (optional)
+  - custom_video: Custom video (optional)
+  - image_source: 'collection_image', 'collection_card_image', or 'custom_image'
+  - text_position: 'bottom-left', 'bottom-center', 'bottom-right', 'center'
+  - aspect_ratio: 'square', 'portrait', 'landscape', 'wide', 'ultra-wide', 'tall'
+{% endcomment %}
+
+{% comment %} Extract collection data {% endcomment %}
+{% assign category_title = collection.title %}
+{% assign category_link = collection.url %}
+
+{% comment %} Determine which image/video to use based on priority and settings {% endcomment %}
+{% assign category_image = null %}
+{% assign category_video = null %}
+
+{% comment %} Priority 1: Custom video (if provided) {% endcomment %}
+{% if custom_video %}
+  {% assign category_video = custom_video %}
+{% else %}
+  {% comment %} Priority 2: Custom image (if provided and image_source is 'custom_image') {% endcomment %}
+  {% if custom_image and image_source == 'custom_image' %}
+    {% assign category_image = custom_image %}
+  {% else %}
+    {% comment %} Priority 3: Collection card image (if image_source is 'collection_card_image') {% endcomment %}
+    {% if image_source == 'collection_card_image' and collection.metafields.custom.card_image.value %}
+      {% assign category_image = collection.metafields.custom.card_image.value %}
+    {% else %}
+      {% comment %} Priority 4: Collection default image {% endcomment %}
+      {% if collection.image %}
+        {% assign category_image = collection.image %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{% comment %} Use the generic card component {% endcomment %}
+{% render 'generic-card',
+  image: category_image,
+  video: category_video,
+  title: category_title,
+  link: category_link,
+  text_position: text_position,
+  aspect_ratio: aspect_ratio
+%}

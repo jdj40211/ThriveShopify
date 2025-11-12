@@ -1,0 +1,14 @@
+{% comment %}
+  Collection Tag Snippet
+  Usage: {% render 'collection-tag', collection: collection_object %}
+
+  Renders a single collection tag with hover effects and click tracking
+{% endcomment %}
+
+<a
+  href="{{ collection.url }}"
+  class="inline-flex  py-2 px-3 bg-gray-100 hover:bg-gray-200 text-black text-sm font-medium transition-all duration-200  whitespace-nowrap "
+  @click="addToHistory('{{ collection.title }}')"
+>
+  {{ collection.title }}
+</a>

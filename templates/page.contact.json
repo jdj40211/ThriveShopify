@@ -1,0 +1,27 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": { "type": "page-hero", "settings": { "title": "Contacto" } },
+    "care": {
+      "type": "contact-customer-care",
+      "settings": { "title": "Customer Care" }
+    },
+    "inquiry": {
+      "type": "contact-inquiry",
+      "settings": { "title": "General Inquiry" }
+    },
+    "social": {
+      "type": "contact-social",
+      "settings": { "title": "Social Media" }
+    }
+  },
+  "order": ["hero", "care", "inquiry", "social"]
+}

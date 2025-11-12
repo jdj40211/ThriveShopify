@@ -1,0 +1,78 @@
+{% comment %}
+  Product Look Fits Snippet
+  Usage: {% render 'product-look-fits', product: product_object %}
+
+  Finds and displays all Look Fit metaobjects that contain the current product
+  in their related_products field.
+{% endcomment %}
+
+{% comment %} Build related look fits using string method {% endcomment %}
+{% assign related_fits_string = '' %}
+{% assign separator = '|||SEPARATOR|||' %}
+
+{% for look_fit in shop.metaobjects.look_fit.values %}
+  {% comment %} Loop through related_products to check for matches {% endcomment %}
+  {% assign found_match = false %}
+
+  {% if look_fit.related_products.value.count > 0 %}
+    {% for product_ref in look_fit.related_products.value %}
+      {% if product_ref.id == product.id %}
+        {% assign found_match = true %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {% if found_match %}
+    {% if related_fits_string == '' %}
+      {% assign related_fits_string = look_fit.system.handle %}
+    {% else %}
+      {% assign related_fits_string = related_fits_string | append: separator | append: look_fit.system.handle %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{% if related_fits_string != '' %}
+  {% assign related_look_fits = related_fits_string | split: separator %}
+{% else %}
+  {% assign related_look_fits = '' | split: '' %}
+{% endif %}
+
+{% if related_look_fits.size > 0 %}
+  <div class="product-look-fits mt-8">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-900">Consigue El Look</h3>
+    </div>
+
+    <div class="swiper product-look-fits-carousel-{{ product.id }}">
+      <div class="swiper-wrapper">
+        {% for look_fit_handle in related_look_fits %}
+          {% assign look_fit = shop.metaobjects.look_fit[look_fit_handle] %}
+          <div class="swiper-slide">
+            {% render 'look-fit-card', fit: look_fit, text_position: 'bottom-left', aspect_ratio: 'portrait' %}
+          </div>
+        {% endfor %}
+      </div>
+
+   
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const carousel = document.querySelector('.product-look-fits-carousel-{{ product.id }}');
+      if (carousel && typeof Swiper !== 'undefined') {
+        new Swiper(carousel, {
+          slidesPerView: 2.2,
+          spaceBetween: 2,
+          breakpoints: {
+            1024: { slidesPerView: 2.5, spaceBetween: 4 },
+            
+          },
+
+
+        });
+      }
+    });
+  </script>
+{% endif %}

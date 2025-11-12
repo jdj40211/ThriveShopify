@@ -1,0 +1,160 @@
+{% comment %}
+  Product Benefits Section
+
+  Features:
+  - Product-related media (video first, then image fallback)
+  - Benefit blocks with icon, title, and rich text
+  - Responsive layout: mobile (stacked), desktop (side-by-side)
+  - Modular design using snippets
+{% endcomment %}
+
+<div class="product-benefits-section py-12 lg:py-16 bg-white">
+  <div class="   lg:pl-12 ">
+    {% comment %} Mobile Layout: Media on top, benefits below {% endcomment %}
+    <div class="lg:hidden flex flex-col gap-8">
+      <!-- Mobile Media Section -->
+      <div class="w-full">
+        {% render 'product-benefits-media', product: product, image_count: '1' %}
+      </div>
+
+      <!-- Mobile Benefits Section -->
+      <div class="w-full px-4">
+        {% render 'product-benefits-content',
+          title: section.settings.title,
+          subtitle: section.settings.subtitle,
+          benefit_blocks: section.blocks
+        %}
+      </div>
+    </div>
+
+    {% comment %} Desktop Layout: Dynamic based on layout setting {% endcomment %}
+    <div class="hidden w-full lg:flex lg:gap-12 lg:items-start {% if section.settings.layout == 'media-left' %}lg:flex-row-reverse{% endif %}">
+      <!-- Desktop Benefits Section -->
+      <div class="lg:w-1/3">
+        {% render 'product-benefits-content',
+          title: section.settings.title,
+          subtitle: section.settings.subtitle,
+          benefit_blocks: section.blocks
+        %}
+      </div>
+
+      <!-- Desktop Media Section -->
+      <div class="lg:w-2/3">
+        {% render 'product-benefits-media', product: product, image_count: section.settings.image_count %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Product Benefits",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section Title",
+      "default": "Adios A La Incomodidad"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Section Subtitle",
+      "default": "WDWDA"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout Orientation",
+      "options": [
+        {
+          "value": "benefits-left",
+          "label": "Benefits Left, Media Right"
+        },
+        {
+          "value": "media-left",
+          "label": "Media Left, Benefits Right"
+        }
+      ],
+      "default": "benefits-left",
+      "info": "Choose the layout orientation for desktop view"
+    },
+    {
+      "type": "select",
+      "id": "image_count",
+      "label": "Number of Images",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 Image"
+        },
+        {
+          "value": "2",
+          "label": "2 Images (Side by Side)"
+        }
+      ],
+      "default": "1",
+      "info": "Choose how many product images to display. Mobile always shows 1 image."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "benefit_item",
+      "name": "Benefit Item",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "Icon",
+          "info": "Upload a custom icon image (SVG, PNG, or JPG recommended)"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Benefit Title",
+          "default": "El Doble De Suavidad Que El Algodón"
+        },
+        {
+          "type": "richtext",
+          "id": "description",
+          "label": "Benefit Description",
+          "default": "<p>Your refuge for skin wellbeing—hydrating, enhancing, and protecting every day.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Benefits",
+      "blocks": [
+        {
+          "type": "benefit_item",
+          "settings": {
+            "title": "El Doble De Suavidad Que El Algodón",
+            "description": "<p>Your refuge for skin wellbeing—hydrating, enhancing, and protecting every day.</p>"
+          }
+        },
+        {
+          "type": "benefit_item",
+          "settings": {
+            "title": "Comfortable All Day",
+            "description": "<p>Experience unmatched comfort that lasts throughout your entire day.</p>"
+          }
+        },
+        {
+          "type": "benefit_item",
+          "settings": {
+            "title": "Premium Quality",
+            "description": "<p>Made with the finest materials and attention to detail.</p>"
+          }
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

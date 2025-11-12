@@ -1,0 +1,348 @@
+{% comment %}
+  Category Grid Section
+  Features:
+  - Dynamic flex layout based on category count
+  - Customizable category images and names
+  - Mobile responsive (column or slider)
+  - Optional section title
+{% endcomment %}
+
+<div class="category-grid-section py-12" id="category-grid-{{ section.id }}">
+  {% if section.settings.title != blank %}
+    <div class="flex justify-between items-center mb-8 mx-4 lg:mx-12">
+      <div class="text-left">
+        <h2>
+          {{ section.settings.title }}
+        </h2>
+        {% if section.settings.subtitle != blank %}
+          <p class="text-lg text-gray-600 max-w-2xl ">
+            {{ section.settings.subtitle }}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if section.blocks.size > 0 %}
+    <!-- Dynamic flex layout -->
+    <div class="category-grid-container overflow-x-hidden">
+      <!-- Mobile Layout -->
+      {% if section.settings.mobile_layout == 'slider' %}
+        <!-- Mobile Slider -->
+        <div class="lg:hidden">
+          <div id="category-mobile-slider-{{ section.id }}" class=" ">
+            <div class="swiper-wrapper">
+              {% for block in section.blocks %}
+                {% case block.type %}
+                  {% when 'category' %}
+                    <div class="swiper-slide">
+                      {% render 'collection-card',
+                        collection: block.settings.collection,
+                        custom_image: block.settings.custom_image,
+                        custom_video: block.settings.custom_video,
+                        image_source: block.settings.image_source,
+                        text_position: block.settings.text_position,
+                        aspect_ratio: block.settings.aspect_ratio
+                      %}
+                    </div>
+                {% endcase %}
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop Layout - Carousel if more than 4 slides, otherwise flex -->
+        {% if section.blocks.size > 4 %}
+          <!-- Desktop Carousel for more than 4 slides -->
+          <div class="hidden lg:block">
+            <div id="category-desktop-slider-{{ section.id }}" class="  ">
+              <div class="swiper-wrapper ">
+                {% for block in section.blocks %}
+                  {% case block.type %}
+                    {% when 'category' %}
+                      <div class="swiper-slide">
+                        {% render 'collection-card',
+                          collection: block.settings.collection,
+                          custom_image: block.settings.custom_image,
+                          custom_video: block.settings.custom_video,
+                          image_source: block.settings.image_source,
+                          text_position: block.settings.text_position,
+                          aspect_ratio: block.settings.aspect_ratio
+                        %}
+                      </div>
+                  {% endcase %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <!-- Desktop Flex Layout for 4 or fewer slides -->
+          <div class="hidden lg:flex gap-1">
+            {% for block in section.blocks %}
+              {% case block.type %}
+                {% when 'category' %}
+                  <div class="flex-1">
+                    {% render 'collection-card',
+                      collection: block.settings.collection,
+                      custom_image: block.settings.custom_image,
+                      custom_video: block.settings.custom_video,
+                      image_source: block.settings.image_source,
+                      text_position: block.settings.text_position,
+                      aspect_ratio: block.settings.aspect_ratio
+                    %}
+                  </div>
+              {% endcase %}
+            {% endfor %}
+          </div>
+        {% endif -%}
+
+      {% else %}
+        <!-- Mobile Column + Desktop Flex -->
+        <div class="flex flex-col overflow-x-hidden lg:flex-row gap-1">
+          {% for block in section.blocks %}
+            {% case block.type %}
+              {% when 'category' %}
+                <div class="w-full lg:flex-1">
+                  {% render 'collection-card',
+                    collection: block.settings.collection,
+                    custom_image: block.settings.custom_image,
+                    custom_video: block.settings.custom_video,
+                    image_source: block.settings.image_source,
+                    text_position: block.settings.text_position,
+                    aspect_ratio: block.settings.aspect_ratio
+                  %}
+                </div>
+            {% endcase %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="text-center py-12">
+      <p class="text-gray-500 text-lg">No categories added yet</p>
+      <p class="text-gray-400 text-sm mt-2">Add categories using the theme editor</p>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const mobileSliderElement = document.getElementById('category-mobile-slider-{{ section.id }}');
+    const desktopSliderElement = document.getElementById('category-desktop-slider-{{ section.id }}');
+
+    // Initialize mobile slider
+    if (mobileSliderElement && typeof Swiper !== 'undefined') {
+      const mobileSwiper = new Swiper(mobileSliderElement, {
+        slidesPerView: 1.2,
+        spaceBetween: 2,
+        freeMode: {
+          enabled: true,
+          sticky: true,
+        },
+        grabCursor: false,
+        breakpoints: {
+          768: {
+            slidesPerView: 2.2,
+          },
+        },
+      });
+    }
+
+    // Initialize desktop slider (only if more than 4 slides)
+    {% if section.blocks.size > 4 %}
+      if (desktopSliderElement && typeof Swiper !== 'undefined') {
+        const desktopSwiper = new Swiper(desktopSliderElement, {
+          slidesPerView: 4.2,
+          spaceBetween: 4,
+          freeMode: {
+            enabled: true,
+            sticky: true,
+            momentum: true,
+          },
+          grabCursor: false,
+        });
+      }
+    {% endif %}
+
+  });
+</script>
+
+<style>
+  .category-grid-container {
+    max-width: 100%;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Category Grid",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section Title",
+      "default": "Best Sellers"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Section Subtitle",
+      "info": "Optional subtitle below the main title"
+    },
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "select",
+      "id": "mobile_layout",
+      "label": "Mobile Layout",
+      "options": [
+        {
+          "value": "column",
+          "label": "Single Column"
+        },
+        {
+          "value": "slider",
+          "label": "Slider"
+        }
+      ],
+      "default": "column"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "Category",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "Select the collection to display"
+        },
+        {
+          "type": "header",
+          "content": "Media Settings"
+        },
+        {
+          "type": "select",
+          "id": "image_source",
+          "label": "Image Source",
+          "options": [
+            {
+              "value": "collection_image",
+              "label": "Collection Image"
+            },
+            {
+              "value": "collection_card_image",
+              "label": "Collection Card Image"
+            },
+            {
+              "value": "custom_image",
+              "label": "Custom Image"
+            }
+          ],
+          "default": "collection_image",
+          "info": "Choose which image to display. If no custom image is uploaded, it will fallback to the collection's default image."
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Custom Image",
+          "info": "Optional: Upload a custom image. If not provided, the collection's default image will be used."
+        },
+        {
+          "type": "video",
+          "id": "custom_video",
+          "label": "Custom Video",
+          "info": "Optional: Upload a video to display instead of an image. If provided, video will take priority over images."
+        },
+        {
+          "type": "header",
+          "content": "Display Settings"
+        },
+        {
+          "type": "select",
+          "id": "text_position",
+          "label": "Text Position",
+          "options": [
+            {
+              "value": "bottom-left",
+              "label": "Bottom Left"
+            },
+            {
+              "value": "bottom-center",
+              "label": "Bottom Center"
+            },
+            {
+              "value": "bottom-right",
+              "label": "Bottom Right"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            }
+          ],
+          "default": "bottom-left"
+        },
+        {
+          "type": "select",
+          "id": "aspect_ratio",
+          "label": "Aspect Ratio",
+          "options": [
+            {
+              "value": "square",
+              "label": "Square (1:1)"
+            },
+            {
+              "value": "portrait",
+              "label": "Portrait (3:4)"
+            },
+            {
+              "value": "landscape",
+              "label": "Landscape (4:3)"
+            },
+            {
+              "value": "wide",
+              "label": "Wide (16:9)"
+            },
+            {
+              "value": "ultra-wide",
+              "label": "Ultra Wide (21:9)"
+            },
+            {
+              "value": "tall",
+              "label": "Tall (2:3)"
+            }
+          ],
+          "default": "portrait",
+          "info": "Choose the aspect ratio for this category card"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Category Grid",
+      "category": "Content",
+      "blocks": [
+        {
+          "type": "category"
+        },
+        {
+          "type": "category"
+        },
+        {
+          "type": "category"
+        },
+        {
+          "type": "category"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

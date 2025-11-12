@@ -1,0 +1,348 @@
+{% comment %}
+  Product Carousel Section
+  Features:
+  - Product filtering by collection, tags, or colors
+  - Product cards with badges, ratings, color swatches
+  - Interactive color selection that changes product image
+  - Size selection grid that appears on plus icon click
+  - Add to cart functionality
+  - Same styling as content carousel
+{% endcomment %}
+
+<div class="py-12 lg:py-10 overflow-x-hidden" id="product-carousel-{{ section.id }}">
+  <div class=" w-full flex flex-col gap-8">
+    {% if section.settings.title != blank %}
+      <div class="flex justify-between items-end  mx-4 lg:mx-12">
+        <div class="flex  flex-col gap-2">
+          <h2>{{ section.settings.title }}</h2>
+          {% if section.settings.rich_text != blank %}
+            <div class="rich-text">{{ section.settings.rich_text }}</div>
+          {% endif %}
+        </div>
+        <div class=" items-center gap-8 hidden lg:flex">
+          {% if section.settings.show_view_all %}
+            {% assign view_all_url = '' %}
+            {% case section.settings.product_source %}
+              {% when 'collections' %}
+                {% assign view_all_url = section.settings.view_all_link_collections %}
+              {% else %}
+                {% assign view_all_url = section.settings.view_all_link %}
+            {% endcase %}
+
+            {% if view_all_url != blank %}
+              <a
+                href="{{ view_all_url }}"
+                class="text-gray-600 hover:text-gray-900 transition-colors underline"
+              >
+                {{ section.settings.view_all_text | default: 'Ver todos' }}
+              </a>
+            {% endif %}
+          {% endif %}
+          {% comment %} Custom arrows for product carousel (hidden on mobile) {% endcomment %}
+          {% if section.settings.show_arrows %}
+            <div class="hidden lg:flex space-x-2" id="product-carousel-arrows-{{ section.id }}">
+              <button
+                class="product-carousel-prev w-8 h-8 rounded-full bg-gray-300 text-gray-500 disabled:hover:bg-gray-300 disabled:hover:text-gray-500 transition-all duration-200 flex items-center justify-center cursor-not-allowed"
+                aria-label="Previous"
+                disabled
+                data-carousel-id="{{ section.id }}"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </button>
+              <button
+                class="product-carousel-next w-8 h-8 rounded-full bg-primary text-white hover:bg-primary/80 disabled:hover:bg-gray-300 disabled:hover:text-gray-500 transition-all duration-200 flex items-center justify-center cursor-pointer"
+                aria-label="Next"
+                data-carousel-id="{{ section.id }}"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% assign products = '' %}
+    {% case section.settings.product_source %}
+      {% when 'collection' %}
+        {% if section.settings.collection != blank %}
+          {% assign products = section.settings.collection.products %}
+        {% endif %}
+      {% when 'collections' %}
+        {% if section.settings.collections.count > 0 %}
+          {% comment %} Collect first 3 products from each collection {% endcomment %}
+          {% assign products = blank %}
+          {% assign first_collection = true %}
+
+          {% for collection in section.settings.collections %}
+            {% assign products_added = 0 %}
+            {% assign collection_products = blank %}
+
+            {% comment %} Get up to 3 products from this collection {% endcomment %}
+            {% for product in collection.products %}
+              {% if product.available and products_added < 3 %}
+                {% if products_added == 0 %}
+                  {% comment %} Start with the product as a single-item array {% endcomment %}
+                  {% assign collection_products = collection.products | where: 'id', product.id %}
+                {% else %}
+                  {% assign single_product = collection.products | where: 'id', product.id %}
+                  {% assign collection_products = collection_products | concat: single_product %}
+                {% endif %}
+                {% assign products_added = products_added | plus: 1 %}
+              {% endif %}
+            {% endfor %}
+
+            {% comment %} Add this collection's products to the main products array {% endcomment %}
+            {% if collection_products != blank %}
+              {% if first_collection %}
+                {% assign products = collection_products %}
+                {% assign first_collection = false %}
+              {% else %}
+                {% assign products = products | concat: collection_products %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% when 'tags' %}
+        {% if section.settings.product_tags != blank %}
+          {% assign tag_array = section.settings.product_tags | split: ',' %}
+          {% assign products = collections.all.products %}
+          {% for tag in tag_array %}
+            {% assign tag_trimmed = tag | strip %}
+            {% assign products = products | where: 'tags', tag_trimmed %}
+          {% endfor %}
+        {% endif %}
+      {% when 'manual' %}
+        {% assign products = section.settings.products %}
+    {% endcase %}
+
+    {% comment %} Count available products {% endcomment %}
+    {% assign available_count = 0 %}
+    {% for product in products %}
+      {% if product.available %}
+        {% assign available_count = available_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+
+    {% if available_count > 0 %}
+      {% comment %} Build carousel content {% endcomment %}
+      {% capture carousel_content %}
+        {% assign products_shown = 0 %}
+        {% for product in products %}
+          {% if product.available and products_shown < section.settings.max_products %}
+            <div class="swiper-slide">
+              <div class="w-full">
+                {% render 'product-card',
+                  product: product,
+                  show_badges: section.settings.show_badges,
+                  show_rating: section.settings.show_rating,
+                  show_color_swatches: section.settings.show_color_swatches,
+                  show_size_selector: section.settings.show_size_selector
+                %}
+              </div>
+            </div>
+            {% assign products_shown = products_shown | plus: 1 %}
+          {% endif %}
+        {% endfor %}
+      {% endcapture %}
+
+      {% comment %} Render carousel using generic carousel snippet {% endcomment %}
+
+      {% render 'generic-carousel',
+        carousel_id: section.id,
+        carousel_class: 'product-carousel',
+        content: carousel_content,
+        show_arrows: section.settings.show_arrows,
+        slides_per_view_mobile: 1.35,
+        slides_per_view_desktop: 4,
+        space_between_mobile: 2,
+        space_between_desktop: 4,
+        centered_slides: true,
+        free_mode: true,
+        total_items: available_count
+      %}
+
+    {% else %}
+      {% comment %} Show message when no products are available {% endcomment %}
+      <div class="text-center py-8">
+        <p class="text-gray-600">
+          {{ section.settings.no_products_message | default: 'No hay productos disponibles en este momento.' }}
+        </p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Product Carousel",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Carousel Title",
+      "default": "Best Sellers"
+    },
+    {
+      "type": "richtext",
+      "id": "rich_text",
+      "label": "Rich Text",
+      "info": "Optional rich text content below the title"
+    },
+    {
+      "type": "header",
+      "content": "View All Link"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show View All Link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "view_all_text",
+      "label": "View All Text",
+      "default": "Ver todos"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "View All Link",
+      "info": "Used for single collection, tags, and manual selection"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link_collections",
+      "label": "View All Link (Multiple Collections)",
+      "info": "Used when multiple collections are selected"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show Navigation Arrows",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Product Selection"
+    },
+    {
+      "type": "select",
+      "id": "product_source",
+      "label": "Product Source",
+      "options": [
+        {
+          "value": "collection",
+          "label": "Single Collection"
+        },
+        {
+          "value": "collections",
+          "label": "Multiple Collections"
+        },
+        {
+          "value": "tags",
+          "label": "Product Tags"
+        },
+        {
+          "value": "manual",
+          "label": "Manual Selection"
+        }
+      ],
+      "default": "collection"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection",
+      "info": "Select products from this collection"
+    },
+    {
+      "type": "collection_list",
+      "id": "collections",
+      "label": "Collections",
+      "limit": 10,
+      "info": "Select multiple collections to mix products from"
+    },
+    {
+      "type": "text",
+      "id": "product_tags",
+      "label": "Product Tags",
+      "info": "Comma-separated tags (e.g., 'best-seller,new')"
+    },
+    {
+      "type": "product_list",
+      "id": "products",
+      "label": "Manual Product Selection",
+      "limit": 20
+    },
+    {
+      "type": "range",
+      "id": "max_products",
+      "label": "Maximum Products",
+      "min": 4,
+      "max": 20,
+      "step": 1,
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Product Card Display"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badges",
+      "label": "Show Product Badges",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show Product Rating",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_color_swatches",
+      "label": "Show Color Swatches",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_size_selector",
+      "label": "Show Size Selector",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Messages"
+    },
+    {
+      "type": "text",
+      "id": "no_products_message",
+      "label": "No Products Available Message",
+      "default": "No hay productos disponibles en este momento.",
+      "info": "Message shown when no products are available to display"
+    },
+    {
+      "type": "header",
+      "content": "Carousel Settings"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Carousel",
+      "settings": {
+        "title": "Best Sellers",
+        "product_source": "collection"
+      }
+    }
+  ]
+}
+{% endschema %}

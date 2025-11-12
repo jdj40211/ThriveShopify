@@ -1,0 +1,49 @@
+{% comment %}
+  Cart Trigger Button
+  Features:
+  - Shows cart item count
+  - Opens cart drawer when clicked
+  - Responsive design
+{% endcomment %}
+
+<button
+  @click="$dispatch('cart:open')"
+  class="relative flex items-center justify-center"
+  x-data="
+    {
+      cartCount: 0,
+      async updateCartCount() {
+        try {
+          // Small delay to ensure server has processed the cart update
+          await new Promise(resolve => setTimeout(resolve, 100));
+          const response = await fetch('/cart.js');
+          const cart = await response.json();
+          this.cartCount = cart.item_count;
+        } catch (error) {
+          console.error('Error updating cart count:', error);
+        }
+      },
+      init() {
+        this.updateCartCount();
+
+        // Listen for Alpine.js cart events
+        this.$watch('$store.cart', () => {
+          this.updateCartCount();
+        });
+
+        // Note: cart:updated events are handled by @cart:updated.window directive
+        // No need for additional window.addEventListener here
+      }
+    }
+  "
+  @cart:updated.window="updateCartCount()"
+>
+  {% render 'cart-icon', class: 'w-6 h-6' %}
+
+  <!-- Cart Count Badge -->
+  <span
+    x-show="cartCount > 0"
+    x-text="cartCount"
+    class="absolute -top-2 -right-3 border-3 border-transparent bg-black text-white body-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
+  ></span>
+</button>

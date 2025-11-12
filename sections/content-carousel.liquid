@@ -1,0 +1,238 @@
+{% comment %}
+  Content Carousel Section
+  Supports content cards with configurable options
+{% endcomment %}
+
+<div class="py-16 md:py-8" id="content-carousel-{{ section.id }}">
+  <div class="container mx-auto ">
+    {% if section.settings.title != blank %}
+      <div class="flex justify-between items-center mb-8">
+        <h2>{{ section.settings.title }}</h2>
+        {% if section.settings.show_view_all and section.settings.view_all_link != blank %}
+          <a href="{{ section.settings.view_all_link }}" class="text-gray-600 hover:text-gray-900 transition-colors">
+            {{ section.settings.view_all_text | default: 'Ver todos' }}
+          </a>
+        {% endif %}
+        {% comment %} Always show arrows when there are blocks {% endcomment %}
+        {% if section.blocks.size > 1 %}
+          {% render 'carousel-arrows' %}
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if section.blocks.size > 0 %}
+      <div class="content-carousel swiper-{{ section.id }} overflow-hidden" data-carousel-id="{{ section.id }}">
+        <div class="swiper-wrapper">
+          {% for block in section.blocks %}
+            <div class="swiper-slide px-2">
+              {% render 'content-card',
+                content_image: block.settings.content_image,
+                content_title: block.settings.content_title,
+                product_count: block.settings.product_count,
+                content_description: block.settings.content_description,
+                content_link: block.settings.content_link
+              %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const carouselId = '{{ section.id }}';
+    const carouselElement = document.querySelector('.swiper-{{ section.id }}');
+
+    if (carouselElement && typeof Swiper !== 'undefined') {
+      const totalBlocks = {{ section.blocks.size }};
+      const enableDesktopCarousel = totalBlocks > 4;
+
+      const swiper = new Swiper(carouselElement, {
+        slidesPerView: 2,
+        spaceBetween: {{ section.settings.gap | default: 24 }},
+        freeMode: {
+          enabled: true,
+          sticky: true,
+          momentum: true,
+        },
+        grabCursor: false,
+        navigation: {
+          nextEl: '.carousel-next',
+          prevEl: '.carousel-prev',
+        },
+        breakpoints: {
+          768: {
+            slidesPerView: 3,
+            spaceBetween: {{ section.settings.gap | default: 24 }},
+          },
+          1024: {
+            slidesPerView: enableDesktopCarousel ? 4 : {{ section.settings.items_per_view | default: 5 }},
+            spaceBetween: {{ section.settings.gap | default: 24 }},
+            freeMode: enableDesktopCarousel ? false : {
+              enabled: true,
+              sticky: true,
+              momentum: true,
+            },
+          },
+        },
+        on: {
+          init: function() {
+            updateContentArrowStates(this);
+          },
+          slideChange: function() {
+            updateContentArrowStates(this);
+          },
+          reachBeginning: function() {
+            updateContentArrowStates(this);
+          },
+          reachEnd: function() {
+            updateContentArrowStates(this);
+          },
+        },
+      });
+    }
+
+    // Function to update arrow states for content carousel
+    function updateContentArrowStates(swiper) {
+      const sectionContainer = document.getElementById('content-carousel-{{ section.id }}');
+      if (!sectionContainer) return;
+
+      const prevArrow = sectionContainer.querySelector('.carousel-prev');
+      const nextArrow = sectionContainer.querySelector('.carousel-next');
+
+      if (prevArrow) {
+        if (swiper.isBeginning) {
+          prevArrow.style.opacity = '0.3';
+          prevArrow.style.cursor = 'not-allowed';
+          prevArrow.disabled = true;
+        } else {
+          prevArrow.style.opacity = '1';
+          prevArrow.style.cursor = 'pointer';
+          prevArrow.disabled = false;
+        }
+      }
+
+      if (nextArrow) {
+        if (swiper.isEnd) {
+          nextArrow.style.opacity = '0.3';
+          nextArrow.style.cursor = 'not-allowed';
+          nextArrow.disabled = true;
+        } else {
+          nextArrow.style.opacity = '1';
+          nextArrow.style.cursor = 'pointer';
+          nextArrow.disabled = false;
+        }
+      }
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Content Carousel",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Carousel Title",
+      "default": "Content Carousel"
+    },
+    {
+      "type": "header",
+      "content": "View All Link"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show View All Link",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "view_all_text",
+      "label": "View All Text",
+      "default": "Ver todos"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "View All Link"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show Navigation Arrows",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Carousel Settings"
+    },
+    {
+      "type": "range",
+      "id": "items_per_view",
+      "label": "Items per view (desktop)",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap between items",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "default": 24
+    }
+  ],
+  "blocks": [
+    {
+      "type": "content_card",
+      "name": "Content Card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "content_image",
+          "label": "Content Image"
+        },
+        {
+          "type": "text",
+          "id": "content_title",
+          "label": "Content Title"
+        },
+        {
+          "type": "text",
+          "id": "product_count",
+          "label": "Product Count (e.g., '3 Productos')"
+        },
+        {
+          "type": "textarea",
+          "id": "content_description",
+          "label": "Content Description"
+        },
+        {
+          "type": "url",
+          "id": "content_link",
+          "label": "Content Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Content Carousel",
+      "blocks": [
+        {
+          "type": "content_card"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

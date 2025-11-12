@@ -1,0 +1,137 @@
+{% comment %}
+  Video Slide Snippet
+
+  Usage:
+  {% render 'video-slide',
+    block: block,
+    aspect_ratio: '3/4'
+  %}
+
+  Parameters:
+  - block: Block object with video settings
+  - aspect_ratio: Aspect ratio class (default: '3/4')
+{% endcomment %}
+
+{% assign aspect_ratio = aspect_ratio | default: '3/4' %}
+
+<div
+  class="video-slide-container relative overflow-hidden  bg-gray-100 aspect-[3/4]"
+  x-data="videoSlide()"
+  data-video-index="{{ video_index | default: 0 }}"
+  data-video-id="{{ video_id | default: block.id }}"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.video_file != blank %}
+    <!-- Video Element -->
+    <video
+      x-ref="video"
+      class="absolute inset-0 w-full h-full object-cover"
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      @loadedmetadata="onVideoLoaded"
+    >
+      {% for source in block.settings.video_file.sources %}
+        <source src="{{ source.url }}" type="{{ source.mime_type }}">
+      {% endfor %}
+      Your browser does not support the video tag.
+    </video>
+
+    <!-- Clickable Video Area -->
+    <div
+      class="absolute inset-0 cursor-pointer z-20"
+      @click="openVideoGallery"
+    ></div>
+
+  {% else %}
+    <!-- No Video Placeholder -->
+    <div class="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 text-gray-400">
+      <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+      </svg>
+      <span class="text-sm font-medium">Add Video</span>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  function videoSlide() {
+    return {
+      videoIndex: {{ video_index | default: 0 }},
+
+      // Video Gallery Methods
+      openVideoGallery() {
+        // Resolve index by locating this slide among non-duplicate slides in this carousel
+        const carouselEl = this.$el.closest('.video-carousel');
+        let resolvedIndex = this.videoIndex;
+        const resolvedId = this.$el.dataset && this.$el.dataset.videoId ? this.$el.dataset.videoId : null;
+        if (carouselEl) {
+          const candidates = Array.from(
+            carouselEl.querySelectorAll('.swiper-slide:not(.swiper-slide-duplicate) .video-slide-container')
+          );
+          const foundIndex = candidates.findIndex(node => node.contains(this.$el));
+          if (foundIndex >= 0) {
+            resolvedIndex = foundIndex;
+          } else {
+            // Fallback to Swiper's original slide index when available
+            const slideEl = this.$el.closest('.swiper-slide');
+            if (slideEl && slideEl.dataset && typeof slideEl.dataset.swiperSlideIndex !== 'undefined') {
+              const parsed = parseInt(slideEl.dataset.swiperSlideIndex, 10);
+              if (!Number.isNaN(parsed)) {
+                resolvedIndex = parsed;
+              }
+            } else if (this.$el.dataset && this.$el.dataset.videoIndex) {
+              const fallbackParsed = parseInt(this.$el.dataset.videoIndex, 10);
+              if (!Number.isNaN(fallbackParsed)) {
+                resolvedIndex = fallbackParsed;
+              }
+            }
+          }
+        }
+
+        // Dispatch event to open video gallery with the resolved index
+        this.$dispatch('open-video-gallery', {
+          carousel: this.$el.closest('.video-carousel'),
+          videoIndex: resolvedIndex,
+          videoId: resolvedId,
+        });
+      },
+
+      onVideoLoaded() {
+        console.log('Video metadata loaded in video slide');
+      },
+
+      init() {
+        // Initialize video state
+        this.$nextTick(() => {
+          const video = this.$refs.video;
+          if (video) {
+            // Ensure video is muted for autoplay compliance
+            video.muted = true;
+            video.playsInline = true;
+
+            // Check if HLS.js is available and needed
+            const videoSrc = video.querySelector('source')?.src;
+            if (videoSrc && videoSrc.includes('.m3u8')) {
+              if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(videoSrc);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                  // HLS manifest parsed
+                });
+              } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = videoSrc;
+              }
+            }
+
+            video.addEventListener('error', (e) => {
+              console.error('Video loading error:', e);
+            });
+          }
+        });
+      },
+    };
+  }
+</script>

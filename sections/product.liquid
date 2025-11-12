@@ -1,0 +1,1973 @@
+{% comment %}
+  Product Page Section - Comprehensive product display
+  Features:
+  - Image gallery with navigation
+  - Product information and pricing
+  - Color swatches (squared design)
+  - Size selector (rounded with border)
+  - Add to cart functionality
+  - Responsive design for mobile and desktop
+{% endcomment %}
+
+<style>
+  /* Mobile Product Gallery Pagination Styles */
+  .swiper-pagination-mobile {
+    width: fit-content;
+    bottom: 20px !important;
+    left: 20px !important;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .swiper-pagination-bullet {
+    background: rgba(0, 0, 0, 0.2) !important;
+    opacity: 1 !important;
+    margin: 0px !important;
+    transition: all 0.6s ease;
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  .swiper-pagination-bullet.swiper-pagination-bullet-active {
+    background: rgba(0, 0, 0, 1) !important;
+    width: 16px !important;
+    height: 5px !important;
+    border-radius: 6px !important;
+    transition: all 0.6s ease;
+  }
+
+  /* Hide Alpine.js fallback text when Alpine.js has loaded */
+  [x-cloak] {
+    display: none !important;
+  }
+  .alpine-fallback {
+    display: block;
+  }
+  [x-data] .alpine-fallback {
+    display: none !important;
+  }
+</style>
+
+<div
+  class="product-page bg-white mt-8 lg:mt-23"
+  x-data="productPage({{ product.id }}, {{ section.settings.delivery_days | default: 7 }})"
+>
+  <div class="flex flex-col lg:flex-row gap-5 lg:gap-8 w-full lg:pr-12">
+    <!-- Product Images Section - 2/3 width -->
+    <div class="product-images-section lg:w-3/4">
+      <!-- Desktop: Product Images Grid -->
+      <div class="hidden lg:grid grid-cols-2 gap-1" x-ref="desktopGallery">
+        <template x-for="(imageUrl, index) in currentImages" :key="imageUrl">
+          <div class="aspect-[3/4] overflow-hidden bg-gray-100">
+            <img
+              :src="imageUrl"
+              :alt="'{{ product.title }} - Image ' + (index + 1)"
+              class="w-full h-full object-cover"
+              width="1080"
+              height="1080"
+              :loading="index < 2 ? 'eager' : 'lazy'"
+            >
+          </div>
+        </template>
+      </div>
+
+      <!-- Mobile: Product Images Carousel -->
+      <div class="lg:hidden relative overflow-hidden">
+        <div
+          class="product-mobile-carousel swiper-product-mobile-{{ product.id }} w-full aspect-[3/4]"
+          data-product-id="{{ product.id }}"
+          data-carousel-type="product-mobile"
+          id="product-mobile-carousel-{{ product.id }}"
+          x-ref="mobileCarousel"
+        >
+          <div class="swiper-wrapper relative h-full" x-ref="mobileWrapper">
+            <template x-for="(imageUrl, index) in currentImages" :key="imageUrl">
+              <div class="swiper-slide w-full h-full flex-shrink-0">
+                <img
+                  :src="imageUrl"
+                  :alt="'{{ product.title }} - Image ' + (index + 1)"
+                  class="w-full h-full object-cover"
+                  width="1080"
+                  height="1080"
+                  :loading="index === 0 ? 'eager' : 'lazy'"
+                >
+              </div>
+            </template>
+          </div>
+
+          <!-- Mobile Pagination Dots -->
+          {% if section.settings.show_slide_counter %}
+            <div class="swiper-pagination-mobile w-fit absolute bottom-4 left-4 z-10 lg:hidden"></div>
+          {% endif %}
+
+          <!-- Mobile Gallery Plus Button -->
+          <button
+            class="absolute bottom-4 right-4 flex items-center justify-center  z-40 lg:hidden"
+            @click="openMobileGallery"
+            type="button"
+          >
+            <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+              <rect width="256" height="256" fill="none"/><polyline points="168 48 208 48 208 88" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/><polyline points="88 208 48 208 48 168" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/><polyline points="208 168 208 208 168 208" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/><polyline points="48 88 48 48 88 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Gallery Overlay -->
+      <div
+        x-show="showMobileGallery"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 bg-black z-50 lg:hidden"
+        @click="closeMobileGallery"
+        x-cloak
+      >
+        <!-- Close Button -->
+        <button
+          class="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg z-10"
+          @click="closeMobileGallery"
+          type="button"
+        >
+          <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+
+        <!-- Gallery Images Container -->
+        <div class="h-full overflow-y-auto">
+          <div class="">
+            <template x-for="(imageUrl, index) in currentImages" :key="imageUrl">
+              <div class="w-full">
+                <img
+                  :src="imageUrl"
+                  :alt="'{{ product.title }} - Image ' + (index + 1)"
+                  class="w-full h-auto object-cover "
+                  width="400"
+                  height="600"
+                  :loading="index < 3 ? 'eager' : 'lazy'"
+                >
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Information Section -->
+    <div class="product-info-section h-fit sticky top-12 space-y-6 pt-0 lg:pt-8 px-4 lg:px-0 min-w-[350px] w-full lg:w-1/4">
+      <!-- Product Title and Price -->
+      <div class="space-y-2">
+        <div class="flex items-start gap-2 justify-between">
+          <div class="flex flex-col gap-0.5">
+            <h6>{{ product.title }}</h6>
+            {% if section.settings.show_reviews_average or section.settings.show_reviews_count %}
+              <div class="flex items-center gap-1">
+                {% render 'product-rating',
+                  product: product,
+                  show_rating_value: section.settings.show_reviews_average,
+                  show_review_count: section.settings.show_reviews_count,
+                  show_review_text: true,
+                  size: 'md'
+                %}
+              </div>
+            {% endif %}
+          </div>
+          <div class="flex flex-col items-end gap-0.5">
+            <h6 class=" {%if product.compare_at_price > product.price %} text-red-700  {% else %} text-black {% endif %} ">
+              ${{ product.price | money_without_currency }}
+            </h6>
+            {% if product.compare_at_price > product.price %}
+              <p class="body line-through text-neutral-400">${{ product.compare_at_price | money_without_currency }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Star Rating -->
+
+        <!-- Price -->
+      </div>
+
+      <!-- Color Selection -->
+      <div class="space-y-3 transition-all duration-300">
+        {% render 'color-selector',
+          product: product,
+          selected_color_variable: 'selectedColor',
+          click_function: 'selectColor',
+          show_main_label: true,
+          show_wishlist: true
+        %}
+      </div>
+
+      <!-- Size Selection -->
+      <div class="space-y-3 transition-all duration-300">
+        {% render 'size-selector',
+          product: product,
+          selected_size_variable: 'selectedSize',
+          click_function: 'selectSize',
+          show_main_label: true,
+          show_size_guide: true
+        %}
+      </div>
+
+      <!-- Purchase Options Logic -->
+      {% comment %} Check if current product is eligible for duo discount {% endcomment %}
+      {% assign duo_eligible = false %}
+      {% assign has_sufficient_stock = false %}
+
+      {% comment %} Check stock availability (need more than 1 item) {% endcomment %}
+      {% assign total_stock = 0 %}
+      {% for variant in product.variants %}
+        {% if variant.available %}
+          {% assign total_stock = total_stock | plus: variant.inventory_quantity %}
+        {% endif %}
+      {% endfor %}
+      {% if total_stock > 1 %}
+        {% assign has_sufficient_stock = true %}
+      {% endif %}
+
+      {% comment %} Check if product is in eligible products list {% endcomment %}
+
+      {% for eligible_product in section.settings.duo_eligible_products %}
+        {% if eligible_product.id == product.id %}
+          {% assign duo_eligible = true %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+
+      {% comment %} Check if product belongs to eligible collections {% endcomment %}
+      {% if duo_eligible == false %}
+        {% for collection in product.collections %}
+          {% for eligible_collection in section.settings.duo_eligible_collections %}
+            {% if eligible_collection.id == collection.id %}
+              {% assign duo_eligible = true %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+          {% if duo_eligible %}
+            {% break %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+
+      {% comment %} If no specific products or collections are selected, make all products eligible {% endcomment %}
+      {% if section.settings.duo_eligible_products.size == 0 and section.settings.duo_eligible_collections.size == 0 %}
+        {% assign duo_eligible = true %}
+      {% endif %}
+
+      {% comment %} Final eligibility check: must be eligible AND have sufficient stock {% endcomment %}
+      {% assign show_duo_option = false %}
+      {% if duo_eligible and has_sufficient_stock %}
+        {% assign show_duo_option = true %}
+      {% endif %}
+
+      <!-- Purchase Options - Only show if duo option is available -->
+      {% if show_duo_option %}
+        <div class="flex flex-col gap-2">
+          <!-- Single Purchase Option -->
+          <label
+            class="flex items-center  cursor-pointer p-3 gap-2 border border-gray-900  bg-white hover:bg-gray-50 transition-colors"
+            :class="purchaseOption === 'single' ? 'bg-primary/10' : ''"
+          >
+            <input
+              type="radio"
+              name="purchase_option"
+              value="single"
+              x-model="purchaseOption"
+              class="w-4 h-4 "
+            >
+            <div class="flex-1">
+              <h6 class="font-semibold">
+                {{ section.settings.single_option_title | default: 'Único' }}
+              </h6>
+              <div class="body-sm text-black/80">
+                {{ section.settings.single_option_subtitle | default: 'Standard price' }}
+              </div>
+            </div>
+            <h6>${{ product.price | money_without_currency }}</h6>
+          </label>
+
+          <!-- Duo Purchase Option -->
+          <div
+            class="border border-gray-900 p-3  bg-white hover:bg-gray-50 transition-colors relative"
+            :class="purchaseOption === 'duo' ? 'bg-primary/10' : ''"
+          >
+            <label class="flex items-center gap-2 cursor-pointer ">
+              <input
+                type="radio"
+                name="purchase_option"
+                value="duo"
+                x-model="purchaseOption"
+                class="w-4 h-4 "
+              >
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <h6 class="font-semibold">
+                    {{- section.settings.duo_option_title | default: 'Duo' -}}
+                  </h6>
+                  <span class="bg-green body-sm text-white  uppercase py-1 px-2 rounded-sm font-semibold absolute -top-1 right-0">
+                    {{- section.settings.best_value_text | default: 'BEST VALUE' -}}
+                  </span>
+                </div>
+                <div class="body-sm text-black/80">
+                  {{ section.settings.duo_option_subtitle | default: 'Compra más y ahorra' }}
+                </div>
+              </div>
+              {% render 'duo-price-display',
+                product: product,
+                discount_percentage: section.settings.duo_discount_percentage
+              %}
+            </label>
+            <!-- Duo Selection Interface -->
+            <div x-show="purchaseOption === 'duo'" x-transition class="divide-y divide-black/15">
+              <!-- Product 1 Selection -->
+              {% render 'duo-product-selector', product: product, product_number: 1, product_title: 'Primera prenda' %}
+
+              <!-- Product 2 Selection -->
+              {% render 'duo-product-selector', product: product, product_number: 2, product_title: 'Segunda prenda' %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="space-y-2">
+        <!-- Availability and Delivery -->
+        <div class="w-full flex justify-between items-center">
+          <div class="flex items-center gap-1">
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span class="body-sm font-medium text-black">
+              {{- section.settings.availability_text | default: 'Aún disponibles' -}}
+            </span>
+          </div>
+          <div class="flex items-center gap-1 text-gray-800 font-medium">
+            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="body-sm font-medium text-black" x-text="deliveryDate"></span>
+          </div>
+        </div>
+        <!-- Add to Cart Button -->
+        <button
+          @click="addToCart"
+          :disabled="!isReadyToAddToCart || isAddingToCart || (purchaseOption === 'duo' && (!duoProduct1.color || !duoProduct1.size || !duoProduct2.color || !duoProduct2.size))"
+          :class="(isReadyToAddToCart && !isAddingToCart && !(purchaseOption === 'duo' && (!duoProduct1.color || !duoProduct1.size || !duoProduct2.color || !duoProduct2.size))) ? 'w-full bg-primary text-white py-4 px-6 font-semibold body border border-primary hover:bg-transparent hover:border-black hover:text-black transition-colors duration-300' : 'w-full bg-gray-300 text-gray-500 py-4 px-6 font-semibold body border border-gray-300 cursor-not-allowed transition-colors duration-300'"
+        >
+          <!-- Loading State -->
+          <span x-show="isAddingToCart" x-cloak class="flex items-center justify-center gap-2">
+            <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Añadiendo...</span>
+          </span>
+
+          <!-- Normal State with Ready to Add -->
+          <span x-show="isReadyToAddToCart && !isAddingToCart" x-cloak>
+            <span x-show="purchaseOption === 'single'">
+              {{ section.settings.cta_button_text | default: 'Paga de forma segura' }} - $
+              {{- product.price | money_without_currency }}
+            </span>
+            <span x-show="purchaseOption === 'duo'">
+              Comprar Duo - $
+              {% assign duo_discount = section.settings.duo_discount_percentage | default: 5 %}
+              {% assign duo_original_price = product.price | plus: product.price %}
+              {% assign duo_discount_amount = duo_original_price | times: duo_discount | divided_by: 100 %}
+              {% assign duo_discounted_price = duo_original_price | minus: duo_discount_amount %}
+              {{ duo_discounted_price | money_without_currency }}
+            </span>
+          </span>
+
+          <!-- Not Ready to Add -->
+          <span x-show="!isReadyToAddToCart && !isAddingToCart" x-cloak>
+            <span x-show="purchaseOption === 'single'"> Elije tu talla </span>
+            <span x-show="purchaseOption === 'duo'"> Completa ambas prendas </span>
+          </span>
+
+          <!-- Fallback text before Alpine.js loads -->
+          <span class="alpine-fallback"> Elije tu talla </span>
+        </button>
+      </div>
+      <!-- Shipping and Returns -->
+      {% if section.settings.show_shipping_returns %}
+        <div class="space-y-2 text-sm text-black">
+          <div class="flex items-center gap-2">
+            {% if section.settings.shipping_icon %}
+              <img
+                src="{{ section.settings.shipping_icon | image_url: width: 16 }}"
+                alt="{{ section.settings.shipping_icon_alt | default: 'Shipping Icon' }}"
+                class="w-4 h-4"
+                width="16"
+                height="16"
+                loading="lazy"
+              >
+            {% else %}
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+            {% endif %}
+            <span>{{ section.settings.free_shipping_text | default: 'Envío gratis En ordenes +500.000' }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            {% if section.settings.returns_icon %}
+              <img
+                src="{{ section.settings.returns_icon | image_url: width: 16 }}"
+                alt="{{ section.settings.returns_icon_alt | default: 'Returns Icon' }}"
+                class="w-4 h-4"
+                width="16"
+                height="16"
+                loading="lazy"
+              >
+            {% else %}
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+            {% endif %}
+            <span>{{ section.settings.free_returns_text | default: 'Devoluciones gratis y intercambiables' }}</span>
+          </div>
+        </div>
+      {% endif %}
+
+      {% assign video_count = 0 %}
+      {% for media in product.media %}
+        {% if media.media_type == 'video' %}
+          {% assign video_count = video_count | plus: 1 %}
+        {% endif %}
+      {% endfor %}
+
+      <!-- See it in Action - Video Carousel -->
+      {% if video_count > 0 %}
+        <div class="space-y-3" x-data="productVideoCarousel()">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">Miralo En Acción</h3>
+            {% comment %} Show arrows when there are multiple videos {% endcomment %}
+
+            {% if video_count > 1 %}
+              {% render 'carousel-arrows' %}
+            {% endif %}
+          </div>
+
+          <div class="relative">
+            <div
+              class="product-video-carousel swiper w-full overflow-hidden"
+              data-carousel-id="product-video-carousel-{{ product.id }}"
+              id="product-video-carousel-{{ product.id }}"
+            >
+              <div class="swiper-wrapper w-full">
+                {% for media in product.media %}
+                  {% if media.media_type == 'video' %}
+                    <div class="swiper-slide">
+                      <div
+                        class="video-slide-container relative  overflow-hidden bg-gray-100 h-64 lg:h-96"
+                        x-data="videoSlide()"
+                        @mouseenter="handleMouseEnter"
+                        @mouseleave="handleMouseLeave"
+                      >
+                        <!-- Video Element -->
+                        <video
+                          x-ref="video"
+                          class="absolute  inset-0 w-full h-full object-cover"
+                          muted
+                          loop
+                          playsinline
+                          preload="metadata"
+                          @loadedmetadata="onVideoLoaded"
+                        >
+                          {% if media.sources %}
+                            {% for source in media.sources %}
+                              <source src="{{ source.url }}" type="{{ source.mime_type }}">
+                            {% endfor %}
+                          {% else %}
+                            <source src="{{ media | file_url }}" type="video/mp4">
+                          {% endif %}
+                          Your browser does not support the video tag.
+                        </video>
+
+                        <!-- Play Button Overlay -->
+                        <div
+                          x-show="!isPlaying && showPlayButton"
+                          x-transition:enter="transition ease-out duration-300"
+                          x-transition:enter-start="opacity-0 "
+                          x-transition:enter-end="opacity-100 "
+                          x-transition:leave="transition ease-in duration-200"
+                          x-transition:leave-start="opacity-100"
+                          x-transition:leave-end="opacity-0 "
+                          class="absolute inset-0 flex items-center justify-center z-20 bg-black/20"
+                        >
+                          <div class="w-6 h-6 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white/100 transition-all duration-200">
+                            <svg class="w-6 h-6 text-gray-800 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </div>
+                        </div>
+
+                        <!-- Video Title Overlay -->
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              <!-- Pagination -->
+              {% if video_count > 1 %}
+                <div class="swiper-pagination mt-4 flex justify-center gap-2"></div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {% render 'product-look-fits', product: product %}
+
+      {% if section.blocks.size > 0 %}
+        {% assign accordion_blocks = section.blocks | where: 'type', 'accordion_item' %}
+        {% if accordion_blocks.size > 0 %}
+          <div class="product-accordion w-full lg:w-2/3  mt-8  lg:px-0">
+            {% render 'accordion',
+              items: accordion_blocks,
+              accordion_id: 'product-accordion',
+              title_color: '#1f2937',
+              answer_color: '#374151'
+            %}
+          </div>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <!-- Look Fits Carousel -->
+  </div>
+
+  <!-- Product Gallery Blocks (Full Width) -->
+  {% for block in section.blocks %}
+    {% if block.type == 'product_gallery' %}
+      <div class="product-gallery-block w-full" {{ block.shopify_attributes }}>
+        {% render 'product-gallery', block: block, current_product: product %}
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<script>
+  function productPage(productId, deliveryDays = 7) {
+    return {
+      productId: productId,
+      selectedVariantId: {{ product.selected_or_first_available_variant.id }},
+      selectedColor: {% comment %}Find the color option dynamically for selected variant{% endcomment %}
+      {% assign selected_color = '' %}
+      {% for product_option in product.options_with_values %}
+        {% for product_option_value in product_option.values %}
+          {% if product_option_value.swatch %}
+            {% for variant_option in product.selected_or_first_available_variant.options %}
+              {% if variant_option == product_option_value %}
+                {% assign selected_color = variant_option %}
+                {% break %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {% if selected_color != '' %}{% break %}{% endif %}
+        {% endfor %}
+        {% if selected_color != '' %}{% break %}{% endif %}
+      {% endfor %}
+      '{{ selected_color | default: product.selected_or_first_available_variant.option1 }}',
+      selectedSize: null,
+      currentImages: [],
+      isInWishlist: false,
+      deliveryDate: '',
+      purchaseOption: 'single',
+      duoAvailable: {{ show_duo_option | json }},
+      showMobileGallery: false,
+      isAddingToCart: false,
+      
+      // Watch for purchase option changes to transfer selections
+      purchaseOptionWatcher: null,
+      
+      // Computed total price
+      get totalPrice() {
+        if (this.purchaseOption === 'duo' && this.duoAvailable) {
+          // Calculate duo total price (2 items with discount)
+          const basePrice = {{ product.price | money_without_currency }};
+          const discountPercentage = {{ section.settings.duo_discount_percentage | default: 5 }};
+          const discountedPrice = basePrice * (1 - discountPercentage / 100);
+          const totalDuoPrice = discountedPrice * 2; // Two items
+          return Math.round(totalDuoPrice * 100) / 100; // Round to 2 decimal places
+        } else {
+          // Return normal price
+          return {{ product.price | money_without_currency }};
+        }
+      },
+
+      get isReadyToAddToCart() {
+        if (this.purchaseOption === 'single') {
+          return !!this.selectedSize;
+        } else if (this.purchaseOption === 'duo' && this.duoAvailable) {
+          return !!(this.duoProduct1.variantId && this.duoProduct2.variantId);
+        }
+        return false;
+      },
+      
+      // Variant data with metafields
+      variantData: [
+        {% for variant in product.variants %}
+          {
+            id: {{ variant.id }},
+            options: [{% for option in variant.options %}'{{ option }}'{% unless forloop.last %}, {% endunless %}{% endfor %}],
+            color: {% comment %}Find the color option dynamically{% endcomment %}
+            {% assign color_value = '' %}
+            {% for product_option in product.options_with_values %}
+              {% for product_option_value in product_option.values %}
+                {% if product_option_value.swatch %}
+                  {% for variant_option in variant.options %}
+                    {% if variant_option == product_option_value %}
+                      {% assign color_value = variant_option %}
+                      {% break %}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+                {% if color_value != '' %}{% break %}{% endif %}              {% endfor %}
+              {% if color_value != '' %}{% break %}{% endif %}
+            {% endfor %}
+            '{{ color_value | default: variant.option1 }}',
+            gallery: [
+              {% if variant.metafields.custom.variant_gallery.value %}
+                {% for image in variant.metafields.custom.variant_gallery.value %}
+                  '{{ image | image_url: width: 800 }}'{% unless forloop.last %},{% endunless %}
+                {% endfor %}
+              {% endif %}
+            ]
+          }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ],
+      
+      // Fallback product images
+      productImages: [
+        {% for image in product.images %}
+          '{{ image | image_url: width: 800 }}'{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ],
+      duoProduct1: {
+        color: null,
+        size: null,
+        variantId: null
+      },
+      duoProduct2: {
+        color: null,
+        size: null,
+        variantId: null
+      },
+      forceUpdate: 0,
+
+      selectColor(color, imageUrl, variantId) {
+        this.selectedColor = color;
+        this.selectedVariantId = variantId;
+        
+        // Always sync with first duo product
+        this.duoProduct1.color = color;
+        this.duoProduct1.variantId = variantId;
+        
+        // Only update gallery if we're in single purchase mode (not duo)
+        if (this.purchaseOption === 'single') {
+          this.updateGalleryForColor(color);
+        }
+      },
+      
+      // Check if product has color variants
+      hasColorVariants() {
+        // Check if there are multiple different colors in variants
+        const uniqueColors = [...new Set(this.variantData.map(v => v.color))];
+        return uniqueColors.length > 1;
+      },
+
+      // Get images for a specific color
+      getImagesForColor(color) {
+        // If product doesn't have color variants, always use product images
+        if (!this.hasColorVariants()) {
+          return this.productImages;
+        }
+        
+        // Find the first variant with this color that has gallery images
+        const variantWithGallery = this.variantData.find(variant => 
+          variant.color === color && variant.gallery.length > 0
+        );
+        
+        if (variantWithGallery && variantWithGallery.gallery.length > 0) {
+          return variantWithGallery.gallery;
+        }
+        
+        // Fallback to product images
+        return this.productImages;
+      },
+      
+      // Update gallery for selected color
+      updateGalleryForColor(color) {
+        this.currentImages = this.getImagesForColor(color);
+        
+        // Update mobile carousel after Alpine.js updates the DOM
+        this.updateMobileCarousel();
+      },
+      
+      // Update mobile carousel after image changes
+      updateMobileCarousel() {
+        if (this.mobileSwiper) {
+          // Wait for Alpine.js to update the DOM
+          this.$nextTick(() => {
+            this.mobileSwiper.update();
+            this.mobileSwiper.slideTo(0);
+          });
+        }
+      },
+
+      // === VARIANT MATCHING ABSTRACTION ===
+      
+      getVariants() {
+        return [
+          {% for variant in product.variants %}
+            {
+              id: {{ variant.id }},
+              options: [{% for option in variant.options %}'{{ option }}'{% unless forloop.last %}, {% endunless %}{% endfor %}],
+              available: {{ variant.available | json }},
+              inventory_quantity: {{ variant.inventory_quantity | default: 0 }},
+              inventory_policy: '{{ variant.inventory_policy | default: "deny" }}'
+            }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ];
+      },
+
+      hasColorVariants() {
+        // Check if there are multiple different colors in variants
+        const uniqueColors = [...new Set(this.variantData.map(v => v.color))];
+        return uniqueColors.length > 1;
+      },
+
+      findVariant(size = null, color = null, mustBeAvailable = false) {
+        const variants = this.getVariants();
+        
+        // Debug: findVariant called
+        
+        const result = variants.find(variant => {
+          const matchesSize = !size || variant.options.includes(size);
+          const matchesColor = !color || variant.options.includes(color);
+          const isAvailable = !mustBeAvailable || variant.available;
+          
+          // Debug: variant matching logic
+          
+          return matchesSize && matchesColor && isAvailable;
+        });
+        
+        // Debug: findVariant result
+        return result;
+      },
+
+      isColorAvailable(color) {
+        if (!this.hasColorVariants()) return true;
+        
+        // If no size selected, check if color has any available variants
+        if (!this.selectedSize) {
+          return !!this.findVariant(null, color, true);
+        }
+        
+        // If size is selected, check if this color+size combination is available
+        return !!this.findVariant(this.selectedSize, color, true);
+      },
+
+      isSizeAvailable(size) {
+        // If no color variants, just check size availability
+        if (!this.hasColorVariants()) {
+          return !!this.findVariant(size, null, true);
+        }
+        
+        // If no color selected, check if size has any available variants
+        if (!this.selectedColor) {
+          return !!this.findVariant(size, null, true);
+        }
+        
+        // If color is selected, check if this size+color combination is available
+        return !!this.findVariant(size, this.selectedColor, true);
+      },
+
+      // Check if a color is available for duo product
+      isDuoColorAvailable(productNumber, color) {
+        if (!this.hasColorVariants()) return true;
+        
+        // Get the size for this specific duo product
+        let productSize = null;
+        if (productNumber === 1) {
+          productSize = this.duoProduct1.size;
+        } else if (productNumber === 2) {
+          productSize = this.duoProduct2.size;
+        }
+        
+        // If no size selected for this product, check if color has any available variants
+        if (!productSize) {
+          return !!this.findVariant(null, color, true);
+        }
+        
+        // If size is selected, check if this color+size combination is available
+        const isAvailable = !!this.findVariant(productSize, color, true);
+        return isAvailable;
+      },
+
+      // Check if a size is available for duo product
+      isDuoSizeAvailable(productNumber, size) {
+        // Get the color for this specific duo product
+        let productColor = null;
+        if (productNumber === 1) {
+          productColor = this.duoProduct1.color;
+        } else if (productNumber === 2) {
+          productColor = this.duoProduct2.color;
+        }
+        
+        // If no color selected for this product, check if size has any available variants
+        if (!productColor) {
+          return !!this.findVariant(size, null, true);
+        }
+        
+        // If color is selected, check if this size+color combination is available
+        const isAvailable = !!this.findVariant(size, productColor, true);
+        return isAvailable;
+      },
+
+      findVariantIdForSize(size) {
+        // If no color variants, find any variant with this size
+        if (!this.hasColorVariants()) {
+          const variant = this.findVariant(size, null, false);
+          return variant ? variant.id : null;
+        }
+        
+        // If color is selected, find variant with both size and color
+        if (this.selectedColor) {
+          const variant = this.findVariant(size, this.selectedColor, false);
+          return variant ? variant.id : null;
+        }
+        
+        // If no color selected, find first available variant with this size
+        const variant = this.findVariant(size, null, false);
+        return variant ? variant.id : null;
+      },
+
+      selectSize(size, variantId) {
+        this.selectedSize = size;
+        this.selectedVariantId = variantId;
+        
+        // Always sync with first duo product
+        this.duoProduct1.size = size;
+        this.duoProduct1.variantId = variantId;
+      },
+
+      selectDuoColor(productNumber, color, variantId) {
+        if (productNumber === 1) {
+          this.duoProduct1.color = color;
+          this.duoProduct1.variantId = variantId;
+          
+          // Sync with single mode selections
+          this.selectedColor = color;
+          this.selectedVariantId = variantId;
+          
+          // If size is already selected, update variant ID to match both
+          if (this.duoProduct1.size) {
+            const matchingVariant = this.findVariantBySizeAndColor(this.duoProduct1.size, color);
+            if (matchingVariant) {
+              this.duoProduct1.variantId = matchingVariant;
+              this.selectedVariantId = matchingVariant;
+            }
+          }
+        } else {
+          this.duoProduct2.color = color;
+          this.duoProduct2.variantId = variantId;
+          
+          // If size is already selected, update variant ID to match both
+          if (this.duoProduct2.size) {
+            const matchingVariant = this.findVariantBySizeAndColor(this.duoProduct2.size, color);
+            if (matchingVariant) {
+              this.duoProduct2.variantId = matchingVariant;
+            }
+          }
+        }
+        
+        // Force Alpine.js to re-evaluate the UI for better visual feedback
+        this.$nextTick(() => {
+          // Trigger a re-render by updating a reactive property
+          this.forceUpdate = Date.now();
+        });
+      },
+
+      selectDuoSize(productNumber, size, variantId) {
+        if (productNumber === 1) {
+          this.duoProduct1.size = size;
+          // Find variant that matches both color and size for product 1
+          const matchingVariant = this.findVariantBySizeAndColor(size, this.duoProduct1.color);
+          this.duoProduct1.variantId = matchingVariant || variantId;
+          
+          // Sync with single mode selections
+          this.selectedSize = size;
+          this.selectedVariantId = matchingVariant || variantId;
+        } else {
+          this.duoProduct2.size = size;
+          // Find variant that matches both color and size for product 2
+          const matchingVariant = this.findVariantBySizeAndColor(size, this.duoProduct2.color);
+          this.duoProduct2.variantId = matchingVariant || variantId;
+        }
+        
+        // Force Alpine.js to re-evaluate the UI for better visual feedback
+        this.$nextTick(() => {
+          // Trigger a re-render by updating a reactive property
+          this.forceUpdate = Date.now();
+        });
+      },
+
+      goToSlide(index) {
+        // This function is no longer needed with the grid layout
+        // but kept for compatibility
+      },
+
+      async addToCart() {
+        // Prevent double-clicks
+        if (this.isAddingToCart) return;
+        
+        this.isAddingToCart = true;
+        
+        try {
+          let items = [];
+
+          if (this.purchaseOption === 'single') {
+            // Validate single product selection
+            if (!this.selectedSize) {
+              this.showErrorToast('Por favor selecciona una talla');
+              this.isAddingToCart = false;
+              return;
+            }
+            
+            if (!this.selectedVariantId) {
+              this.showErrorToast('Por favor selecciona una variante válida');
+              this.isAddingToCart = false;
+              return;
+            }
+
+            // Check if selected variant is still available
+            const selectedVariant = this.getVariants().find(v => v.id === this.selectedVariantId);
+            if (!selectedVariant || !selectedVariant.available) {
+              this.showErrorToast('Esta variante ya no está disponible');
+              this.isAddingToCart = false;
+              return;
+            }
+
+            items = [{
+              id: this.selectedVariantId,
+              quantity: 1
+            }];
+          } else if (this.purchaseOption === 'duo' && this.duoAvailable) {
+            // Duo purchase - validate both products are selected (color and size)
+            const duoMissingSelections = !this.duoProduct1.color || !this.duoProduct1.size || !this.duoProduct2.color || !this.duoProduct2.size;
+            if (duoMissingSelections) {
+              this.showErrorToast('Por favor selecciona color y talla para ambas prendas');
+              this.isAddingToCart = false;
+              return;
+            }
+
+            // Validate variant IDs exist for both selections
+            if (!this.duoProduct1.variantId || !this.duoProduct2.variantId) {
+              this.showErrorToast('Por favor selecciona variantes válidas para ambas prendas');
+              this.isAddingToCart = false;
+              return;
+            }
+
+            // Check if both variants are still available
+            const variants = this.getVariants();
+            const variant1 = variants.find(v => v.id === this.duoProduct1.variantId);
+            const variant2 = variants.find(v => v.id === this.duoProduct2.variantId);
+            
+            if (!variant1 || !variant1.available || !variant2 || !variant2.available) {
+              this.showErrorToast('Una o más variantes seleccionadas ya no están disponibles');
+              this.isAddingToCart = false;
+              return;
+            }
+
+            items = [
+              {
+                id: this.duoProduct1.variantId,
+                quantity: 1
+              },
+              {
+                id: this.duoProduct2.variantId,
+                quantity: 1
+              }
+            ];
+          } else {
+            // Fallback to single if duo is selected but not available
+            if (!this.selectedVariantId) {
+              this.showErrorToast('Por favor selecciona una variante válida');
+              this.isAddingToCart = false;
+              return;
+            }
+            
+            items = [{
+              id: this.selectedVariantId,
+              quantity: 1
+            }];
+          }
+
+          const response = await fetch('/cart/add.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ items })
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            
+            // Trigger cart update event
+            this.$dispatch('cart:updated');
+            // Also dispatch to window to ensure header receives the event
+            window.dispatchEvent(new CustomEvent('cart:updated'));
+
+            // Open cart drawer
+            this.$dispatch('cart:open');
+
+            this.isAddingToCart = false;
+          } else {
+            // Handle specific HTTP error codes
+            const errorData = await response.json().catch(() => ({}));
+            let errorMessage = 'Error al añadir al carrito';
+            
+            if (response.status === 422) {
+              errorMessage = 'Producto agotado o no disponible';
+            } else if (response.status === 404) {
+              errorMessage = 'Producto no encontrado';
+            } else if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+            
+            this.showErrorToast(errorMessage);
+            this.isAddingToCart = false;
+          }
+        } catch (error) {
+          console.error('Error adding to cart:', error);
+          this.showErrorToast('Error de conexión. Por favor intenta de nuevo.');
+          this.isAddingToCart = false;
+        }
+      },
+
+
+      showErrorToast(message) {
+        // Create error toast message
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 left-4 bg-red-500 text-white  py-3 rounded-lg shadow-lg z-10 max-w-sm';
+        toast.innerHTML = `
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-sm font-medium">${message}</span>
+          </div>
+        `;
+        document.body.appendChild(toast);
+
+        // Remove after 4 seconds
+        setTimeout(() => {
+          if (document.body.contains(toast)) {
+            document.body.removeChild(toast);
+          }
+        }, 4000);
+      },
+
+      // Show feedback when trying to select unavailable duo variant
+      showDuoVariantError(productNumber, type) {
+        const productName = productNumber === 1 ? 'Primera' : 'Segunda';
+        const typeName = type === 'color' ? 'color' : 'talla';
+        this.showErrorToast(`${productName} prenda: Este ${typeName} no está disponible`);
+      },
+
+      // Show info message about variant combination availability
+      showDuoVariantInfo(productNumber, type, value) {
+        const productName = productNumber === 1 ? 'Primera' : 'Segunda';
+        const typeName = type === 'color' ? 'color' : 'talla';
+        const otherType = type === 'color' ? 'talla' : 'color';
+        
+        // Get the other selection to show the combination
+        let otherValue = null;
+        if (type === 'color') {
+          otherValue = productNumber === 1 ? this.duoProduct1.size : this.duoProduct2.size;
+        } else {
+          otherValue = productNumber === 1 ? this.duoProduct1.color : this.duoProduct2.color;
+        }
+        
+        if (otherValue) {
+          this.showErrorToast(`${productName} prenda: La combinación ${otherValue} + ${value} no está disponible`);
+        } else {
+          this.showDuoVariantError(productNumber, type);
+        }
+      },
+
+      // Get CSS classes for duo variant buttons
+      getDuoVariantClasses(productNumber, type, value) {
+        const isSelected = type === 'color' 
+          ? (productNumber === 1 ? this.duoProduct1.color === value : this.duoProduct2.color === value)
+          : (productNumber === 1 ? this.duoProduct1.size === value : this.duoProduct2.size === value);
+        
+        const isAvailable = type === 'color' 
+          ? this.isDuoColorAvailable(productNumber, value)
+          : this.isDuoSizeAvailable(productNumber, value);
+        
+        if (isSelected) {
+          return type === 'color' 
+            ? 'ring-2 ring-offset-2 border-transparent ring-gray-900'
+            : 'bg-primary text-white border-gray-900';
+        }
+        
+        if (!isAvailable) {
+          return type === 'color'
+            ? 'border-gray-300 opacity-40 cursor-not-allowed'
+            : 'border-gray-300 text-gray-800 opacity-40 cursor-not-allowed';
+        }
+        
+        return type === 'color'
+          ? 'border-gray-300 hover:border-gray-400'
+          : 'border-gray-300 text-gray-900 hover:border-gray-400';
+      },
+
+      toggleWishlist() {
+        this.isInWishlist = !this.isInWishlist;
+        // Here you would typically make an API call to add/remove from wishlist
+      },
+
+      findVariantBySizeAndColor(size, color) {
+        // Get all variants from the product with their options
+        const variants = [
+          {% for variant in product.variants %}
+            {
+              id: {{ variant.id }},
+              options: [{% for option in variant.options %}'{{ option }}'{% unless forloop.last %}, {% endunless %}{% endfor %}],
+            }{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        ];
+
+        // Find variant that matches both size and color
+        const targetVariant = variants.find(variant =>
+          variant.options.includes(size) && variant.options.includes(color)
+        );
+
+        return targetVariant ? targetVariant.id : null;
+      },
+
+      // Calculate delivery date
+      calculateDeliveryDate() {
+        const today = new Date();
+        const deliveryDate = new Date(today);
+        deliveryDate.setDate(today.getDate() + deliveryDays);
+        
+        const options = { 
+          weekday: 'long', 
+          day: 'numeric', 
+          month: 'long' 
+        };
+        
+        const spanishMonths = {
+          'January': 'enero', 'February': 'febrero', 'March': 'marzo', 'April': 'abril',
+          'May': 'mayo', 'June': 'junio', 'July': 'julio', 'August': 'agosto',
+          'September': 'septiembre', 'October': 'octubre', 'November': 'noviembre', 'December': 'diciembre'
+        };
+        
+        const spanishDays = {
+          'Monday': 'lunes', 'Tuesday': 'martes', 'Wednesday': 'miércoles', 'Thursday': 'jueves',
+          'Friday': 'viernes', 'Saturday': 'sábado', 'Sunday': 'domingo'
+        };
+        
+        const dateString = deliveryDate.toLocaleDateString('en-US', options);
+        const [weekday, month, day] = dateString.split(' ');
+        
+        this.deliveryDate = `Recibelo el ${spanishDays[weekday.replace(',', '')]} ${day} de ${spanishMonths[month]}`;
+      },
+
+      // Initialize product page
+      init() {
+        this.calculateDeliveryDate();
+        
+        // Initialize gallery
+        if (this.hasColorVariants()) {
+          // Product has color variants - use variant-specific images
+          const firstColor = this.selectedColor || (this.variantData.length > 0 ? this.variantData[0].color : null);
+          if (firstColor) {
+            this.updateGalleryForColor(firstColor);
+          }
+        } else {
+          // Product has no color variants - always use product images
+          this.currentImages = this.productImages;
+        }
+        
+        this.initializeMobileCarousel();
+        
+        // Set up watcher for purchase option changes
+        this.setupPurchaseOptionWatcher();
+        
+        // Make duo functions globally available
+        this.setupGlobalDuoFunctions();
+      },
+
+      // Set up watcher for purchase option changes
+      setupPurchaseOptionWatcher() {
+        this.$watch('purchaseOption', (newValue, oldValue) => {
+          if (newValue === 'duo' && oldValue === 'single') {
+            // Transfer current selections to first duo product
+            this.transferSelectionsToDuo();
+          } else if (newValue === 'single' && oldValue === 'duo') {
+            // Transfer first duo product selections back to single mode
+            this.transferSelectionsFromDuo();
+          }
+        });
+        
+        // Watch for changes in duo selections to update UI
+        this.$watch('duoProduct1.color', () => {
+          if (this.purchaseOption === 'duo') {
+            this.$nextTick(() => this.forceUpdate = Date.now());
+          }
+        });
+        
+        this.$watch('duoProduct1.size', () => {
+          if (this.purchaseOption === 'duo') {
+            this.$nextTick(() => this.forceUpdate = Date.now());
+          }
+        });
+        
+        this.$watch('duoProduct2.color', () => {
+          if (this.purchaseOption === 'duo') {
+            this.$nextTick(() => this.forceUpdate = Date.now());
+          }
+        });
+        
+        this.$watch('duoProduct2.size', () => {
+          if (this.purchaseOption === 'duo') {
+            this.$nextTick(() => this.forceUpdate = Date.now());
+          }
+        });
+      },
+
+      // Make duo functions globally available for snippets
+      setupGlobalDuoFunctions() {
+        // Store reference to this component instance
+        const self = this;
+        
+        // Make functions available globally
+        window.isDuoColorAvailable = (productNumber, color) => {
+          return self.isDuoColorAvailable(productNumber, color);
+        };
+        
+        window.isDuoSizeAvailable = (productNumber, size) => {
+          return self.isDuoSizeAvailable(productNumber, size);
+        };
+        
+        // Global duo functions setup completed
+      },
+
+      // Transfer current selections to first duo product
+      transferSelectionsToDuo() {
+        // Transfer color selection
+        if (this.selectedColor) {
+          this.duoProduct1.color = this.selectedColor;
+          // Find variant ID for the selected color
+          const colorVariant = this.variantData.find(v => v.color === this.selectedColor);
+          if (colorVariant) {
+            this.duoProduct1.variantId = colorVariant.id;
+          }
+        }
+        
+        // Transfer size selection
+        if (this.selectedSize) {
+          this.duoProduct1.size = this.selectedSize;
+          // Update variant ID to match both color and size
+          if (this.duoProduct1.color) {
+            const matchingVariant = this.findVariantBySizeAndColor(this.selectedSize, this.duoProduct1.color);
+            if (matchingVariant) {
+              this.duoProduct1.variantId = matchingVariant;
+            }
+          }
+        }
+        
+        // Validate that the transferred selections are actually available
+        this.validateDuoSelections();
+        
+        // Force UI update to show the new state
+        this.$nextTick(() => {
+          this.forceUpdate = Date.now();
+        });
+      },
+
+      // Transfer first duo product selections back to single mode
+      transferSelectionsFromDuo() {
+        // Transfer color selection from first duo product
+        if (this.duoProduct1.color) {
+          this.selectedColor = this.duoProduct1.color;
+          this.selectedVariantId = this.duoProduct1.variantId;
+        }
+        
+        // Transfer size selection from first duo product
+        if (this.duoProduct1.size) {
+          this.selectedSize = this.duoProduct1.size;
+          this.selectedVariantId = this.duoProduct1.variantId;
+        }
+        
+        // Force UI update to show the new state
+        this.$nextTick(() => {
+          this.forceUpdate = Date.now();
+        });
+      },
+
+      // Validate duo selections and adjust if necessary
+      validateDuoSelections() {
+        // Check if product 1 has valid selections
+        if (this.duoProduct1.color && this.duoProduct1.size) {
+          const variant = this.findVariant(this.duoProduct1.size, this.duoProduct1.color, true);
+          if (!variant) {
+            // If the combination is not available, try to find an available variant
+            const availableVariant = this.findVariant(this.duoProduct1.size, this.duoProduct1.color, false);
+            if (availableVariant) {
+              // Keep the selections but mark as unavailable
+              this.duoProduct1.variantId = availableVariant.id;
+            } else {
+              // Reset selections if no variant found
+              this.duoProduct1.variantId = null;
+            }
+          } else {
+            this.duoProduct1.variantId = variant.id;
+          }
+        }
+        
+        // Also validate product 2 if it has selections
+        if (this.duoProduct2.color && this.duoProduct2.size) {
+          const variant = this.findVariant(this.duoProduct2.size, this.duoProduct2.color, true);
+          if (!variant) {
+            const availableVariant = this.findVariant(this.duoProduct2.size, this.duoProduct2.color, false);
+            if (availableVariant) {
+              this.duoProduct2.variantId = availableVariant.id;
+            } else {
+              this.duoProduct2.variantId = null;
+            }
+          } else {
+            this.duoProduct2.variantId = variant.id;
+          }
+        }
+      },
+
+      // Clear duo selections for a specific product
+      clearDuoSelections(productNumber) {
+        if (productNumber === 1) {
+          this.duoProduct1.color = null;
+          this.duoProduct1.size = null;
+          this.duoProduct1.variantId = null;
+        } else if (productNumber === 2) {
+          this.duoProduct2.color = null;
+          this.duoProduct2.size = null;
+          this.duoProduct2.variantId = null;
+        }
+        
+        // Force UI update
+        this.$nextTick(() => {
+          this.forceUpdate = Date.now();
+        });
+      },
+
+      // Get detailed availability info for duo variant
+      getDuoVariantAvailability(productNumber, type, value) {
+        const isAvailable = type === 'color' 
+          ? this.isDuoColorAvailable(productNumber, value)
+          : this.isDuoSizeAvailable(productNumber, value);
+        
+        const isSelected = type === 'color' 
+          ? (productNumber === 1 ? this.duoProduct1.color === value : this.duoProduct2.color === value)
+          : (productNumber === 1 ? this.duoProduct1.size === value : this.duoProduct2.size === value);
+        
+        return {
+          available: isAvailable,
+          selected: isSelected,
+          disabled: !isAvailable
+        };
+      },
+
+      // Debug method to check duo state (removed for production)
+
+      // Mobile Gallery Methods
+      openMobileGallery() {
+        this.showMobileGallery = true;
+        // Prevent body scroll when overlay is open
+        document.body.style.overflow = 'hidden';
+      },
+
+      closeMobileGallery() {
+        this.showMobileGallery = false;
+        // Restore body scroll
+        document.body.style.overflow = '';
+      },
+
+      // Initialize mobile carousel
+      initializeMobileCarousel() {
+        this.$nextTick(() => {
+          const carouselElement = this.$el.querySelector('.product-mobile-carousel');
+          if (carouselElement && typeof Swiper !== 'undefined') {
+            // Check if this carousel is already initialized
+            if (carouselElement.swiper) {
+              return;
+            }
+
+            // Create swiper instance
+            const swiperInstance = new Swiper(carouselElement, {
+              slidesPerView: 1,
+              spaceBetween: 0,
+              allowTouchMove: true,
+              grabCursor: false,
+              navigation: {
+                nextEl: carouselElement.querySelector('.mobile-next'),
+                prevEl: carouselElement.querySelector('.mobile-prev'),
+              },
+              pagination: {
+                el: carouselElement.querySelector('.swiper-pagination-mobile'),
+                clickable: true,
+                dynamicBullets: false,
+              }
+            });
+
+            // Function to update arrow states (disabled for mobile)
+            const updateArrowStates = () => {
+              // Mobile arrows are disabled, so no need to update states
+              return;
+            };
+
+            // Set initial state and add event listeners
+            swiperInstance.on('slideChange', () => {
+              updateArrowStates();
+            });
+            swiperInstance.on('reachBeginning', updateArrowStates);
+            swiperInstance.on('reachEnd', updateArrowStates);
+
+            // Initial state update
+            setTimeout(updateArrowStates, 100);
+
+            // Store the swiper instance on the element to avoid conflicts
+            carouselElement.swiper = swiperInstance;
+            this.mobileSwiper = swiperInstance;
+          }
+        });
+      },
+
+      // Cleanup method
+      destroy() {
+        // Restore body scroll if gallery was open
+        if (this.showMobileGallery) {
+          document.body.style.overflow = '';
+        }
+      }
+    }
+  }
+
+  // Product Video Carousel functionality
+  function productVideoCarousel() {
+    return {
+      swiper: null,
+
+      init() {
+        this.$nextTick(() => {
+          this.initializeCarousel();
+        });
+      },
+
+      initializeCarousel() {
+        const carouselElement = this.$el.querySelector('.product-video-carousel');
+
+        if (carouselElement && typeof Swiper !== 'undefined') {
+          // Check if already initialized
+          if (carouselElement.swiper) {
+            return;
+          }
+
+                      // Initialize Swiper
+            this.swiper = new Swiper(carouselElement, {
+              direction: 'horizontal',
+              slidesPerView: 1,
+              spaceBetween: 4,
+              loop: false,
+              centeredSlides: false,
+              grabCursor: false,
+              touchRatio: 1,
+              touchAngle: 45,
+              simulateTouch: true,
+              navigation: {
+                nextEl: '.carousel-next',
+                prevEl: '.carousel-prev',
+              },
+              speed: 800,
+
+              // Responsive breakpoints - more slides = smaller individual videos
+              breakpoints: {
+                640: {
+                  slidesPerView: 1.2,
+                  spaceBetween: 6
+                },
+                768: {
+                  slidesPerView: 1.5,
+                  spaceBetween: 8
+                },
+                1024: {
+                  slidesPerView: 2,
+                  spaceBetween: 10
+                },
+                1280: {
+                  slidesPerView: 2.5,
+                  spaceBetween: 12
+                }
+              },
+
+            // Events for arrow states
+            on: {
+              init: function() {
+                updateProductVideoArrowStates(this);
+              },
+              slideChange: function() {
+                updateProductVideoArrowStates(this);
+              },
+              reachBeginning: function() {
+                updateProductVideoArrowStates(this);
+              },
+              reachEnd: function() {
+                updateProductVideoArrowStates(this);
+              },
+            },
+
+            // Pagination
+            pagination: {
+              el: carouselElement.querySelector('.swiper-pagination'),
+              clickable: true,
+              renderBullet: function (index, className) {
+                return '<span class="' + className + ' w-2 h-2 rounded-full bg-gray-300 cursor-pointer transition-all duration-200 hover:bg-gray-400"></span>';
+              },
+            },
+          });
+
+          // Store swiper instance
+          carouselElement.swiper = this.swiper;
+        }
+      },
+
+      destroy() {
+        if (this.swiper) {
+          this.swiper.destroy();
+          this.swiper = null;
+        }
+      }
+    }
+  }
+
+  // Function to update arrow states for product video carousel
+  function updateProductVideoArrowStates(swiper) {
+    const sectionContainer = document.querySelector('[x-data*="productVideoCarousel"]');
+    if (!sectionContainer) return;
+
+    const prevArrow = sectionContainer.querySelector('.carousel-prev');
+    const nextArrow = sectionContainer.querySelector('.carousel-next');
+
+    if (prevArrow) {
+      if (swiper.isBeginning) {
+        prevArrow.style.opacity = '0.3';
+        prevArrow.style.cursor = 'not-allowed';
+        prevArrow.disabled = true;
+      } else {
+        prevArrow.style.opacity = '1';
+        prevArrow.style.cursor = 'pointer';
+        prevArrow.disabled = false;
+      }
+    }
+
+    if (nextArrow) {
+      if (swiper.isEnd) {
+        nextArrow.style.opacity = '0.3';
+        nextArrow.style.cursor = 'not-allowed';
+        nextArrow.disabled = true;
+      } else {
+        nextArrow.style.opacity = '1';
+        nextArrow.style.cursor = 'pointer';
+        nextArrow.disabled = false;
+      }
+    }
+  }
+
+  // Video Slide functionality (same as video-slide snippet)
+  function videoSlide() {
+    return {
+      isPlaying: false,
+      videoLoaded: false,
+      showPlayButton: true,
+      hoverTimeout: null,
+
+      onVideoLoaded() {
+        console.log('Video metadata loaded');
+        this.videoLoaded = true;
+        // Set initial video state
+        const video = this.$refs.video;
+        if (video) {
+          video.currentTime = 0;
+          video.muted = true;
+          console.log('Video initial state set');
+        }
+      },
+
+      handleMouseEnter() {
+        console.log('Mouse entered, videoLoaded:', this.videoLoaded);
+        if (!this.videoLoaded) return;
+
+        // Clear any existing timeout
+        if (this.hoverTimeout) {
+          clearTimeout(this.hoverTimeout);
+        }
+
+
+
+        // Start playing after a short delay
+        this.hoverTimeout = setTimeout(() => {
+          console.log('Starting video playback');
+          this.playVideo();
+        }, 200);
+      },
+
+      handleMouseLeave() {
+        // Clear hover timeout
+        if (this.hoverTimeout) {
+          clearTimeout(this.hoverTimeout);
+        }
+
+    
+
+        // Pause video and reset
+        this.pauseVideo();
+      },
+
+      playVideo() {
+        const video = this.$refs.video;
+        console.log('playVideo called, video:', video, 'videoLoaded:', this.videoLoaded);
+        if (!video || !this.videoLoaded) return;
+
+        video
+          .play()
+          .then(() => {
+            console.log('Video playing successfully');
+            this.isPlaying = true;
+            this.showPlayButton = false;
+          })
+          .catch((error) => {
+            console.log('Video play failed:', error);
+            // Fallback: ensure video is muted and try again
+            video.muted = true;
+            video
+              .play()
+              .then(() => {
+                console.log('Video playing after mute');
+                this.isPlaying = true;
+                this.showPlayButton = false;
+              })
+              .catch(() => {
+                console.log('Video play completely failed');
+                // If still fails, just hide the play button
+                this.showPlayButton = false;
+              });
+          });
+      },
+
+      pauseVideo() {
+        const video = this.$refs.video;
+        if (!video) return;
+
+        video.pause();
+        video.currentTime = 0;
+        this.isPlaying = false;
+        this.showPlayButton = true;
+      },
+
+      // Handle click events
+      togglePlay() {
+        if (this.isPlaying) {
+          this.pauseVideo();
+        } else {
+          this.playVideo();
+        }
+      },
+
+      init() {
+        // Initialize video state
+        this.$nextTick(() => {
+          const video = this.$refs.video;
+          if (video) {
+            // Ensure video is muted for autoplay compliance
+            video.muted = true;
+            video.playsInline = true;
+
+            // Check if HLS.js is available and needed
+            const videoSrc = video.querySelector('source')?.src;
+            if (videoSrc && videoSrc.includes('.m3u8')) {
+              console.log('HLS video detected:', videoSrc);
+              if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                console.log('Using HLS.js for video playback');
+                const hls = new Hls();
+                hls.loadSource(videoSrc);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                  console.log('HLS manifest parsed');
+                  this.videoLoaded = true;
+                });
+              } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                console.log('Native HLS support detected');
+                video.src = videoSrc;
+              } else {
+                console.error('HLS not supported');
+              }
+            }
+
+            video.addEventListener('ended', () => {
+              this.pauseVideo();
+            });
+
+            video.addEventListener('error', (e) => {
+              console.error('Video loading error:', e);
+              this.showPlayButton = false;
+            });
+
+            // Handle click to play/pause
+            video.addEventListener('click', (e) => {
+              e.preventDefault();
+              this.togglePlay();
+            });
+          }
+        });
+      },
+    };
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Product Page",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Delivery Settings"
+    },
+    {
+      "type": "range",
+      "id": "delivery_days",
+      "min": 1,
+      "max": 30,
+      "step": 1,
+      "label": "Delivery Days",
+      "default": 7,
+      "info": "Number of days to add to current date for delivery estimation"
+    },
+    {
+      "type": "text",
+      "id": "availability_text",
+      "label": "Availability Text",
+      "default": "Aún disponibles",
+      "info": "Text to display for product availability"
+    },
+    {
+      "type": "header",
+      "content": "Purchase Options"
+    },
+    {
+      "type": "text",
+      "id": "single_option_title",
+      "label": "Single Option Title",
+      "default": "Unico",
+      "info": "Title for single product purchase option"
+    },
+    {
+      "type": "text",
+      "id": "single_option_subtitle",
+      "label": "Single Option Subtitle",
+      "default": "Standard price",
+      "info": "Subtitle for single product purchase option"
+    },
+    {
+      "type": "text",
+      "id": "duo_option_title",
+      "label": "Duo Option Title",
+      "default": "Duo",
+      "info": "Title for duo/bundle purchase option"
+    },
+    {
+      "type": "text",
+      "id": "duo_option_subtitle",
+      "label": "Duo Option Subtitle",
+      "default": "Compra más y ahorra",
+      "info": "Subtitle for duo/bundle purchase option"
+    },
+    {
+      "type": "text",
+      "id": "best_value_text",
+      "label": "Best Value Text",
+      "default": "BEST VALUE",
+      "info": "Text for best value badge"
+    },
+    {
+      "type": "range",
+      "id": "duo_discount_percentage",
+      "min": 1,
+      "max": 50,
+      "step": 1,
+      "label": "Descuento Orden (%)",
+      "default": 5,
+      "info": "Porcentaje de descuento aplicado a la orden en compras duo (ej: 5 = 5% de descuento)"
+    },
+    {
+      "type": "product_list",
+      "id": "duo_eligible_products",
+      "label": "Products Eligible for Duo Discount",
+      "info": "Select specific products that can use the duo discount feature. Leave empty to disable product-based filtering."
+    },
+    {
+      "type": "collection_list",
+      "id": "duo_eligible_collections",
+      "label": "Collections Eligible for Duo Discount",
+      "info": "Select collections whose products can use the duo discount feature. Leave empty to disable collection-based filtering."
+    },
+    {
+      "type": "header",
+      "content": "Shipping & Returns"
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_text",
+      "label": "Free Shipping Text",
+      "default": "Envío gratis En ordenes +500.000",
+      "info": "Text for free shipping information"
+    },
+    {
+      "type": "text",
+      "id": "free_returns_text",
+      "label": "Free Returns Text",
+      "default": "Devoluciones gratis y intercambiables",
+      "info": "Text for free returns information"
+    },
+    {
+      "type": "image_picker",
+      "id": "shipping_icon",
+      "label": "Shipping Icon",
+      "info": "Custom icon for shipping information. If not uploaded, default SVG will be used."
+    },
+    {
+      "type": "image_picker",
+      "id": "returns_icon",
+      "label": "Returns Icon",
+      "info": "Custom icon for returns information. If not uploaded, default SVG will be used."
+    },
+    {
+      "type": "text",
+      "id": "shipping_icon_alt",
+      "label": "Shipping Icon Alt Text",
+      "default": "Shipping Icon",
+      "info": "Alternative text for shipping icon accessibility"
+    },
+    {
+      "type": "text",
+      "id": "returns_icon_alt",
+      "label": "Returns Icon Alt Text",
+      "default": "Returns Icon",
+      "info": "Alternative text for returns icon accessibility"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shipping_returns",
+      "label": "Show Shipping & Returns Section",
+      "default": true,
+      "info": "Toggle to show or hide the shipping and returns information"
+    },
+    {
+      "type": "header",
+      "content": "Call to Action"
+    },
+    {
+      "type": "text",
+      "id": "cta_button_text",
+      "label": "Add to Cart Button Text",
+      "default": "Paga de forma segura",
+      "info": "Text for the main call-to-action button"
+    },
+    {
+      "type": "header",
+      "content": "Mobile Carousel"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_reviews_average",
+      "label": "Show reviews average value",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_reviews_count",
+      "label": "Show reviews count",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_slide_counter",
+      "label": "Show Slide Counter",
+      "default": true,
+      "info": "Display slide counter on mobile carousel"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_mobile_navigation",
+      "label": "Show Mobile Navigation Arrows",
+      "default": false,
+      "info": "Display navigation arrows on mobile carousel (disabled by default)"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "accordion_item",
+      "name": "Accordion Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "Detalles del producto"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Información detallada sobre el producto...</p>"
+        }
+      ]
+    },
+    {
+      "type": "product_gallery",
+      "name": "Product Gallery",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Gallery Title",
+          "default": "Combínalo Con"
+        },
+        {
+          "type": "range",
+          "id": "products_limit",
+          "min": 2,
+          "max": 8,
+          "step": 1,
+          "label": "Number of Products",
+          "default": 4,
+          "info": "Maximum number of products to show"
+        }
+      ]
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}

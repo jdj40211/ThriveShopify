@@ -1,0 +1,21 @@
+{% comment %}
+  Duo Price Display Snippet
+
+  Usage:
+  {% render 'duo-price-display',
+    product: product,
+    discount_percentage: section.settings.duo_discount_percentage
+  %}
+
+  Parameters:
+  - product: Product object
+  - discount_percentage: Discount percentage for second item
+{% endcomment %}
+
+{% assign duo_discount = discount_percentage | default: 5 %}
+{% assign duo_original_price = product.price | times: 2 %}
+{% assign item_discount = product.price | plus: product.price | times: duo_discount | divided_by: 100 %}
+{% assign discounted_price = product.price | plus: product.price | minus: item_discount %}
+
+<h6 >${{ discounted_price | money_without_currency }}</h6>
+<p class="body-lg opacity-60 line-through">${{ duo_original_price | money_without_currency }}</p>
