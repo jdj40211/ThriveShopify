@@ -1,0 +1,240 @@
+.ambassadors {
+  overflow: hidden;
+}
+
+.ambassadors__heading {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.ambassadors__subheading {
+  font-size: 1.8rem;
+  text-align: center;
+  color: rgba(var(--color-foreground), 0.75);
+  margin-bottom: 2rem;
+}
+
+.ambassadors__description {
+  max-width: 60rem;
+  margin: 0 auto 4rem;
+  text-align: center;
+  font-size: 1.6rem;
+  line-height: 1.6;
+}
+
+.ambassadors__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  margin-bottom: 4rem;
+}
+
+@media screen and (min-width: 750px) {
+  .ambassadors__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .ambassadors__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ambassadors__card {
+  background: rgba(var(--color-foreground), 0.04);
+  border-radius: 1.2rem;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ambassadors__card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.ambassadors__image-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 125%; /* 4:5 aspect ratio */
+  overflow: hidden;
+  background: rgba(var(--color-foreground), 0.08);
+}
+
+.ambassadors__image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.ambassadors__card:hover .ambassadors__image {
+  transform: scale(1.05);
+}
+
+.ambassadors__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.ambassadors__card:hover .ambassadors__overlay {
+  opacity: 1;
+}
+
+.ambassadors__overlay-text {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.ambassadors__content {
+  padding: 2rem;
+  text-align: center;
+}
+
+.ambassadors__name {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: rgb(var(--color-foreground));
+}
+
+.ambassadors__role {
+  font-size: 1.4rem;
+  color: rgba(var(--color-foreground), 0.6);
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+.ambassadors__quote {
+  position: relative;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  font-style: italic;
+  color: rgba(var(--color-foreground), 0.85);
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: rgba(var(--color-foreground), 0.04);
+  border-radius: 0.8rem;
+}
+
+.ambassadors__quote-icon {
+  width: 24px;
+  height: 24px;
+  opacity: 0.3;
+  margin-bottom: 0.5rem;
+}
+
+.ambassadors__social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  font-size: 1.4rem;
+  color: rgb(var(--color-link));
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.ambassadors__social-link:hover {
+  color: rgb(var(--color-link));
+  text-decoration: underline;
+}
+
+.ambassadors__social-link svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.ambassadors__product-link {
+  display: inline-block;
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.ambassadors__cta {
+  margin-top: 4rem;
+  padding: 4rem 3rem;
+  background: linear-gradient(135deg, rgba(var(--color-button), 0.1), rgba(var(--color-button), 0.05));
+  border-radius: 1.2rem;
+  text-align: center;
+  border: 2px solid rgba(var(--color-button), 0.2);
+}
+
+.ambassadors__cta-heading {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: rgb(var(--color-foreground));
+}
+
+.ambassadors__cta-text {
+  font-size: 1.8rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.75);
+  margin-bottom: 2rem;
+  max-width: 50rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ambassadors__cta .button {
+  font-size: 1.6rem;
+  padding: 1.2rem 3rem;
+}
+
+@media screen and (max-width: 749px) {
+  .ambassadors__grid {
+    gap: 2rem;
+  }
+
+  .ambassadors__card {
+    border-radius: 0.8rem;
+  }
+
+  .ambassadors__content {
+    padding: 1.5rem;
+  }
+
+  .ambassadors__name {
+    font-size: 1.8rem;
+  }
+
+  .ambassadors__role {
+    font-size: 1.3rem;
+  }
+
+  .ambassadors__quote {
+    font-size: 1.4rem;
+    padding: 1rem;
+  }
+
+  .ambassadors__cta {
+    padding: 3rem 2rem;
+  }
+
+  .ambassadors__cta-heading {
+    font-size: 2.4rem;
+  }
+
+  .ambassadors__cta-text {
+    font-size: 1.6rem;
+  }
+}

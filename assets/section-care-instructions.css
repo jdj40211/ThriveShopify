@@ -1,0 +1,271 @@
+.care-instructions {
+  overflow: hidden;
+}
+
+.care-instructions__heading {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.care-instructions__description {
+  max-width: 60rem;
+  margin: 0 auto 3rem;
+  text-align: center;
+  font-size: 1.6rem;
+  line-height: 1.6;
+}
+
+.care-instructions__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+@media screen and (min-width: 750px) {
+  .care-instructions__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .care-instructions__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Care Item */
+.care-instructions__item {
+  display: flex;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: rgba(var(--color-foreground), 0.04);
+  border-radius: 0.8rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.care-instructions__item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.care-instructions__icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.care-instructions__icon svg {
+  width: 100%;
+  height: 100%;
+  fill: rgb(var(--color-foreground));
+}
+
+.care-instructions__content {
+  flex: 1;
+}
+
+.care-instructions__title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: rgb(var(--color-foreground));
+}
+
+.care-instructions__text {
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.75);
+  margin: 0;
+}
+
+/* Material Specific Card */
+.care-instructions__material-card {
+  grid-column: 1 / -1;
+  padding: 2.5rem;
+  background: linear-gradient(135deg, rgba(var(--color-button), 0.1), rgba(var(--color-button), 0.05));
+  border-left: 4px solid rgb(var(--color-button));
+  border-radius: 0.8rem;
+}
+
+.care-instructions__material-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: rgb(var(--color-foreground));
+}
+
+.care-instructions__material-content {
+  font-size: 1.5rem;
+  line-height: 1.7;
+}
+
+.care-instructions__material-content ul,
+.care-instructions__material-content ol {
+  padding-left: 2rem;
+  margin: 1rem 0;
+}
+
+.care-instructions__material-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Warning */
+.care-instructions__warning {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: rgba(255, 59, 48, 0.1);
+  border: 2px solid rgba(255, 59, 48, 0.3);
+  border-radius: 0.8rem;
+}
+
+.care-instructions__warning-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.care-instructions__warning-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: rgb(255, 59, 48);
+}
+
+.care-instructions__warning-content {
+  flex: 1;
+}
+
+.care-instructions__warning-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: rgb(255, 59, 48);
+}
+
+.care-instructions__warning-text {
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground));
+  margin: 0;
+}
+
+/* Tip */
+.care-instructions__tip {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: rgba(52, 199, 89, 0.1);
+  border: 2px solid rgba(52, 199, 89, 0.3);
+  border-radius: 0.8rem;
+}
+
+.care-instructions__tip-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.care-instructions__tip-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: rgb(52, 199, 89);
+}
+
+.care-instructions__tip-content {
+  flex: 1;
+}
+
+.care-instructions__tip-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: rgb(52, 199, 89);
+}
+
+.care-instructions__tip-text {
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground));
+  margin: 0;
+}
+
+/* Symbols Guide */
+.care-instructions__symbols {
+  margin-top: 4rem;
+  padding: 3rem;
+  background: rgba(var(--color-foreground), 0.04);
+  border-radius: 0.8rem;
+  text-align: center;
+}
+
+.care-instructions__symbols-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: rgb(var(--color-foreground));
+}
+
+.care-instructions__symbols-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.8rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.care-instructions__symbols-description {
+  max-width: 80rem;
+  margin: 0 auto;
+  font-size: 1.5rem;
+  line-height: 1.7;
+  text-align: left;
+}
+
+@media screen and (max-width: 749px) {
+  .care-instructions__item {
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+
+  .care-instructions__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .care-instructions__title {
+    font-size: 1.4rem;
+  }
+
+  .care-instructions__text {
+    font-size: 1.3rem;
+  }
+
+  .care-instructions__material-card {
+    padding: 2rem;
+  }
+
+  .care-instructions__material-title {
+    font-size: 1.8rem;
+  }
+
+  .care-instructions__warning,
+  .care-instructions__tip {
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+
+  .care-instructions__symbols {
+    padding: 2rem;
+  }
+
+  .care-instructions__symbols-title {
+    font-size: 2rem;
+  }
+}

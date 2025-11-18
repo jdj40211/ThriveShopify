@@ -4,11 +4,36 @@
   Can be used for About, Contact, or any other page.
 {% endcomment %}
 
+{% comment %}
+  Allow collection templates to fall back to the current collection data
+  whenever a setting is left empty in the editor.
+{% endcomment %}
+{% assign hero_image = section.settings.image %}
+{% if hero_image == blank and collection and collection.image %}
+  {% assign hero_image = collection.image %}
+{% endif %}
+
+{% assign hero_title = section.settings.title %}
+{% if hero_title == blank %}
+  {% if collection and collection.title %}
+    {% assign hero_title = collection.title %}
+  {% elsif page and page.title %}
+    {% assign hero_title = page.title %}
+  {% else %}
+    {% assign hero_title = shop.name %}
+  {% endif %}
+{% endif %}
+
+{% assign hero_description = section.settings.description %}
+{% if hero_description == blank and collection and collection.description != blank %}
+  {% assign hero_description = collection.description %}
+{% endif %}
+
 <section class="w-full">
   {%- render 'generic-hero',
-    image: section.settings.image,
-    title: section.settings.title,
-    description: section.settings.description
+    image: hero_image,
+    title: hero_title,
+    description: hero_description
   -%}
 </section>
 
@@ -17,8 +42,8 @@
   "name": "Page Hero",
   "settings": [
     { "type": "image_picker", "id": "image", "label": "Imagen de fondo" },
-    { "type": "text", "id": "title", "label": "Título", "default": "Page Title" },
-    { "type": "richtext", "id": "description", "label": "Descripción", "default": "<p>Description</p>" }
+    { "type": "text", "id": "title", "label": "T��tulo", "default": "Page Title" },
+    { "type": "richtext", "id": "description", "label": "Descripci��n", "default": "<p>Description</p>" }
   ],
   "presets": [{ "name": "Page Hero" }]
 }

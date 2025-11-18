@@ -1,0 +1,367 @@
+{{ 'section-product-faq.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="product-faq section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width">
+    {% if section.settings.heading != blank %}
+      <h2 class="product-faq__heading {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+    {% endif %}
+
+    {% if section.settings.description != blank %}
+      <div class="product-faq__description rte">
+        {{ section.settings.description }}
+      </div>
+    {% endif %}
+
+    {%- assign has_categories = false -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'category' -%}
+        {%- assign has_categories = true -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {% if has_categories %}
+      <div class="product-faq__tabs">
+        {% for block in section.blocks %}
+          {% if block.type == 'category' %}
+            <button
+              class="product-faq__tab {% if forloop.first %}product-faq__tab--active{% endif %}"
+              data-tab="{{ block.id }}"
+            >
+              {{ block.settings.category_name }}
+            </button>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="product-faq__content">
+      {% if has_categories %}
+        {% for block in section.blocks %}
+          {% if block.type == 'category' %}
+            <div
+              class="product-faq__category {% if forloop.first %}product-faq__category--active{% endif %}"
+              data-category="{{ block.id }}"
+              {{ block.shopify_attributes }}
+            >
+              {% if block.settings.category_description != blank %}
+                <p class="product-faq__category-description">{{ block.settings.category_description }}</p>
+              {% endif %}
+
+              <div class="product-faq__accordion">
+                {%- assign category_id = block.id -%}
+                {% for question_block in section.blocks %}
+                  {% if question_block.type == 'question' and question_block.settings.category == category_id %}
+                    <div class="product-faq__item" {{ question_block.shopify_attributes }}>
+                      <button class="product-faq__question" aria-expanded="false">
+                        <span class="product-faq__question-text">{{ question_block.settings.question }}</span>
+                        <svg class="product-faq__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
+                        </svg>
+                      </button>
+                      <div class="product-faq__answer">
+                        <div class="product-faq__answer-content rte">
+                          {{ question_block.settings.answer }}
+                        </div>
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        <div class="product-faq__accordion">
+          {% for block in section.blocks %}
+            {% if block.type == 'question' %}
+              <div class="product-faq__item" {{ block.shopify_attributes }}>
+                <button class="product-faq__question" aria-expanded="false">
+                  <span class="product-faq__question-text">{{ block.settings.question }}</span>
+                  <svg class="product-faq__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
+                  </svg>
+                </button>
+                <div class="product-faq__answer">
+                  <div class="product-faq__answer-content rte">
+                    {{ block.settings.answer }}
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    {% if section.settings.show_contact_cta %}
+      <div class="product-faq__cta">
+        <p class="product-faq__cta-text">{{ section.settings.contact_text }}</p>
+        {% if section.settings.contact_button_text != blank and section.settings.contact_button_link != blank %}
+          <a href="{{ section.settings.contact_button_link }}" class="button button--primary">
+            {{ section.settings.contact_button_text }}
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Tab functionality
+    const tabs = document.querySelectorAll('.product-faq__tab');
+    const categories = document.querySelectorAll('.product-faq__category');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        const targetCategory = this.getAttribute('data-tab');
+
+        tabs.forEach(t => t.classList.remove('product-faq__tab--active'));
+        categories.forEach(c => c.classList.remove('product-faq__category--active'));
+
+        this.classList.add('product-faq__tab--active');
+        document.querySelector(`[data-category="${targetCategory}"]`).classList.add('product-faq__category--active');
+      });
+    });
+
+    // Accordion functionality
+    const questions = document.querySelectorAll('.product-faq__question');
+
+    questions.forEach(question => {
+      question.addEventListener('click', function() {
+        const item = this.parentElement;
+        const isOpen = this.getAttribute('aria-expanded') === 'true';
+
+        // Close all other items in the same accordion
+        const accordion = item.closest('.product-faq__accordion');
+        accordion.querySelectorAll('.product-faq__question').forEach(q => {
+          q.setAttribute('aria-expanded', 'false');
+          q.parentElement.classList.remove('product-faq__item--active');
+        });
+
+        // Toggle current item
+        if (!isOpen) {
+          this.setAttribute('aria-expanded', 'true');
+          item.classList.add('product-faq__item--active');
+        }
+      });
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "FAQ's del Producto",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Preguntas Frecuentes",
+      "label": "Título"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "Pequeño"
+        },
+        {
+          "value": "h1",
+          "label": "Mediano"
+        },
+        {
+          "value": "h0",
+          "label": "Grande"
+        }
+      ],
+      "default": "h1",
+      "label": "Tamaño del título"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Descripción",
+      "default": "<p>Encuentra respuestas a las preguntas más frecuentes sobre nuestros productos.</p>"
+    },
+    {
+      "type": "header",
+      "content": "CTA de Contacto"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_contact_cta",
+      "default": true,
+      "label": "Mostrar CTA de contacto"
+    },
+    {
+      "type": "text",
+      "id": "contact_text",
+      "default": "¿No encontraste lo que buscabas?",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "contact_button_text",
+      "default": "Contáctanos",
+      "label": "Texto del botón"
+    },
+    {
+      "type": "url",
+      "id": "contact_button_link",
+      "label": "Enlace del botón"
+    },
+    {
+      "type": "header",
+      "content": "Colores"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Espaciado"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado superior",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado inferior",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "Categoría",
+      "settings": [
+        {
+          "type": "text",
+          "id": "category_name",
+          "label": "Nombre de categoría",
+          "default": "Polos",
+          "info": "Ejemplo: Polos, Hoodies, Longsleeves"
+        },
+        {
+          "type": "textarea",
+          "id": "category_description",
+          "label": "Descripción de categoría"
+        }
+      ]
+    },
+    {
+      "type": "question",
+      "name": "Pregunta",
+      "settings": [
+        {
+          "type": "text",
+          "id": "category",
+          "label": "ID de Categoría",
+          "info": "Deja en blanco si no usas categorías. Si usas categorías, ingresa el ID del bloque de categoría."
+        },
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Pregunta",
+          "default": "¿Cuál es tu pregunta?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Respuesta",
+          "default": "<p>Aquí va la respuesta a tu pregunta.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ's del Producto",
+      "blocks": [
+        {
+          "type": "category",
+          "settings": {
+            "category_name": "Polos"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "¿Cómo es el calce de los polos?",
+            "answer": "<p>Nuestros polos tienen un calce regular que favorece a todos los tipos de cuerpo.</p>"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "¿Los polos encogen al lavar?",
+            "answer": "<p>Nuestros polos están pre-encogidos y no deberían tener cambios significativos si sigues las instrucciones de lavado.</p>"
+          }
+        },
+        {
+          "type": "category",
+          "settings": {
+            "category_name": "Hoodies"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "¿Los hoodies tienen bolsillo canguro?",
+            "answer": "<p>Sí, todos nuestros hoodies incluyen un bolsillo canguro espacioso.</p>"
+          }
+        },
+        {
+          "type": "category",
+          "settings": {
+            "category_name": "Longsleeves"
+          }
+        },
+        {
+          "type": "question",
+          "settings": {
+            "question": "¿Las mangas son largas?",
+            "answer": "<p>Las mangas tienen largo estándar. Revisa nuestra guía de tallas para más detalles.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,381 @@
+{{ 'section-care-instructions.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="care-instructions section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width">
+    {% if section.settings.heading != blank %}
+      <h2 class="care-instructions__heading {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+    {% endif %}
+
+    {% if section.settings.description != blank %}
+      <div class="care-instructions__description rte">
+        {{ section.settings.description }}
+      </div>
+    {% endif %}
+
+    <div class="care-instructions__grid">
+      {% for block in section.blocks %}
+        {% case block.type %}
+          {% when 'care_item' %}
+            <div class="care-instructions__item" {{ block.shopify_attributes }}>
+              <div class="care-instructions__icon">
+                {% case block.settings.icon %}
+                  {% when 'washing' %}
+                    {% render 'icon-washing' %}
+                  {% when 'bleach' %}
+                    {% render 'icon-bleach' %}
+                  {% when 'drying' %}
+                    {% render 'icon-drying' %}
+                  {% when 'ironing' %}
+                    {% render 'icon-ironing' %}
+                  {% when 'dry-clean' %}
+                    {% render 'icon-dry-clean' %}
+                  {% when 'water-temp' %}
+                    {% render 'icon-water-temp' %}
+                  {% when 'hang-dry' %}
+                    {% render 'icon-hang-dry' %}
+                  {% when 'tumble-dry' %}
+                    {% render 'icon-tumble-dry' %}
+                {% endcase %}
+              </div>
+              <div class="care-instructions__content">
+                <h3 class="care-instructions__title">{{ block.settings.title }}</h3>
+                <p class="care-instructions__text">{{ block.settings.description }}</p>
+              </div>
+            </div>
+
+          {% when 'material_specific' %}
+            <div class="care-instructions__material-card" {{ block.shopify_attributes }}>
+              <h3 class="care-instructions__material-title">
+                {{ block.settings.material_name }}
+              </h3>
+              <div class="care-instructions__material-content rte">
+                {{ block.settings.instructions }}
+              </div>
+            </div>
+
+          {% when 'warning' %}
+            <div class="care-instructions__warning" {{ block.shopify_attributes }}>
+              <div class="care-instructions__warning-icon">
+                {% render 'icon-warning' %}
+              </div>
+              <div class="care-instructions__warning-content">
+                <h4 class="care-instructions__warning-title">{{ block.settings.warning_title }}</h4>
+                <p class="care-instructions__warning-text">{{ block.settings.warning_text }}</p>
+              </div>
+            </div>
+
+          {% when 'tip' %}
+            <div class="care-instructions__tip" {{ block.shopify_attributes }}>
+              <div class="care-instructions__tip-icon">
+                {% render 'icon-lightbulb' %}
+              </div>
+              <div class="care-instructions__tip-content">
+                <h4 class="care-instructions__tip-title">{{ block.settings.tip_title }}</h4>
+                <p class="care-instructions__tip-text">{{ block.settings.tip_text }}</p>
+              </div>
+            </div>
+        {% endcase %}
+      {% endfor %}
+    </div>
+
+    {% if section.settings.show_symbols_guide %}
+      <div class="care-instructions__symbols">
+        <h3 class="care-instructions__symbols-title">{{ section.settings.symbols_title }}</h3>
+        {% if section.settings.symbols_image != blank %}
+          <img
+            src="{{ section.settings.symbols_image | image_url: width: 1200 }}"
+            alt="{{ section.settings.symbols_title }}"
+            loading="lazy"
+            width="1200"
+            height="{{ 1200 | divided_by: section.settings.symbols_image.aspect_ratio | ceil }}"
+            class="care-instructions__symbols-image"
+          >
+        {% endif %}
+        {% if section.settings.symbols_description != blank %}
+          <div class="care-instructions__symbols-description rte">
+            {{ section.settings.symbols_description }}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Instrucciones de Lavado",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Instrucciones de Cuidado",
+      "label": "Título"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "Pequeño"
+        },
+        {
+          "value": "h1",
+          "label": "Mediano"
+        },
+        {
+          "value": "h0",
+          "label": "Grande"
+        }
+      ],
+      "default": "h1",
+      "label": "Tamaño del título"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Descripción",
+      "default": "<p>Sigue estas instrucciones para mantener tus prendas Thrive en perfecto estado.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Guía de Símbolos"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_symbols_guide",
+      "default": true,
+      "label": "Mostrar guía de símbolos"
+    },
+    {
+      "type": "text",
+      "id": "symbols_title",
+      "default": "Guía de Símbolos de Lavado",
+      "label": "Título"
+    },
+    {
+      "type": "image_picker",
+      "id": "symbols_image",
+      "label": "Imagen de símbolos",
+      "info": "Imagen con los símbolos de cuidado textil"
+    },
+    {
+      "type": "richtext",
+      "id": "symbols_description",
+      "label": "Descripción de símbolos"
+    },
+    {
+      "type": "header",
+      "content": "Colores"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Espaciado"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado superior",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado inferior",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "care_item",
+      "name": "Instrucción de Cuidado",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icono",
+          "options": [
+            {
+              "value": "washing",
+              "label": "Lavado"
+            },
+            {
+              "value": "bleach",
+              "label": "Blanqueador"
+            },
+            {
+              "value": "drying",
+              "label": "Secado"
+            },
+            {
+              "value": "ironing",
+              "label": "Planchado"
+            },
+            {
+              "value": "dry-clean",
+              "label": "Limpieza en seco"
+            },
+            {
+              "value": "water-temp",
+              "label": "Temperatura del agua"
+            },
+            {
+              "value": "hang-dry",
+              "label": "Secar colgado"
+            },
+            {
+              "value": "tumble-dry",
+              "label": "Secadora"
+            }
+          ],
+          "default": "washing"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título",
+          "default": "Lavar a máquina"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Descripción",
+          "default": "Lavar con agua fría (máx. 30°C)"
+        }
+      ]
+    },
+    {
+      "type": "material_specific",
+      "name": "Cuidado por Material",
+      "settings": [
+        {
+          "type": "text",
+          "id": "material_name",
+          "label": "Nombre del material",
+          "default": "Algodón 100%"
+        },
+        {
+          "type": "richtext",
+          "id": "instructions",
+          "label": "Instrucciones específicas",
+          "default": "<p>Instrucciones de cuidado para este material específico.</p>"
+        }
+      ]
+    },
+    {
+      "type": "warning",
+      "name": "Advertencia",
+      "settings": [
+        {
+          "type": "text",
+          "id": "warning_title",
+          "label": "Título",
+          "default": "Importante"
+        },
+        {
+          "type": "textarea",
+          "id": "warning_text",
+          "label": "Texto",
+          "default": "No usar blanqueador con cloro"
+        }
+      ]
+    },
+    {
+      "type": "tip",
+      "name": "Consejo",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tip_title",
+          "label": "Título",
+          "default": "Consejo"
+        },
+        {
+          "type": "textarea",
+          "id": "tip_text",
+          "label": "Texto",
+          "default": "Lava tus prendas del revés para mantener los colores vibrantes"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Instrucciones de Lavado",
+      "blocks": [
+        {
+          "type": "care_item",
+          "settings": {
+            "icon": "washing",
+            "title": "Lavar a máquina",
+            "description": "Lavar con agua fría (máx. 30°C)"
+          }
+        },
+        {
+          "type": "care_item",
+          "settings": {
+            "icon": "bleach",
+            "title": "No usar blanqueador",
+            "description": "No usar blanqueador con cloro"
+          }
+        },
+        {
+          "type": "care_item",
+          "settings": {
+            "icon": "hang-dry",
+            "title": "Secar colgado",
+            "description": "Secar a la sombra, evitar exposición directa al sol"
+          }
+        },
+        {
+          "type": "care_item",
+          "settings": {
+            "icon": "ironing",
+            "title": "Planchar a baja temperatura",
+            "description": "Si es necesario, planchar del revés a temperatura baja"
+          }
+        },
+        {
+          "type": "tip",
+          "settings": {
+            "tip_title": "Consejo Pro",
+            "tip_text": "Lava tus prendas del revés para mantener los colores vibrantes por más tiempo"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

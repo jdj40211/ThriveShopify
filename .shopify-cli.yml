@@ -1,0 +1,28 @@
+# Thrive Custom Theme - Metafields Configuration
+# Este archivo documenta los metafields necesarios para el tema
+
+# IMPORTANTE: Los metafields deben ser creados en el admin de Shopify
+# Settings > Custom Data > Products
+
+# METAFIELDS DE PRODUCTO:
+#
+# 1. custom.fabric_type (single_line_text_field)
+#    Tipo de tela (ej: "Algodón Pima", "Poliéster")
+#
+# 2. custom.fabric_gsm (number_integer)
+#    GSM de la tela (ej: 180, 240)
+#
+# 3. custom.fabric_feel (single_line_text_field)
+#    Tacto del producto (ej: "Suave y transpirable")
+#
+# 4. custom.print_type (single_line_text_field)
+#    Tipo de estampado (ej: "DTG", "Serigrafía", "Bordado")
+#
+# 5. custom.model_reference (single_line_text_field)
+#    Referencia del modelo (ej: "El modelo mide 1.80m y usa talla M")
+#
+# 6. custom.care_instructions (multi_line_text_field)
+#    Instrucciones específicas de lavado
+#
+# 7. custom.related_guides (list.page_reference)
+#    Enlaces a guías relacionadas (tallas, cuidado, etc.)

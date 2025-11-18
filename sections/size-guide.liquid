@@ -1,0 +1,457 @@
+{{ 'section-size-guide.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="size-guide section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width">
+    {% if section.settings.heading != blank %}
+      <h2 class="size-guide__heading {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+    {% endif %}
+
+    {% if section.settings.description != blank %}
+      <div class="size-guide__description rte">
+        {{ section.settings.description }}
+      </div>
+    {% endif %}
+
+    {% if section.settings.model_reference != blank %}
+      <div class="size-guide__model-reference">
+        <div class="size-guide__model-icon">
+          {% render 'icon-model' %}
+        </div>
+        <p class="size-guide__model-text">{{ section.settings.model_reference }}</p>
+      </div>
+    {% endif %}
+
+    <div class="size-guide__tabs">
+      {% for block in section.blocks %}
+        {% if block.type == 'size_chart' %}
+          <button
+            class="size-guide__tab {% if forloop.first %}size-guide__tab--active{% endif %}"
+            data-tab="{{ block.id }}"
+          >
+            {{ block.settings.product_type }}
+          </button>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="size-guide__content">
+      {% for block in section.blocks %}
+        {% if block.type == 'size_chart' %}
+          <div
+            class="size-guide__chart {% if forloop.first %}size-guide__chart--active{% endif %}"
+            data-chart="{{ block.id }}"
+            {{ block.shopify_attributes }}
+          >
+            {% if block.settings.chart_description != blank %}
+              <p class="size-guide__chart-description">{{ block.settings.chart_description }}</p>
+            {% endif %}
+
+            <div class="size-guide__table-wrapper">
+              <table class="size-guide__table">
+                <thead>
+                  <tr>
+                    <th>Talla</th>
+                    {% if block.settings.show_chest %}
+                      <th>Pecho (cm)</th>
+                    {% endif %}
+                    {% if block.settings.show_waist %}
+                      <th>Cintura (cm)</th>
+                    {% endif %}
+                    {% if block.settings.show_hips %}
+                      <th>Cadera (cm)</th>
+                    {% endif %}
+                    {% if block.settings.show_length %}
+                      <th>Largo (cm)</th>
+                    {% endif %}
+                    {% if block.settings.show_shoulder %}
+                      <th>Hombro (cm)</th>
+                    {% endif %}
+                    {% if block.settings.show_sleeve %}
+                      <th>Manga (cm)</th>
+                    {% endif %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if block.settings.size_xs_measurements != blank %}
+                    <tr>
+                      <td><strong>XS</strong></td>
+                      {% assign measurements = block.settings.size_xs_measurements | split: ',' %}
+                      {% for measurement in measurements %}
+                        <td>{{ measurement | strip }}</td>
+                      {% endfor %}
+                    </tr>
+                  {% endif %}
+
+                  {% if block.settings.size_s_measurements != blank %}
+                    <tr>
+                      <td><strong>S</strong></td>
+                      {% assign measurements = block.settings.size_s_measurements | split: ',' %}
+                      {% for measurement in measurements %}
+                        <td>{{ measurement | strip }}</td>
+                      {% endfor %}
+                    </tr>
+                  {% endif %}
+
+                  {% if block.settings.size_m_measurements != blank %}
+                    <tr>
+                      <td><strong>M</strong></td>
+                      {% assign measurements = block.settings.size_m_measurements | split: ',' %}
+                      {% for measurement in measurements %}
+                        <td>{{ measurement | strip }}</td>
+                      {% endfor %}
+                    </tr>
+                  {% endif %}
+
+                  {% if block.settings.size_l_measurements != blank %}
+                    <tr>
+                      <td><strong>L</strong></td>
+                      {% assign measurements = block.settings.size_l_measurements | split: ',' %}
+                      {% for measurement in measurements %}
+                        <td>{{ measurement | strip }}</td>
+                      {% endfor %}
+                    </tr>
+                  {% endif %}
+
+                  {% if block.settings.size_xl_measurements != blank %}
+                    <tr>
+                      <td><strong>XL</strong></td>
+                      {% assign measurements = block.settings.size_xl_measurements | split: ',' %}
+                      {% for measurement in measurements %}
+                        <td>{{ measurement | strip }}</td>
+                      {% endfor %}
+                    </tr>
+                  {% endif %}
+
+                  {% if block.settings.size_xxl_measurements != blank %}
+                    <tr>
+                      <td><strong>XXL</strong></td>
+                      {% assign measurements = block.settings.size_xxl_measurements | split: ',' %}
+                      {% for measurement in measurements %}
+                        <td>{{ measurement | strip }}</td>
+                      {% endfor %}
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+
+            {% if block.settings.measurement_image != blank %}
+              <div class="size-guide__image">
+                <img
+                  src="{{ block.settings.measurement_image | image_url: width: 600 }}"
+                  alt="{{ block.settings.product_type }} - Cómo medir"
+                  loading="lazy"
+                  width="600"
+                  height="{{ 600 | divided_by: block.settings.measurement_image.aspect_ratio | ceil }}"
+                >
+                {% if block.settings.measurement_image_caption != blank %}
+                  <p class="size-guide__image-caption">{{ block.settings.measurement_image_caption }}</p>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if section.settings.show_contact_cta %}
+      <div class="size-guide__cta">
+        <p class="size-guide__cta-text">{{ section.settings.contact_text }}</p>
+        {% if section.settings.contact_button_text != blank and section.settings.contact_button_link != blank %}
+          <a href="{{ section.settings.contact_button_link }}" class="button button--primary">
+            {{ section.settings.contact_button_text }}
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.size-guide__tab');
+    const charts = document.querySelectorAll('.size-guide__chart');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        const targetChart = this.getAttribute('data-tab');
+
+        // Remove active class from all tabs and charts
+        tabs.forEach(t => t.classList.remove('size-guide__tab--active'));
+        charts.forEach(c => c.classList.remove('size-guide__chart--active'));
+
+        // Add active class to clicked tab and corresponding chart
+        this.classList.add('size-guide__tab--active');
+        document.querySelector(`[data-chart="${targetChart}"]`).classList.add('size-guide__chart--active');
+      });
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Guía de Tallas",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Guía de Tallas",
+      "label": "Título"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "Pequeño"
+        },
+        {
+          "value": "h1",
+          "label": "Mediano"
+        },
+        {
+          "value": "h0",
+          "label": "Grande"
+        }
+      ],
+      "default": "h1",
+      "label": "Tamaño del título"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Descripción",
+      "default": "<p>Encuentra tu talla perfecta con nuestra guía de medidas detallada.</p>"
+    },
+    {
+      "type": "text",
+      "id": "model_reference",
+      "label": "Referencia del modelo",
+      "info": "Ejemplo: 'El modelo mide 1.80m y usa talla M'",
+      "default": "El modelo mide 1.80m y usa talla M"
+    },
+    {
+      "type": "header",
+      "content": "CTA de Contacto"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_contact_cta",
+      "default": true,
+      "label": "Mostrar CTA de contacto"
+    },
+    {
+      "type": "text",
+      "id": "contact_text",
+      "default": "¿Necesitas ayuda para elegir tu talla?",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "contact_button_text",
+      "default": "Contáctanos",
+      "label": "Texto del botón"
+    },
+    {
+      "type": "url",
+      "id": "contact_button_link",
+      "label": "Enlace del botón"
+    },
+    {
+      "type": "header",
+      "content": "Colores"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Espaciado"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado superior",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado inferior",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "size_chart",
+      "name": "Tabla de Tallas",
+      "settings": [
+        {
+          "type": "text",
+          "id": "product_type",
+          "label": "Tipo de producto",
+          "default": "Polos",
+          "info": "Ejemplo: Polos, Hoodies, Longsleeves"
+        },
+        {
+          "type": "textarea",
+          "id": "chart_description",
+          "label": "Descripción de la tabla",
+          "info": "Instrucciones específicas para este tipo de producto"
+        },
+        {
+          "type": "header",
+          "content": "Columnas a mostrar"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_chest",
+          "default": true,
+          "label": "Mostrar Pecho"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_waist",
+          "default": false,
+          "label": "Mostrar Cintura"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_hips",
+          "default": false,
+          "label": "Mostrar Cadera"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_length",
+          "default": true,
+          "label": "Mostrar Largo"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_shoulder",
+          "default": false,
+          "label": "Mostrar Hombro"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_sleeve",
+          "default": false,
+          "label": "Mostrar Manga"
+        },
+        {
+          "type": "header",
+          "content": "Medidas"
+        },
+        {
+          "type": "text",
+          "id": "size_xs_measurements",
+          "label": "Talla XS",
+          "info": "Ejemplo: 88, 68 (valores separados por comas)"
+        },
+        {
+          "type": "text",
+          "id": "size_s_measurements",
+          "label": "Talla S",
+          "info": "Ejemplo: 92, 70"
+        },
+        {
+          "type": "text",
+          "id": "size_m_measurements",
+          "label": "Talla M",
+          "info": "Ejemplo: 96, 72"
+        },
+        {
+          "type": "text",
+          "id": "size_l_measurements",
+          "label": "Talla L",
+          "info": "Ejemplo: 100, 74"
+        },
+        {
+          "type": "text",
+          "id": "size_xl_measurements",
+          "label": "Talla XL",
+          "info": "Ejemplo: 104, 76"
+        },
+        {
+          "type": "text",
+          "id": "size_xxl_measurements",
+          "label": "Talla XXL",
+          "info": "Ejemplo: 108, 78"
+        },
+        {
+          "type": "header",
+          "content": "Imagen de referencia"
+        },
+        {
+          "type": "image_picker",
+          "id": "measurement_image",
+          "label": "Imagen de cómo medir",
+          "info": "Imagen que muestra cómo tomar las medidas"
+        },
+        {
+          "type": "text",
+          "id": "measurement_image_caption",
+          "label": "Descripción de imagen",
+          "default": "Cómo tomar tus medidas correctamente"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Guía de Tallas",
+      "blocks": [
+        {
+          "type": "size_chart",
+          "settings": {
+            "product_type": "Polos"
+          }
+        },
+        {
+          "type": "size_chart",
+          "settings": {
+            "product_type": "Hoodies"
+          }
+        },
+        {
+          "type": "size_chart",
+          "settings": {
+            "product_type": "Longsleeves"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

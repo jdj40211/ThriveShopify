@@ -1,0 +1,244 @@
+{{ 'section-policy-page.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="policy-page section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width">
+    <div class="policy-page__wrapper">
+      {%- if section.settings.show_sidebar -%}
+        <aside class="policy-page__sidebar">
+          <nav class="policy-page__nav">
+            <h3 class="policy-page__nav-title">{{ section.settings.sidebar_title }}</h3>
+            <ul class="policy-page__nav-list">
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'policy_link' -%}
+                  <li class="policy-page__nav-item">
+                    <a
+                      href="{{ block.settings.page.url }}"
+                      class="policy-page__nav-link {% if block.settings.page.url == page.url %}policy-page__nav-link--active{% endif %}"
+                    >
+                      {{ block.settings.page.title }}
+                    </a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </nav>
+
+          {%- if section.settings.show_contact_card -%}
+            <div class="policy-page__contact-card">
+              <h4 class="policy-page__contact-title">{{ section.settings.contact_title }}</h4>
+              <p class="policy-page__contact-text">{{ section.settings.contact_text }}</p>
+              {%- if section.settings.contact_button_text != blank and section.settings.contact_button_link != blank -%}
+                <a href="{{ section.settings.contact_button_link }}" class="button button--secondary button--small">
+                  {{ section.settings.contact_button_text }}
+                </a>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </aside>
+      {%- endif -%}
+
+      <div class="policy-page__content">
+        {%- if page.title != blank -%}
+          <header class="policy-page__header">
+            <h1 class="policy-page__title">{{ page.title }}</h1>
+            {%- if section.settings.show_last_updated and page.published_at -%}
+              <p class="policy-page__date">
+                {{ section.settings.last_updated_text }}:
+                <time datetime="{{ page.published_at | date: '%Y-%m-%d' }}">
+                  {{ page.published_at | date: format: 'date' }}
+                </time>
+              </p>
+            {%- endif -%}
+          </header>
+        {%- endif -%}
+
+        {%- if page.content != blank -%}
+          <div class="policy-page__body rte">
+            {{ page.content }}
+          </div>
+        {%- else -%}
+          <div class="policy-page__placeholder">
+            <p>{{ section.settings.placeholder_text }}</p>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.show_back_button -%}
+          <div class="policy-page__footer">
+            <a href="{{ section.settings.back_button_link | default: routes.root_url }}" class="button button--secondary">
+              ← {{ section.settings.back_button_text }}
+            </a>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Página de Políticas",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Barra Lateral"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sidebar",
+      "default": true,
+      "label": "Mostrar barra lateral"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_title",
+      "default": "Políticas",
+      "label": "Título de la barra lateral"
+    },
+    {
+      "type": "header",
+      "content": "Tarjeta de Contacto"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_contact_card",
+      "default": true,
+      "label": "Mostrar tarjeta de contacto"
+    },
+    {
+      "type": "text",
+      "id": "contact_title",
+      "default": "¿Preguntas?",
+      "label": "Título"
+    },
+    {
+      "type": "textarea",
+      "id": "contact_text",
+      "default": "Si tienes alguna pregunta sobre nuestras políticas, contáctanos.",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "contact_button_text",
+      "default": "Contáctanos",
+      "label": "Texto del botón"
+    },
+    {
+      "type": "url",
+      "id": "contact_button_link",
+      "label": "Enlace del botón"
+    },
+    {
+      "type": "header",
+      "content": "Contenido"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_last_updated",
+      "default": true,
+      "label": "Mostrar fecha de actualización"
+    },
+    {
+      "type": "text",
+      "id": "last_updated_text",
+      "default": "Última actualización",
+      "label": "Texto de fecha"
+    },
+    {
+      "type": "text",
+      "id": "placeholder_text",
+      "default": "Esta página aún no tiene contenido. Edítala en el admin de Shopify.",
+      "label": "Texto cuando no hay contenido"
+    },
+    {
+      "type": "header",
+      "content": "Navegación"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_back_button",
+      "default": true,
+      "label": "Mostrar botón de volver"
+    },
+    {
+      "type": "text",
+      "id": "back_button_text",
+      "default": "Volver al inicio",
+      "label": "Texto del botón"
+    },
+    {
+      "type": "url",
+      "id": "back_button_link",
+      "label": "Enlace del botón",
+      "info": "Deja en blanco para ir a la página de inicio"
+    },
+    {
+      "type": "header",
+      "content": "Colores"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Espaciado"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado superior",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado inferior",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "policy_link",
+      "name": "Enlace a Política",
+      "settings": [
+        {
+          "type": "page",
+          "id": "page",
+          "label": "Página"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Página de Políticas"
+    }
+  ]
+}
+{% endschema %}

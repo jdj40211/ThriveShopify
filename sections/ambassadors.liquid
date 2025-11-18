@@ -1,0 +1,302 @@
+{{ 'section-ambassadors.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="ambassadors section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width">
+    {% if section.settings.heading != blank %}
+      <h2 class="ambassadors__heading {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+    {% endif %}
+
+    {% if section.settings.subheading != blank %}
+      <p class="ambassadors__subheading">{{ section.settings.subheading }}</p>
+    {% endif %}
+
+    {% if section.settings.description != blank %}
+      <div class="ambassadors__description rte">
+        {{ section.settings.description }}
+      </div>
+    {% endif %}
+
+    <div class="ambassadors__grid">
+      {% for block in section.blocks %}
+        {% if block.type == 'ambassador' %}
+          <div class="ambassadors__card" {{ block.shopify_attributes }}>
+            {% if block.settings.image != blank %}
+              <div class="ambassadors__image-wrapper">
+                <img
+                  src="{{ block.settings.image | image_url: width: 600 }}"
+                  alt="{{ block.settings.name }}"
+                  loading="lazy"
+                  width="600"
+                  height="{{ 600 | divided_by: block.settings.image.aspect_ratio | ceil }}"
+                  class="ambassadors__image"
+                >
+                {% if block.settings.show_overlay %}
+                  <div class="ambassadors__overlay">
+                    <p class="ambassadors__overlay-text">{{ block.settings.overlay_text }}</p>
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+
+            <div class="ambassadors__content">
+              {% if block.settings.name != blank %}
+                <h3 class="ambassadors__name">{{ block.settings.name }}</h3>
+              {% endif %}
+
+              {% if block.settings.role != blank %}
+                <p class="ambassadors__role">{{ block.settings.role }}</p>
+              {% endif %}
+
+              {% if block.settings.quote != blank %}
+                <blockquote class="ambassadors__quote">
+                  <svg class="ambassadors__quote-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 17H11L8 21V22H6V21L9 17H6V12H11V17H6ZM13 17H18L15 21V22H13V21L16 17H13V12H18V17H13Z" fill="currentColor"/>
+                  </svg>
+                  "{{ block.settings.quote }}"
+                </blockquote>
+              {% endif %}
+
+              {% if block.settings.instagram != blank %}
+                <a href="{{ block.settings.instagram }}" target="_blank" rel="noopener noreferrer" class="ambassadors__social-link">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2ZM16 8.7C15.8 9.8 15.1 12.5 14.7 13.8C14.5 14.6 14.2 14.8 13.9 14.8C13.4 14.9 13 14.5 12.6 14.2C11.9 13.7 11.5 13.4 10.8 12.9C10 12.3 10.5 12 10.9 11.6C11 11.5 13.1 9.6 13.2 9.4C13.2 9.4 13.2 9.3 13.1 9.3C13.1 9.2 13 9.3 12.9 9.3C12.8 9.3 11.3 10.4 8.4 12.5C8 12.8 7.6 12.9 7.3 12.9C7 12.9 6.4 12.7 5.9 12.6C5.4 12.4 4.9 12.3 5 12C5 11.8 5.3 11.7 5.9 11.5C9 10.3 11 9.5 11.9 9.1C14.9 8 15.5 7.8 15.9 7.8C16 7.8 16.2 7.8 16.3 8C16.4 8.1 16.4 8.2 16.4 8.3C16.4 8.4 16.4 8.6 16 8.7Z" fill="currentColor"/>
+                  </svg>
+                  @{{ block.settings.instagram | remove: 'https://instagram.com/' | remove: 'https://www.instagram.com/' | remove: '@' }}
+                </a>
+              {% endif %}
+
+              {% if block.settings.product_link != blank and block.settings.product_link_text != blank %}
+                <a href="{{ block.settings.product_link }}" class="ambassadors__product-link button button--secondary">
+                  {{ block.settings.product_link_text }}
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if section.settings.show_cta %}
+      <div class="ambassadors__cta">
+        {% if section.settings.cta_heading != blank %}
+          <h3 class="ambassadors__cta-heading">{{ section.settings.cta_heading }}</h3>
+        {% endif %}
+        {% if section.settings.cta_text != blank %}
+          <p class="ambassadors__cta-text">{{ section.settings.cta_text }}</p>
+        {% endif %}
+        {% if section.settings.cta_button_text != blank and section.settings.cta_button_link != blank %}
+          <a href="{{ section.settings.cta_button_link }}" class="button button--primary">
+            {{ section.settings.cta_button_text }}
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Embajadores / Comunidad",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Quiénes usan Thrive",
+      "label": "Título"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "Pequeño"
+        },
+        {
+          "value": "h1",
+          "label": "Mediano"
+        },
+        {
+          "value": "h0",
+          "label": "Grande"
+        }
+      ],
+      "default": "h1",
+      "label": "Tamaño del título"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subtítulo",
+      "default": "Nuestra comunidad de embajadores"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Descripción",
+      "default": "<p>Conoce a las personas que hacen parte de la familia Thrive.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Call to Action"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cta",
+      "default": true,
+      "label": "Mostrar CTA"
+    },
+    {
+      "type": "text",
+      "id": "cta_heading",
+      "default": "¿Quieres ser parte?",
+      "label": "Título del CTA"
+    },
+    {
+      "type": "textarea",
+      "id": "cta_text",
+      "default": "Únete a nuestra comunidad de embajadores Thrive",
+      "label": "Texto del CTA"
+    },
+    {
+      "type": "text",
+      "id": "cta_button_text",
+      "default": "Aplicar ahora",
+      "label": "Texto del botón"
+    },
+    {
+      "type": "url",
+      "id": "cta_button_link",
+      "label": "Enlace del botón"
+    },
+    {
+      "type": "header",
+      "content": "Colores"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Espaciado"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado superior",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado inferior",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "ambassador",
+      "name": "Embajador",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Foto"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_overlay",
+          "default": false,
+          "label": "Mostrar overlay en hover"
+        },
+        {
+          "type": "text",
+          "id": "overlay_text",
+          "label": "Texto del overlay",
+          "default": "Ver productos"
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Nombre",
+          "default": "Nombre del embajador"
+        },
+        {
+          "type": "text",
+          "id": "role",
+          "label": "Rol / Título",
+          "default": "Embajador Thrive"
+        },
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Frase / Testimonial",
+          "info": "Frase acerca de Thrive"
+        },
+        {
+          "type": "url",
+          "id": "instagram",
+          "label": "Instagram URL"
+        },
+        {
+          "type": "url",
+          "id": "product_link",
+          "label": "Enlace a producto",
+          "info": "Producto que usa este embajador"
+        },
+        {
+          "type": "text",
+          "id": "product_link_text",
+          "label": "Texto del enlace",
+          "default": "Ver su estilo"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Embajadores / Comunidad",
+      "blocks": [
+        {
+          "type": "ambassador"
+        },
+        {
+          "type": "ambassador"
+        },
+        {
+          "type": "ambassador"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

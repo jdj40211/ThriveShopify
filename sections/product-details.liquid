@@ -1,0 +1,291 @@
+{{ 'section-product-details.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="product-details section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width">
+    {% if section.settings.heading != blank %}
+      <h2 class="product-details__heading {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+    {% endif %}
+
+    <div class="product-details__grid">
+      {%- if product.metafields.custom.fabric_type != blank or product.metafields.custom.fabric_gsm != blank -%}
+        <div class="product-details__item">
+          <div class="product-details__icon">
+            {% render 'icon-fabric' %}
+          </div>
+          <div class="product-details__content">
+            <h3 class="product-details__title">{{ section.settings.fabric_title }}</h3>
+            {%- if product.metafields.custom.fabric_type != blank -%}
+              <p class="product-details__text">
+                <strong>Material:</strong> {{ product.metafields.custom.fabric_type }}
+              </p>
+            {%- endif -%}
+            {%- if product.metafields.custom.fabric_gsm != blank -%}
+              <p class="product-details__text">
+                <strong>GSM:</strong> {{ product.metafields.custom.fabric_gsm }}
+              </p>
+            {%- endif -%}
+            {%- if product.metafields.custom.fabric_feel != blank -%}
+              <p class="product-details__text">
+                {{ product.metafields.custom.fabric_feel }}
+              </p>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endif -%}
+
+      {%- if product.metafields.custom.print_type != blank -%}
+        <div class="product-details__item">
+          <div class="product-details__icon">
+            {% render 'icon-print' %}
+          </div>
+          <div class="product-details__content">
+            <h3 class="product-details__title">{{ section.settings.print_title }}</h3>
+            <p class="product-details__text">
+              {{ product.metafields.custom.print_type }}
+            </p>
+          </div>
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_care_icon -%}
+        <div class="product-details__item">
+          <div class="product-details__icon">
+            {% render 'icon-care' %}
+          </div>
+          <div class="product-details__content">
+            <h3 class="product-details__title">{{ section.settings.care_title }}</h3>
+            {%- if product.metafields.custom.care_instructions != blank -%}
+              <div class="product-details__text rte">
+                {{ product.metafields.custom.care_instructions | newline_to_br }}
+              </div>
+            {%- else -%}
+              <p class="product-details__text">
+                {{ section.settings.care_default_text }}
+              </p>
+            {%- endif -%}
+            {%- if section.settings.care_page != blank -%}
+              <a href="{{ section.settings.care_page.url }}" class="product-details__link">
+                {{ section.settings.care_link_text }} →
+              </a>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_size_guide -%}
+        <div class="product-details__item">
+          <div class="product-details__icon">
+            {% render 'icon-ruler' %}
+          </div>
+          <div class="product-details__content">
+            <h3 class="product-details__title">{{ section.settings.size_title }}</h3>
+            {%- if product.metafields.custom.model_reference != blank -%}
+              <p class="product-details__text">
+                {{ product.metafields.custom.model_reference }}
+              </p>
+            {%- endif -%}
+            {%- if section.settings.size_guide_page != blank -%}
+              <a href="{{ section.settings.size_guide_page.url }}" class="product-details__link">
+                {{ section.settings.size_link_text }} →
+              </a>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- if product.metafields.custom.related_guides != blank -%}
+      <div class="product-details__guides">
+        <h3 class="product-details__guides-title">{{ section.settings.guides_title }}</h3>
+        <div class="product-details__guides-list">
+          {%- for guide in product.metafields.custom.related_guides.value -%}
+            <a href="{{ guide.url }}" class="product-details__guide-link">
+              {{ guide.title }}
+            </a>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Detalles del Producto",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Detalles del Producto",
+      "label": "Título"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "Pequeño"
+        },
+        {
+          "value": "h1",
+          "label": "Mediano"
+        },
+        {
+          "value": "h0",
+          "label": "Grande"
+        }
+      ],
+      "default": "h1",
+      "label": "Tamaño del título"
+    },
+    {
+      "type": "header",
+      "content": "Tela"
+    },
+    {
+      "type": "text",
+      "id": "fabric_title",
+      "default": "Tela",
+      "label": "Título de tela"
+    },
+    {
+      "type": "header",
+      "content": "Estampado"
+    },
+    {
+      "type": "text",
+      "id": "print_title",
+      "default": "Estampado",
+      "label": "Título de estampado"
+    },
+    {
+      "type": "header",
+      "content": "Cuidado"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_care_icon",
+      "default": true,
+      "label": "Mostrar instrucciones de cuidado"
+    },
+    {
+      "type": "text",
+      "id": "care_title",
+      "default": "Cuidado",
+      "label": "Título de cuidado"
+    },
+    {
+      "type": "textarea",
+      "id": "care_default_text",
+      "default": "Lavar a máquina con agua fría. No usar blanqueador.",
+      "label": "Texto por defecto"
+    },
+    {
+      "type": "page",
+      "id": "care_page",
+      "label": "Página de instrucciones"
+    },
+    {
+      "type": "text",
+      "id": "care_link_text",
+      "default": "Ver guía completa",
+      "label": "Texto del enlace"
+    },
+    {
+      "type": "header",
+      "content": "Guía de Tallas"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_size_guide",
+      "default": true,
+      "label": "Mostrar guía de tallas"
+    },
+    {
+      "type": "text",
+      "id": "size_title",
+      "default": "Guía de Tallas",
+      "label": "Título"
+    },
+    {
+      "type": "page",
+      "id": "size_guide_page",
+      "label": "Página de guía de tallas"
+    },
+    {
+      "type": "text",
+      "id": "size_link_text",
+      "default": "Ver guía completa",
+      "label": "Texto del enlace"
+    },
+    {
+      "type": "header",
+      "content": "Guías Relacionadas"
+    },
+    {
+      "type": "text",
+      "id": "guides_title",
+      "default": "Guías Relacionadas",
+      "label": "Título"
+    },
+    {
+      "type": "header",
+      "content": "Colores"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Espaciado"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado superior",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Espaciado inferior",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Detalles del Producto"
+    }
+  ]
+}
+{% endschema %}

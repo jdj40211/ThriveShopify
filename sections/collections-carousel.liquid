@@ -14,6 +14,18 @@
     {% assign selected_collections = collections %}
   {% when 'manual' %}
     {% assign selected_collections = section.settings.collections %}
+  {% when 'metafield' %}
+    {% if collection and section.settings.collections_metafield != blank %}
+      {% assign metafield_parts = section.settings.collections_metafield | split: '.' %}
+      {% if metafield_parts.size == 2 %}
+        {% assign metafield_namespace = metafield_parts[0] %}
+        {% assign metafield_key = metafield_parts[1] %}
+        {% assign metafield_source = collection.metafields[metafield_namespace][metafield_key] %}
+        {% if metafield_source and metafield_source.value != blank %}
+          {% assign selected_collections = metafield_source.value %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
   {% when 'tags' %}
     {% if section.settings.collection_tags != blank %}
       {% assign selected_collections = collections %}
@@ -160,6 +172,10 @@
           "label": "Manual Selection"
         },
         {
+          "value": "metafield",
+          "label": "Collection Metafield"
+        },
+        {
           "value": "tags",
           "label": "Collection Tags"
         }
@@ -172,6 +188,12 @@
       "label": "Manual Collection Selection",
       "limit": 20,
       "info": "Select specific collections to display"
+    },
+    {
+      "type": "text",
+      "id": "collections_metafield",
+      "label": "Metafield Source (namespace.key)",
+      "info": "Used when source is Metafield. Example: custom.related_collections"
     },
     {
       "type": "text",

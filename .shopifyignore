@@ -1,0 +1,6 @@
+# Ignore temporary editor files that shouldn't be uploaded
+*.tmp.*
+*.tmp
+*.swp
+*.swo
+~*
