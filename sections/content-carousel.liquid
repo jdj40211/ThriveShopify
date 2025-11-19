@@ -59,7 +59,6 @@
       const autoplayConfig = enableAutoplay ? {
         delay: autoplayDelay,
         disableOnInteraction: false,
-        pauseOnMouseEnter: true,
       } : false;
 
       const swiperConfig = {
@@ -92,6 +91,10 @@
         on: {
           init: function() {
             updateContentArrowStates(this);
+            // Start autoplay after initialization if enabled
+            if (enableAutoplay && this.autoplay) {
+              this.autoplay.start();
+            }
           },
           slideChange: function() {
             updateContentArrowStates(this);
