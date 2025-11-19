@@ -4,6 +4,12 @@
   {% assign is_video = true %}
 {% endif %}
 
+{% comment %} Check if mobile video exists {% endcomment %}
+{% assign has_mobile_video = false %}
+{% if slide.video_mobile %}
+  {% assign has_mobile_video = true %}
+{% endif %}
+
 {% if slide_image or slide.title or slide.description or slide.button_text or is_video %}
   <div
     class="absolute top-0 z-5 left-0 right-0 bottom-0 bg-gradient-to-t from-black/60 via-transparent to-black/60 pointer-events-none"
@@ -15,24 +21,69 @@
     {% endif %}
   >
     {% if is_video %}
-      <!-- Video Slide -->
-      <video
-        class="h-full w-auto object-cover"
-        muted
-        loop
-        playsinline
-        preload="metadata"
-        data-video-element
-      >
-        {% if slide.video.sources %}
-          {% for source in slide.video.sources %}
-            <source src="{{ source.url }}" type="{{ source.mime_type }}">
-          {% endfor %}
-        {% else %}
-          <source src="{{ slide.video | file_url }}" type="video/mp4">
-        {% endif %}
-        Your browser does not support the video tag.
-      </video>
+      {% if has_mobile_video %}
+        <!-- Desktop Video (hidden on mobile) -->
+        <video
+          class="h-full w-full object-cover hidden lg:block"
+          muted
+          autoplay
+          loop
+          playsinline
+          preload="metadata"
+          data-video-element
+          data-video-desktop
+        >
+          {% if slide.video.sources %}
+            {% for source in slide.video.sources %}
+              <source src="{{ source.url }}" type="{{ source.mime_type }}">
+            {% endfor %}
+          {% else %}
+            <source src="{{ slide.video | file_url }}" type="video/mp4">
+          {% endif %}
+          Your browser does not support the video tag.
+        </video>
+
+        <!-- Mobile Video (hidden on desktop) -->
+        <video
+          class="h-full w-full object-cover lg:hidden"
+          muted
+          autoplay
+          loop
+          playsinline
+          preload="metadata"
+          data-video-element
+          data-video-mobile
+        >
+          {% if slide.video_mobile.sources %}
+            {% for source in slide.video_mobile.sources %}
+              <source src="{{ source.url }}" type="{{ source.mime_type }}">
+            {% endfor %}
+          {% else %}
+            <source src="{{ slide.video_mobile | file_url }}" type="video/mp4">
+          {% endif %}
+          Your browser does not support the video tag.
+        </video>
+      {% else %}
+        <!-- Single Video (no mobile variant) -->
+        <video
+          class="h-full w-full object-cover"
+          muted
+          autoplay
+          loop
+          playsinline
+          preload="metadata"
+          data-video-element
+        >
+          {% if slide.video.sources %}
+            {% for source in slide.video.sources %}
+              <source src="{{ source.url }}" type="{{ source.mime_type }}">
+            {% endfor %}
+          {% else %}
+            <source src="{{ slide.video | file_url }}" type="video/mp4">
+          {% endif %}
+          Your browser does not support the video tag.
+        </video>
+      {% endif %}
     {% elsif slide_image %}
       <!-- Image Slide -->
       {% if slide.image_url %}

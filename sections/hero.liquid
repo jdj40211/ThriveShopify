@@ -175,15 +175,35 @@
         updateProgress();
       }
 
+      // Get the visible video element (desktop or mobile based on screen size)
+      getVisibleVideo(slide) {
+        if (!slide) return null;
+
+        const videos = slide.querySelectorAll('video');
+        if (videos.length === 0) return null;
+        if (videos.length === 1) return videos[0];
+
+        // Multiple videos - return the visible one based on screen size
+        const isDesktop = window.innerWidth >= 1024;
+        const desktopVideo = slide.querySelector('[data-video-desktop]');
+        const mobileVideo = slide.querySelector('[data-video-mobile]');
+
+        if (isDesktop && desktopVideo) return desktopVideo;
+        if (!isDesktop && mobileVideo) return mobileVideo;
+
+        // Fallback to first video
+        return videos[0];
+      }
+
       // Start slide (video or image)
       startSlide(slideIndex, bullet) {
         // Stop current slide
         this.stopSlide();
-        
+
         const slide = heroElement.querySelectorAll('.swiper-slide')[slideIndex];
-        const video = slide?.querySelector('video');
+        const video = this.getVisibleVideo(slide);
         const isVideo = bullet?.dataset.isVideo === 'true';
-        
+
         this.currentSlide = slide;
         this.currentBullet = bullet;
         
@@ -229,12 +249,15 @@
       // Stop current slide
       stopSlide() {
         this.cleanup();
-        
+
         if (this.currentSlide) {
-          const video = this.currentSlide.querySelector('video');
-          if (video && !video.paused) {
-            video.pause();
-          }
+          // Pause all videos in the slide
+          const videos = this.currentSlide.querySelectorAll('video');
+          videos.forEach(video => {
+            if (video && !video.paused) {
+              video.pause();
+            }
+          });
         }
         
         if (this.currentBullet) {
@@ -254,17 +277,17 @@
       // Pause current slide
       pauseSlide() {
         this.cleanup();
-        
+
         if (this.currentSlide) {
-          const video = this.currentSlide.querySelector('video');
+          const video = this.getVisibleVideo(this.currentSlide);
           if (video && !video.paused) {
             video.pause();
-            
+
             // Update video bullet UI
             const playIcon = this.currentBullet?.querySelector('.play-icon');
             const pauseIcon = this.currentBullet?.querySelector('.pause-icon');
             const slideNumber = this.currentBullet?.querySelector('.slide-number');
-            
+
             if (slideNumber) slideNumber.style.display = 'none';
             if (playIcon) playIcon.style.display = 'flex';
             if (pauseIcon) pauseIcon.style.display = 'none';
@@ -305,9 +328,8 @@
       // Toggle slide (play/pause)
       toggleSlide(slideIndex, bullet) {
         const slide = heroElement.querySelectorAll('.swiper-slide')[slideIndex];
-        const video = slide?.querySelector('video');
         const isVideo = bullet?.dataset.isVideo === 'true';
-        
+
         if (this.currentSlide === slide && this.currentBullet === bullet) {
           // Currently active slide - pause it
           this.pauseSlide();
@@ -764,9 +786,24 @@
           "label": "Or Image URL (alternative to image picker)"
         },
         {
+          "type": "header",
+          "content": "Desktop Video"
+        },
+        {
           "type": "video",
           "id": "video",
-          "label": "Video File"
+          "label": "Desktop Video File",
+          "info": "Video shown on desktop (1024px+)"
+        },
+        {
+          "type": "header",
+          "content": "Mobile Video"
+        },
+        {
+          "type": "video",
+          "id": "video_mobile",
+          "label": "Mobile Video File",
+          "info": "Video shown on mobile/tablet. If empty, desktop video will be used."
         },
         {
           "type": "text",
