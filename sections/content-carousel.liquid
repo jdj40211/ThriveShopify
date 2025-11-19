@@ -61,7 +61,7 @@
         pauseOnMouseEnter: true,
       } : false;
 
-      const swiper = new Swiper(carouselElement, {
+      const swiperConfig = {
         slidesPerView: 2,
         spaceBetween: {{ section.settings.gap | default: 8 }},
         speed: autoplaySpeed,
@@ -73,12 +73,6 @@
           momentum: true,
         },
         grabCursor: !enableAutoplay,
-        {% if section.settings.show_arrows %}
-        navigation: {
-          nextEl: '.carousel-next',
-          prevEl: '.carousel-prev',
-        },
-        {% endif %}
         breakpoints: {
           768: {
             slidesPerView: 3,
@@ -108,7 +102,18 @@
             updateContentArrowStates(this);
           },
         },
-      });
+      };
+
+      // Add navigation only if arrows are enabled
+      const showArrows = {{ section.settings.show_arrows | default: true }};
+      if (showArrows) {
+        swiperConfig.navigation = {
+          nextEl: '.carousel-next',
+          prevEl: '.carousel-prev',
+        };
+      }
+
+      const swiper = new Swiper(carouselElement, swiperConfig);
 
       // Pause autoplay on hover
       if (enableAutoplay) {
@@ -234,7 +239,7 @@
       "id": "autoplay_delay",
       "label": "Autoplay Delay (ms)",
       "min": 1000,
-      "max": 10000,
+      "max": 8000,
       "step": 500,
       "default": 3000,
       "info": "Tiempo entre transiciones en milisegundos (1000ms = 1 segundo)"
