@@ -481,7 +481,10 @@
         "view_all_link": "",
         "show_arrows": true,
         "items_per_view": 5,
-        "gap": 24
+        "gap": 8,
+        "enable_autoplay": false,
+        "autoplay_delay": 3000,
+        "autoplay_speed": 600
       }
     }
   },
