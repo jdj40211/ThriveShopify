@@ -33,7 +33,9 @@
                 content_title: block.settings.content_title,
                 product_count: block.settings.product_count,
                 content_description: block.settings.content_description,
-                content_link: block.settings.content_link
+                content_link: block.settings.content_link,
+                card_aspect_ratio: section.settings.card_aspect_ratio,
+                card_max_width: section.settings.card_max_width
               %}
             </div>
           {% endfor %}
@@ -226,6 +228,45 @@
       "step": 4,
       "default": 8,
       "info": "Espacio entre tarjetas en píxeles"
+    },
+    {
+      "type": "header",
+      "content": "Card Size"
+    },
+    {
+      "type": "select",
+      "id": "card_aspect_ratio",
+      "label": "Card Aspect Ratio",
+      "options": [
+        {
+          "value": "square",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "portrait",
+          "label": "Portrait (2:3)"
+        },
+        {
+          "value": "landscape",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "wide",
+          "label": "Wide (16:9)"
+        }
+      ],
+      "default": "portrait",
+      "info": "Proporción de aspecto de las tarjetas"
+    },
+    {
+      "type": "range",
+      "id": "card_max_width",
+      "label": "Card Max Width (px)",
+      "min": 200,
+      "max": 500,
+      "step": 20,
+      "default": 280,
+      "info": "Ancho máximo de cada tarjeta en píxeles"
     },
     {
       "type": "header",

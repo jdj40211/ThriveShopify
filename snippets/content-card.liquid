@@ -1,14 +1,32 @@
 {% comment %}
   Content Card Snippet
-  Reusable content card component with collection linking
+  Reusable content card component with collection linking and configurable sizing
 {% endcomment %}
 
-<div class="w-full max-w-[280px] md:max-w-[240px] mx-auto">
+{% comment %} Set defaults {% endcomment %}
+{% assign aspect_ratio = card_aspect_ratio | default: 'portrait' %}
+{% assign max_width = card_max_width | default: 280 %}
+
+{% comment %} Map aspect ratios {% endcomment %}
+{% case aspect_ratio %}
+  {% when 'square' %}
+    {% assign aspect_class = 'aspect-[1/1]' %}
+  {% when 'portrait' %}
+    {% assign aspect_class = 'aspect-[2/3]' %}
+  {% when 'landscape' %}
+    {% assign aspect_class = 'aspect-[4/3]' %}
+  {% when 'wide' %}
+    {% assign aspect_class = 'aspect-[16/9]' %}
+  {% else %}
+    {% assign aspect_class = 'aspect-[2/3]' %}
+{% endcase %}
+
+<div class="w-full mx-auto" style="max-width: {{ max_width }}px;">
   {% if collection_link %}
     <a href="{{ collection_link }}" class="block group">
   {% endif %}
-  
-  <div class="relative overflow-hidden aspect-[2/3] transition-transform duration-300">
+
+  <div class="relative overflow-hidden {{ aspect_class }} transition-transform duration-300">
     {% if content_image %}
       <img
         src="{{ content_image | img_url: '400x600', crop: 'center' }}"

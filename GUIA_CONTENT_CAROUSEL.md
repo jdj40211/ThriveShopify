@@ -57,7 +57,40 @@ Guía rápida para configurar el Content Carousel con todas sus opciones.
 
 ---
 
-### **🔄 Autoplay / Infinite Scroll** (NUEVO)
+### **📐 Card Size** (NUEVO)
+
+Controla el tamaño y proporción de las tarjetas individuales.
+
+#### **Card Aspect Ratio**
+Selecciona la proporción de aspecto de las imágenes:
+
+- **Square (1:1)**: Formato cuadrado, ideal para logos o íconos
+- **Portrait (2:3)**: Formato vertical (por defecto), perfecto para fotos de productos o personas
+- **Landscape (4:3)**: Formato horizontal clásico, bueno para paisajes
+- **Wide (16:9)**: Formato panorámico, ideal para banners o escenas amplias
+
+**Recomendaciones por tipo de contenido:**
+- **Fotos de personas/productos**: Portrait (2:3) ✅
+- **Logos/iconos**: Square (1:1)
+- **Paisajes/escenas**: Landscape (4:3) o Wide (16:9)
+- **Banners promocionales**: Wide (16:9)
+
+#### **Card Max Width**
+- **Rango**: 200px a 500px
+- **Por defecto**: 280px
+- Controla el ancho máximo de cada tarjeta
+
+**Recomendaciones:**
+- **200-240px**: Tarjetas pequeñas, muestra más items
+- **260-300px**: Tamaño estándar (óptimo) ✅
+- **320-400px**: Tarjetas grandes, más impacto visual
+- **400-500px**: Tarjetas muy grandes, menos items visibles
+
+💡 **Tip:** Si usas `Card Max Width` grande, reduce `Items per view` para que no se vea apretado.
+
+---
+
+### **🔄 Autoplay / Infinite Scroll**
 
 #### **Enable Autoplay** ☑️
 Activa el desplazamiento automático e infinito del carrusel.
@@ -107,6 +140,8 @@ Carousel Title: Content Carousel
 Show Navigation Arrows: ✓ Activado
 Items per view: 5
 Gap between items: 8px
+Card Aspect Ratio: Portrait (2:3)
+Card Max Width: 280px
 Enable Autoplay: ✗ Desactivado
 ```
 
@@ -121,6 +156,8 @@ Carousel Title: Lo que dicen de nosotros
 Show Navigation Arrows: ✗ Desactivado
 Items per view: 3
 Gap between items: 12px
+Card Aspect Ratio: Portrait (2:3)
+Card Max Width: 320px
 Enable Autoplay: ✓ Activado
 Autoplay Delay: 5000ms (5 segundos)
 Transition Speed: 800ms
@@ -162,6 +199,40 @@ Transition Speed: 600ms
 
 ---
 
+### Ejemplo 5: Galería de Logos (Square Format)
+
+```
+Carousel Title: Nuestras Marcas
+Show Navigation Arrows: ✓ Activado
+Items per view: 6
+Gap between items: 16px
+Card Aspect Ratio: Square (1:1)
+Card Max Width: 200px
+Enable Autoplay: ✗ Desactivado
+```
+
+**Resultado:** Grid de logos cuadrados, compacto y limpio
+
+---
+
+### Ejemplo 6: Banners Promocionales (Wide Format)
+
+```
+Carousel Title: Ofertas Especiales
+Show Navigation Arrows: ✗ Desactivado
+Items per view: 2
+Gap between items: 8px
+Card Aspect Ratio: Wide (16:9)
+Card Max Width: 500px
+Enable Autoplay: ✓ Activado
+Autoplay Delay: 4000ms
+Transition Speed: 500ms
+```
+
+**Resultado:** Banners panorámicos grandes con autoplay suave
+
+---
+
 ## 💡 Tips y Mejores Prácticas
 
 ### ✅ DO (Hacer)
@@ -173,6 +244,14 @@ Transition Speed: 600ms
 5. **Ajusta el delay según el contenido**:
    - Contenido simple/visual: 2-3 segundos
    - Contenido con texto: 5-6 segundos
+6. **Elige el aspect ratio correcto**:
+   - Fotos de personas: Portrait (2:3)
+   - Logos: Square (1:1)
+   - Banners: Wide (16:9)
+7. **Ajusta Card Max Width según Items per view**:
+   - 6+ items: 200-240px
+   - 4-5 items: 260-300px
+   - 2-3 items: 320-400px
 
 ### ❌ DON'T (No hacer)
 
