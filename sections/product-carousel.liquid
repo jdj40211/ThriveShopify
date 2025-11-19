@@ -66,47 +66,18 @@
       </div>
     {% endif %}
 
-    {% assign products = '' %}
+    {% comment %} Get products based on selection method {% endcomment %}
+    {% assign products = blank %}
+
     {% case section.settings.product_source %}
       {% when 'collection' %}
         {% if section.settings.collection != blank %}
           {% assign products = section.settings.collection.products %}
         {% endif %}
-      {% when 'collections' %}
-        {% if section.settings.collections.count > 0 %}
-          {% comment %} Collect first 3 products from each collection {% endcomment %}
-          {% assign products = blank %}
-          {% assign first_collection = true %}
 
-          {% for collection in section.settings.collections %}
-            {% assign products_added = 0 %}
-            {% assign collection_products = blank %}
+      {% when 'manual' %}
+        {% assign products = section.settings.products %}
 
-            {% comment %} Get up to 3 products from this collection {% endcomment %}
-            {% for product in collection.products %}
-              {% if product.available and products_added < 3 %}
-                {% if products_added == 0 %}
-                  {% comment %} Start with the product as a single-item array {% endcomment %}
-                  {% assign collection_products = collection.products | where: 'id', product.id %}
-                {% else %}
-                  {% assign single_product = collection.products | where: 'id', product.id %}
-                  {% assign collection_products = collection_products | concat: single_product %}
-                {% endif %}
-                {% assign products_added = products_added | plus: 1 %}
-              {% endif %}
-            {% endfor %}
-
-            {% comment %} Add this collection's products to the main products array {% endcomment %}
-            {% if collection_products != blank %}
-              {% if first_collection %}
-                {% assign products = collection_products %}
-                {% assign first_collection = false %}
-              {% else %}
-                {% assign products = products | concat: collection_products %}
-              {% endif %}
-            {% endif %}
-          {% endfor %}
-        {% endif %}
       {% when 'tags' %}
         {% if section.settings.product_tags != blank %}
           {% assign tag_array = section.settings.product_tags | split: ',' %}
@@ -116,22 +87,38 @@
             {% assign products = products | where: 'tags', tag_trimmed %}
           {% endfor %}
         {% endif %}
-      {% when 'manual' %}
-        {% assign products = section.settings.products %}
     {% endcase %}
 
-    {% comment %} Count available products {% endcomment %}
-    {% assign available_count = 0 %}
-    {% for product in products %}
-      {% if product.available %}
-        {% assign available_count = available_count | plus: 1 %}
-      {% endif %}
-    {% endfor %}
+    {% comment %} Build carousel content directly {% endcomment %}
+    {% capture carousel_content %}
+      {% assign products_shown = 0 %}
 
-    {% if available_count > 0 %}
-      {% comment %} Build carousel content {% endcomment %}
-      {% capture carousel_content %}
-        {% assign products_shown = 0 %}
+      {% if section.settings.product_source == 'collections' %}
+        {% comment %} For multiple collections, loop through each collection {% endcomment %}
+        {% if section.settings.collections != blank %}
+          {% for collection in section.settings.collections %}
+            {% assign collection_products_shown = 0 %}
+            {% for product in collection.products %}
+              {% if product.available and products_shown < section.settings.max_products and collection_products_shown < 3 %}
+                <div class="swiper-slide">
+                  <div class="w-full">
+                    {% render 'product-card',
+                      product: product,
+                      show_badges: section.settings.show_badges,
+                      show_rating: section.settings.show_rating,
+                      show_color_swatches: section.settings.show_color_swatches,
+                      show_size_selector: section.settings.show_size_selector
+                    %}
+                  </div>
+                </div>
+                {% assign products_shown = products_shown | plus: 1 %}
+                {% assign collection_products_shown = collection_products_shown | plus: 1 %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+      {% else %}
+        {% comment %} For other sources, use the products array {% endcomment %}
         {% for product in products %}
           {% if product.available and products_shown < section.settings.max_products %}
             <div class="swiper-slide">
@@ -148,7 +135,10 @@
             {% assign products_shown = products_shown | plus: 1 %}
           {% endif %}
         {% endfor %}
-      {% endcapture %}
+      {% endif %}
+    {% endcapture %}
+
+    {% if products_shown > 0 or section.settings.product_source == 'collections' %}
 
       {% comment %} Render carousel using generic carousel snippet {% endcomment %}
 
@@ -163,7 +153,7 @@
         space_between_desktop: 4,
         centered_slides: true,
         free_mode: true,
-        total_items: available_count
+        total_items: products_shown
       %}
 
     {% else %}
