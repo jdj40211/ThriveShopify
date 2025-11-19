@@ -8,15 +8,17 @@
     {% if section.settings.title != blank %}
       <div class="flex justify-between items-center mb-8">
         <h2>{{ section.settings.title }}</h2>
-        {% if section.settings.show_view_all and section.settings.view_all_link != blank %}
-          <a href="{{ section.settings.view_all_link }}" class="text-gray-600 hover:text-gray-900 transition-colors">
-            {{ section.settings.view_all_text | default: 'Ver todos' }}
-          </a>
-        {% endif %}
-        {% comment %} Always show arrows when there are blocks {% endcomment %}
-        {% if section.blocks.size > 1 %}
-          {% render 'carousel-arrows' %}
-        {% endif %}
+        <div class="flex items-center gap-4">
+          {% if section.settings.show_view_all and section.settings.view_all_link != blank %}
+            <a href="{{ section.settings.view_all_link }}" class="text-gray-600 hover:text-gray-900 transition-colors">
+              {{ section.settings.view_all_text | default: 'Ver todos' }}
+            </a>
+          {% endif %}
+          {% comment %} Show arrows if enabled and there are blocks {% endcomment %}
+          {% if section.settings.show_arrows and section.blocks.size > 1 %}
+            {% render 'carousel-arrows' %}
+          {% endif %}
+        </div>
       </div>
     {% endif %}
 
@@ -24,7 +26,7 @@
       <div class="content-carousel swiper-{{ section.id }} overflow-hidden" data-carousel-id="{{ section.id }}">
         <div class="swiper-wrapper">
           {% for block in section.blocks %}
-            <div class="swiper-slide px-2">
+            <div class="swiper-slide">
               {% render 'content-card',
                 content_image: block.settings.content_image,
                 content_title: block.settings.content_title,
@@ -48,29 +50,44 @@
     if (carouselElement && typeof Swiper !== 'undefined') {
       const totalBlocks = {{ section.blocks.size }};
       const enableDesktopCarousel = totalBlocks > 4;
+      const enableAutoplay = {{ section.settings.enable_autoplay | default: false }};
+      const autoplayDelay = {{ section.settings.autoplay_delay | default: 3000 }};
+      const autoplaySpeed = {{ section.settings.autoplay_speed | default: 300 }};
+
+      // Build autoplay config
+      const autoplayConfig = enableAutoplay ? {
+        delay: autoplayDelay,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true,
+      } : false;
 
       const swiper = new Swiper(carouselElement, {
         slidesPerView: 2,
-        spaceBetween: {{ section.settings.gap | default: 24 }},
-        freeMode: {
+        spaceBetween: {{ section.settings.gap | default: 8 }},
+        speed: autoplaySpeed,
+        loop: enableAutoplay,
+        autoplay: autoplayConfig,
+        freeMode: enableAutoplay ? false : {
           enabled: true,
           sticky: true,
           momentum: true,
         },
-        grabCursor: false,
+        grabCursor: !enableAutoplay,
+        {% if section.settings.show_arrows %}
         navigation: {
           nextEl: '.carousel-next',
           prevEl: '.carousel-prev',
         },
+        {% endif %}
         breakpoints: {
           768: {
             slidesPerView: 3,
-            spaceBetween: {{ section.settings.gap | default: 24 }},
+            spaceBetween: {{ section.settings.gap | default: 8 }},
           },
           1024: {
             slidesPerView: enableDesktopCarousel ? 4 : {{ section.settings.items_per_view | default: 5 }},
-            spaceBetween: {{ section.settings.gap | default: 24 }},
-            freeMode: enableDesktopCarousel ? false : {
+            spaceBetween: {{ section.settings.gap | default: 8 }},
+            freeMode: (enableDesktopCarousel || enableAutoplay) ? false : {
               enabled: true,
               sticky: true,
               momentum: true,
@@ -92,6 +109,16 @@
           },
         },
       });
+
+      // Pause autoplay on hover
+      if (enableAutoplay) {
+        carouselElement.addEventListener('mouseenter', () => {
+          swiper.autoplay.stop();
+        });
+        carouselElement.addEventListener('mouseleave', () => {
+          swiper.autoplay.start();
+        });
+      }
     }
 
     // Function to update arrow states for content carousel
@@ -184,11 +211,43 @@
     {
       "type": "range",
       "id": "gap",
-      "label": "Gap between items",
+      "label": "Gap between items (px)",
       "min": 0,
       "max": 40,
       "step": 4,
-      "default": 24
+      "default": 8,
+      "info": "Espacio entre tarjetas en píxeles"
+    },
+    {
+      "type": "header",
+      "content": "Autoplay / Infinite Scroll"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_autoplay",
+      "label": "Enable Autoplay",
+      "default": false,
+      "info": "Activa el desplazamiento automático e infinito del carrusel"
+    },
+    {
+      "type": "range",
+      "id": "autoplay_delay",
+      "label": "Autoplay Delay (ms)",
+      "min": 1000,
+      "max": 10000,
+      "step": 500,
+      "default": 3000,
+      "info": "Tiempo entre transiciones en milisegundos (1000ms = 1 segundo)"
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Transition Speed (ms)",
+      "min": 200,
+      "max": 2000,
+      "step": 100,
+      "default": 600,
+      "info": "Velocidad de la animación de transición"
     }
   ],
   "blocks": [
