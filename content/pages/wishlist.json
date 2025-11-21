@@ -1,0 +1,9 @@
+{
+  "page": {
+    "title": "Lista de deseos",
+    "handle": "wishlist",
+    "body_html": "",
+    "template_suffix": "wishlist",
+    "published": true
+  }
+}

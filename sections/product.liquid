@@ -9,6 +9,15 @@
   - Responsive design for mobile and desktop
 {% endcomment %}
 
+{% liquid
+  assign size_guide_image_url = ''
+  if section.settings.size_guide_image != blank
+    assign size_guide_image_url = section.settings.size_guide_image | image_url: width: 1200
+  else
+    assign size_guide_image_url = 'https://cdn.shopify.com/s/files/1/0671/2285/6119/files/NEW_SIZE_GUIDE_WFC.svg?v=1748007079'
+  endif
+%}
+
 <style>
   /* Mobile Product Gallery Pagination Styles */
   .swiper-pagination-mobile {
@@ -186,6 +195,24 @@
             {% endif %}
           </div>
         </div>
+
+        {% if product.description != blank %}
+          <div class="text-base leading-relaxed text-black/70 space-y-2">
+            <p x-cloak x-show="!descriptionExpanded">
+              {{ product.description | strip_html | strip | truncate: 140 }}
+            </p>
+            <div x-cloak x-show="descriptionExpanded" class="space-y-2 text-black/80">
+              {{ product.description }}
+            </div>
+            <button
+              type="button"
+              class="inline-flex text-sm font-semibold underline"
+              @click="toggleDescription()"
+            >
+              <span x-text="descriptionExpanded ? 'Leer menos' : 'Leer m\u00e1s'"></span>
+            </button>
+          </div>
+        {% endif %}
 
         <!-- Star Rating -->
 
@@ -548,6 +575,67 @@
       </div>
     {% endif %}
   {% endfor %}
+
+  <div
+    x-cloak
+    x-show="sizeGuideOpen"
+    class="fixed inset-0 z-50"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+    @keydown.window.escape="closeSizeGuide()"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="absolute inset-0 bg-black/60" @click="closeSizeGuide()"></div>
+    <aside
+      class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col"
+      x-transition:enter="transform transition ease-out duration-300"
+      x-transition:enter-start="translate-x-full"
+      x-transition:enter-end="translate-x-0"
+      x-transition:leave="transform transition ease-in duration-200"
+      x-transition:leave-start="translate-x-0"
+      x-transition:leave-end="translate-x-full"
+    >
+      <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+        <p class="font-semibold tracking-wide uppercase text-sm">Gu&iacute;a de tallas</p>
+        <button
+          type="button"
+          class="p-2 rounded-full text-gray-500 hover:text-black hover:bg-gray-100 transition"
+          @click="closeSizeGuide()"
+          aria-label="Cerrar gu&iacute;a de tallas"
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 py-6 space-y-5">
+        <div class="rounded-2xl border border-gray-100 bg-gray-50 overflow-hidden">
+          <img
+            src="{{ size_guide_image_url }}"
+            alt="{{ section.settings.size_guide_image_alt | default: 'Guia de tallas' }}"
+            class="w-full h-full object-contain"
+            loading="lazy"
+          >
+        </div>
+        {% if section.settings.size_guide_model_info != blank %}
+          <p class="text-sm text-black/70 text-center">
+            {{ section.settings.size_guide_model_info }}
+          </p>
+        {% endif %}
+        {% if section.settings.size_guide_notes != blank %}
+          <div class="text-sm text-black/70 space-y-2">
+            {{ section.settings.size_guide_notes }}
+          </div>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
 </div>
 
 <script>
@@ -579,6 +667,8 @@
       purchaseOption: 'single',
       duoAvailable: {{ show_duo_option | json }},
       showMobileGallery: false,
+      sizeGuideOpen: false,
+      descriptionExpanded: false,
       isAddingToCart: false,
       
       // Watch for purchase option changes to transfer selections
@@ -670,6 +760,28 @@
         // Only update gallery if we're in single purchase mode (not duo)
         if (this.purchaseOption === 'single') {
           this.updateGalleryForColor(color);
+        }
+      },
+
+      toggleDescription() {
+        this.descriptionExpanded = !this.descriptionExpanded;
+      },
+
+      openSizeGuide() {
+        this.sizeGuideOpen = true;
+        this.updateBodyScrollLock();
+      },
+
+      closeSizeGuide() {
+        this.sizeGuideOpen = false;
+        this.updateBodyScrollLock();
+      },
+
+      updateBodyScrollLock() {
+        if (this.showMobileGallery || this.sizeGuideOpen) {
+          document.body.style.overflow = 'hidden';
+        } else {
+          document.body.style.overflow = '';
         }
       },
       
@@ -1391,14 +1503,12 @@
       // Mobile Gallery Methods
       openMobileGallery() {
         this.showMobileGallery = true;
-        // Prevent body scroll when overlay is open
-        document.body.style.overflow = 'hidden';
+        this.updateBodyScrollLock();
       },
 
       closeMobileGallery() {
         this.showMobileGallery = false;
-        // Restore body scroll
-        document.body.style.overflow = '';
+        this.updateBodyScrollLock();
       },
 
       // Initialize mobile carousel
@@ -1453,10 +1563,9 @@
 
       // Cleanup method
       destroy() {
-        // Restore body scroll if gallery was open
-        if (this.showMobileGallery) {
-          document.body.style.overflow = '';
-        }
+        this.showMobileGallery = false;
+        this.sizeGuideOpen = false;
+        this.updateBodyScrollLock();
       }
     }
   }
@@ -1880,6 +1989,35 @@
       "label": "Show Shipping & Returns Section",
       "default": true,
       "info": "Toggle to show or hide the shipping and returns information"
+    },
+    {
+      "type": "header",
+      "content": "Size Guide Drawer"
+    },
+    {
+      "type": "image_picker",
+      "id": "size_guide_image",
+      "label": "Guide image",
+      "info": "Image displayed inside the drawer. Leave blank to use the default reference image."
+    },
+    {
+      "type": "text",
+      "id": "size_guide_image_alt",
+      "label": "Guide image alt text",
+      "default": "Guia de tallas"
+    },
+    {
+      "type": "text",
+      "id": "size_guide_model_info",
+      "label": "Model info text",
+      "default": "La modelo mide 1.75 m y usa talla M.",
+      "info": "Shown under the guide image."
+    },
+    {
+      "type": "richtext",
+      "id": "size_guide_notes",
+      "label": "Additional size notes",
+      "default": "<p>Consulta la tabla para encontrar tu ajuste ideal.</p>"
     },
     {
       "type": "header",

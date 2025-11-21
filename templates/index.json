@@ -12,12 +12,13 @@
     "hero": {
       "type": "hero",
       "blocks": {
-        "slide_wfyam9": {
+        "slide_kF6V7J": {
           "type": "slide",
           "settings": {
-            "media_type": "image",
-            "image": "shopify://shop_images/LARGE_IMAGE_BANNER_DESKTOP_THRIVE-2.svg",
+            "media_type": "video",
             "image_url": "",
+            "video": "shopify://files/videos/VideoHorizontalWebOptimizado.mp4",
+            "video_mobile": "shopify://files/videos/VideoVerticalWebOptimizado.mp4",
             "title": "",
             "description": "",
             "button_text": "",
@@ -25,22 +26,22 @@
             "button_style": ""
           }
         },
-        "slide_kF6V7J": {
+        "slide_3VPgVR": {
           "type": "slide",
           "settings": {
             "media_type": "image",
             "image_url": "",
-            "title": "",
-            "description": "",
-            "button_text": "",
+            "title": "Viste el espíritu",
+            "description": "Creemos que la moda no es solo ropa es la historia que cuentas cada vez que te vistes",
+            "button_text": "Descubrelos",
             "button_link": "",
-            "button_style": ""
+            "button_style": "h-11 px-6 border border-1 border-white capitalize"
           }
         }
       },
       "block_order": [
-        "slide_wfyam9",
-        "slide_kF6V7J"
+        "slide_kF6V7J",
+        "slide_3VPgVR"
       ],
       "settings": {
         "min_height": 100,
@@ -123,6 +124,83 @@
         "mobile_layout": "column"
       }
     },
+    "content_carousel_cLW93K": {
+      "type": "content-carousel",
+      "blocks": {
+        "content_card_K7BtAB": {
+          "type": "content_card",
+          "settings": {
+            "content_image": "shopify://shop_images/7b22fdcc-2ee5-4c8c-9a4d-52d9d15474fd.jpg",
+            "content_title": "",
+            "product_count": "",
+            "content_description": "",
+            "content_link": ""
+          }
+        },
+        "content_card_dXbzFh": {
+          "type": "content_card",
+          "settings": {
+            "content_image": "shopify://shop_images/IMG_4293.jpg",
+            "content_title": "",
+            "product_count": "",
+            "content_description": "",
+            "content_link": ""
+          }
+        },
+        "content_card_jQXAX4": {
+          "type": "content_card",
+          "settings": {
+            "content_image": "shopify://shop_images/IMG_4553.jpg",
+            "content_title": "",
+            "product_count": "",
+            "content_description": "",
+            "content_link": ""
+          }
+        },
+        "content_card_DaxBbM": {
+          "type": "content_card",
+          "settings": {
+            "content_image": "shopify://shop_images/IMG_1182.jpg",
+            "content_title": "",
+            "product_count": "",
+            "content_description": "",
+            "content_link": ""
+          }
+        },
+        "content_card_BmjdqX": {
+          "type": "content_card",
+          "settings": {
+            "content_image": "shopify://shop_images/IMG_3267.jpg",
+            "content_title": "",
+            "product_count": "",
+            "content_description": "",
+            "content_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "content_card_K7BtAB",
+        "content_card_dXbzFh",
+        "content_card_jQXAX4",
+        "content_card_DaxBbM",
+        "content_card_BmjdqX"
+      ],
+      "name": "Content Carousel",
+      "settings": {
+        "title": "¿Quiénes Visten Thrive?",
+        "show_view_all": false,
+        "view_all_text": "Ver todos",
+        "view_all_link": "",
+        "show_arrows": true,
+        "items_per_view": 3,
+        "gap": 4,
+        "card_aspect_ratio": "portrait",
+        "card_max_width": 340,
+        "enable_autoplay": false,
+        "autoplay_delay": 3000,
+        "autoplay_speed": 600
+      }
+    },
     "video_carousel_9mVAQj": {
       "type": "video-carousel",
       "blocks": {
@@ -159,6 +237,7 @@
         "video_slide_DddrGU",
         "video_slide_DxiJPr"
       ],
+      "disabled": true,
       "name": "Video Carousel",
       "settings": {
         "title": "¿Quiénes Visten THRIVE?",
@@ -239,8 +318,21 @@
     },
     "quote_E6r7tE": {
       "type": "quote",
+      "blocks": {
+        "quote_item_xxECVy": {
+          "type": "quote_item",
+          "settings": {
+            "text": "<p>\"Creamos una comunidad de <em><strong>personas </strong></em>que eligen superarse, crecer y dejar <em><strong>huella</strong></em>.\"<br/></p>"
+          }
+        }
+      },
+      "block_order": [
+        "quote_item_xxECVy"
+      ],
       "name": "Quote",
       "settings": {
+        "enable_marquee": true,
+        "marquee_speed": 28,
         "quote_text": "",
         "background_color": "#ffffff",
         "text_color": "#000000",
@@ -254,7 +346,7 @@
       "type": "product-carousel",
       "name": "Product Carousel",
       "settings": {
-        "title": "Best Sellers",
+        "title": "Items Destacados",
         "rich_text": "",
         "show_view_all": true,
         "view_all_text": "Ver todos",
@@ -262,7 +354,7 @@
         "view_all_link_collections": "",
         "show_arrows": true,
         "product_source": "collection",
-        "collection": "mas-buscados-vendidos",
+        "collection": "",
         "collections": [],
         "product_tags": "",
         "products": [],
@@ -312,7 +404,7 @@
         "question_color": "#1f2937",
         "answer_color": "#374151",
         "border_color": "#e5e7eb",
-        "accent_color": "#3B2E10"
+        "accent_color": "#3b2e10"
       }
     },
     "care_instructions_kNB6Mi": {
@@ -475,15 +567,17 @@
       ],
       "name": "Content Carousel",
       "settings": {
-        "title": "Content Carousel",
+        "title": "@thrive.pe_",
         "show_view_all": false,
         "view_all_text": "Ver todos",
         "view_all_link": "",
-        "show_arrows": true,
+        "show_arrows": false,
         "items_per_view": 5,
-        "gap": 8,
-        "enable_autoplay": false,
-        "autoplay_delay": 3000,
+        "gap": 4,
+        "card_aspect_ratio": "portrait",
+        "card_max_width": 280,
+        "enable_autoplay": true,
+        "autoplay_delay": 1000,
         "autoplay_speed": 600
       }
     }
@@ -492,6 +586,7 @@
     "hero",
     "product_carousel_WRxntn",
     "category-grid",
+    "content_carousel_cLW93K",
     "video_carousel_9mVAQj",
     "image_with_text_gxhgP9",
     "category_grid_tiJRNW",

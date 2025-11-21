@@ -1,1 +1,85 @@
-{"type":"header","name":"t:general.header","sections":{"ticker":{"type":"ticker","blocks":{"item_1":{"type":"ticker_item","settings":{"text":"Envío gratis a todo Perú"}},"item_2":{"type":"ticker_item","settings":{"text":"Pagos seguros"}},"item_3":{"type":"ticker_item","settings":{"text":"Moda sostenible"}}},"block_order":["item_1","item_2","item_3"],"settings":{"animation_duration":40,"mobile_animation_duration":30}},"header":{"type":"header","blocks":{"mobile_card_7GXENa":{"type":"mobile_card","settings":{"image":"","title":"","link":"","aspect_ratio":"landscape","text_position":"bottom-left"}},"mobile_card_VnyCjh":{"type":"mobile_card","settings":{"image":"","title":"","link":"","aspect_ratio":"landscape","text_position":"bottom-left"}}},"block_order":["mobile_card_7GXENa","mobile_card_VnyCjh"],"settings":{"header_variant_default":"auto","logo":"","logo_height":38,"menu":"primary-mega-menu-nav-bar","mobile_subcollections_count":4}}},"order":["ticker","header"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "header",
+  "name": "t:general.header",
+  "sections": {
+    "ticker": {
+      "type": "ticker",
+      "blocks": {
+        "item_1": {
+          "type": "ticker_item",
+          "settings": {
+            "text": "Envios Gratis Por Compras Mayores a S/.150"
+          }
+        },
+        "item_2": {
+          "type": "ticker_item",
+          "settings": {
+            "text": "Pagos seguros"
+          }
+        },
+        "item_3": {
+          "type": "ticker_item",
+          "settings": {
+            "text": "Moda sostenible"
+          }
+        }
+      },
+      "block_order": [
+        "item_1",
+        "item_2",
+        "item_3"
+      ],
+      "settings": {
+        "animation_duration": 40,
+        "mobile_animation_duration": 30
+      }
+    },
+    "header": {
+      "type": "header",
+      "blocks": {
+        "mobile_card_7GXENa": {
+          "type": "mobile_card",
+          "settings": {
+            "title": "",
+            "link": "",
+            "aspect_ratio": "landscape",
+            "text_position": "bottom-left"
+          }
+        },
+        "mobile_card_VnyCjh": {
+          "type": "mobile_card",
+          "settings": {
+            "title": "",
+            "link": "",
+            "aspect_ratio": "landscape",
+            "text_position": "bottom-left"
+          }
+        }
+      },
+      "block_order": [
+        "mobile_card_7GXENa",
+        "mobile_card_VnyCjh"
+      ],
+      "settings": {
+        "header_variant_default": "auto",
+        "logo": "shopify://shop_images/logoSinFondoThrive.svg",
+        "logo_height": 38,
+        "menu": "",
+        "mobile_subcollections_count": 4
+      }
+    }
+  },
+  "order": [
+    "ticker",
+    "header"
+  ]
+}

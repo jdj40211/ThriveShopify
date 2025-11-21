@@ -1,1 +1,288 @@
-{"sections":{"main":{"type":"product","blocks":{"product_gallery_JmAGCm":{"type":"product_gallery","settings":{"title":"Combínalo Con","products_limit":4}}},"block_order":["product_gallery_JmAGCm"],"settings":{"delivery_days":7,"availability_text":"Aún disponibles","single_option_title":"Unico","single_option_subtitle":"Precio normal","duo_option_title":"Duo","duo_option_subtitle":"Compra más y ahorra","best_value_text":"Mejor oferta","duo_discount_percentage":5,"duo_eligible_products":["camiseta-oversize-375007-copia-2","baby-tank-p70082"],"duo_eligible_collections":[],"free_shipping_text":"Envío Gratis a todo Colombia","free_returns_text":"Devoluciones o cambios simples","shipping_icon_alt":"Shipping Icon","returns_icon_alt":"Returns Icon","show_shipping_returns":true,"cta_button_text":"Añadir Al Carrito","show_reviews_average":true,"show_reviews_count":true,"show_slide_counter":true,"show_mobile_navigation":true}},"product_reviews_section":{"type":"product-reviews","settings":{"reviews_api_url":"http:\/\/localhost:3001\/api\/reviews","show_review_form":true,"write_review_text":"Write a Review"}},"related_collections_carousel_1":{"type":"related-collections-carousel","settings":{"carousels_count":2,"max_products":12}}},"order":["main","product_reviews_section","related_collections_carousel_1"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "product",
+      "blocks": {
+        "product_gallery_JmAGCm": {
+          "type": "product_gallery",
+          "settings": {
+            "title": "Combínalo Con",
+            "products_limit": 4
+          }
+        }
+      },
+      "block_order": [
+        "product_gallery_JmAGCm"
+      ],
+      "settings": {
+        "delivery_days": 7,
+        "availability_text": "Aún disponibles",
+        "single_option_title": "Unico",
+        "single_option_subtitle": "Precio normal",
+        "duo_option_title": "Duo",
+        "duo_option_subtitle": "Compra más y ahorra",
+        "best_value_text": "Mejor oferta",
+        "duo_discount_percentage": 5,
+        "duo_eligible_products": [
+          "camiseta-oversize-375007-copia-2",
+          "baby-tank-p70082"
+        ],
+        "duo_eligible_collections": [],
+        "free_shipping_text": "Envios Gratis Por Compras Mayores a S/.120",
+        "free_returns_text": "Devoluciones o cambios simples",
+        "shipping_icon_alt": "Shipping Icon",
+        "returns_icon_alt": "Returns Icon",
+        "show_shipping_returns": true,
+        "size_guide_image_alt": "Guia de tallas",
+        "size_guide_model_info": "La modelo mide 1.75 m y usa talla M.",
+        "size_guide_notes": "<p>Consulta la tabla para encontrar tu ajuste ideal.</p>",
+        "cta_button_text": "Añadir Al Carrito",
+        "show_reviews_average": true,
+        "show_reviews_count": true,
+        "show_slide_counter": true,
+        "show_mobile_navigation": true
+      }
+    },
+    "product_reviews_section": {
+      "type": "product-reviews",
+      "settings": {
+        "reviews_api_url": "http://localhost:3001/api/reviews",
+        "show_review_form": true,
+        "write_review_text": "Write a Review"
+      }
+    },
+    "related_collections_carousel_1": {
+      "type": "related-collections-carousel",
+      "settings": {
+        "carousels_count": 2,
+        "max_products": 12
+      }
+    },
+    "product_faq_MwLHRb": {
+      "type": "product-faq",
+      "blocks": {
+        "category_NmYUFA": {
+          "type": "category",
+          "settings": {
+            "category_name": "Polos",
+            "category_description": ""
+          }
+        },
+        "question_UDgkXY": {
+          "type": "question",
+          "settings": {
+            "category": "",
+            "question": "¿Cómo es el calce de los polos?",
+            "answer": "<p>Nuestros polos tienen un calce regular que favorece a todos los tipos de cuerpo.</p>"
+          }
+        },
+        "question_n3B48w": {
+          "type": "question",
+          "settings": {
+            "category": "",
+            "question": "¿Los polos encogen al lavar?",
+            "answer": "<p>Nuestros polos están pre-encogidos y no deberían tener cambios significativos si sigues las instrucciones de lavado.</p>"
+          }
+        },
+        "category_B66krC": {
+          "type": "category",
+          "settings": {
+            "category_name": "Hoodies",
+            "category_description": ""
+          }
+        },
+        "question_cNxBgN": {
+          "type": "question",
+          "settings": {
+            "category": "",
+            "question": "¿Los hoodies tienen bolsillo canguro?",
+            "answer": "<p>Sí, todos nuestros hoodies incluyen un bolsillo canguro espacioso.</p>"
+          }
+        },
+        "category_kwzcxJ": {
+          "type": "category",
+          "settings": {
+            "category_name": "Longsleeves",
+            "category_description": ""
+          }
+        },
+        "question_FAnHA8": {
+          "type": "question",
+          "settings": {
+            "category": "",
+            "question": "¿Las mangas son largas?",
+            "answer": "<p>Las mangas tienen largo estándar. Revisa nuestra guía de tallas para más detalles.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "category_NmYUFA",
+        "question_UDgkXY",
+        "question_n3B48w",
+        "category_B66krC",
+        "question_cNxBgN",
+        "category_kwzcxJ",
+        "question_FAnHA8"
+      ],
+      "name": "FAQ's del Producto",
+      "settings": {
+        "heading": "Preguntas Frecuentes",
+        "heading_size": "h1",
+        "description": "<p>Encuentra respuestas a las preguntas más frecuentes sobre nuestros productos.</p>",
+        "show_contact_cta": true,
+        "contact_text": "¿No encontraste lo que buscabas?",
+        "contact_button_text": "Contáctanos",
+        "contact_button_link": "",
+        "color_scheme": "",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "bundle_builder_WtWY4i": {
+      "type": "bundle-builder",
+      "blocks": {
+        "bundle_step_PKDCJi": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 1 - Save 5%",
+            "discount_percentage": 5,
+            "discount_code": ""
+          }
+        },
+        "bundle_step_YynEqW": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 2 - Save 10%",
+            "discount_percentage": 10,
+            "discount_code": ""
+          }
+        },
+        "bundle_step_ATp37K": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 3 - Save 15%",
+            "discount_percentage": 15,
+            "discount_code": ""
+          }
+        },
+        "bundle_step_tTgTz9": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 4 or More - Save 20%",
+            "discount_percentage": 20,
+            "discount_code": ""
+          }
+        }
+      },
+      "block_order": [
+        "bundle_step_PKDCJi",
+        "bundle_step_YynEqW",
+        "bundle_step_ATp37K",
+        "bundle_step_tTgTz9"
+      ],
+      "disabled": true,
+      "name": "Bundle Builder",
+      "settings": {
+        "title": "Crea Tu Bundle Personalizado",
+        "description": "Selecciona productos y ahorra más mientras más compres",
+        "products_title": "Productos Disponibles",
+        "bundle_title": "Tu Bundle",
+        "bundle_collection": "",
+        "products_limit": 20,
+        "no_products_text": "No hay productos disponibles para el bundle",
+        "enable_free_gift": false,
+        "free_gift_product": "",
+        "free_gift_title": "REGALO GRATIS",
+        "free_gift_description": "Valor: $",
+        "total_text": "Total",
+        "discount_text": "Descuento",
+        "final_total_text": "Total Final",
+        "add_to_cart_text": "Añadir Bundle al Carrito",
+        "adding_text": "Añadiendo...",
+        "show_guarantee": true,
+        "guarantee_text": "100-Day Money Back Guarantee"
+      }
+    },
+    "bundle_builder_6Yp99w": {
+      "type": "bundle-builder",
+      "blocks": {
+        "bundle_step_6aei3x": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 1 - Save 5%",
+            "discount_percentage": 5,
+            "discount_code": ""
+          }
+        },
+        "bundle_step_RGkKLe": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 2 - Save 10%",
+            "discount_percentage": 10,
+            "discount_code": ""
+          }
+        },
+        "bundle_step_9KaMkP": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 3 - Save 15%",
+            "discount_percentage": 15,
+            "discount_code": ""
+          }
+        },
+        "bundle_step_Mt3t8C": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 4 or More - Save 20%",
+            "discount_percentage": 20,
+            "discount_code": ""
+          }
+        }
+      },
+      "block_order": [
+        "bundle_step_6aei3x",
+        "bundle_step_RGkKLe",
+        "bundle_step_9KaMkP",
+        "bundle_step_Mt3t8C"
+      ],
+      "name": "Bundle Builder",
+      "settings": {
+        "title": "Crea Tu Bundle Personalizado",
+        "description": "Selecciona productos y ahorra más mientras más compres",
+        "products_title": "Productos Disponibles",
+        "bundle_title": "Tu Bundle",
+        "bundle_collection": "all-roads-lead-to-thrive",
+        "products_limit": 20,
+        "no_products_text": "No hay productos disponibles para el bundle",
+        "enable_free_gift": false,
+        "free_gift_product": "",
+        "free_gift_title": "REGALO GRATIS",
+        "free_gift_description": "Valor: $",
+        "total_text": "Total",
+        "discount_text": "Descuento",
+        "final_total_text": "Total Final",
+        "add_to_cart_text": "Añadir Bundle al Carrito",
+        "adding_text": "Añadiendo...",
+        "show_guarantee": true,
+        "guarantee_text": "100-Day Money Back Guarantee"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "bundle_builder_6Yp99w",
+    "product_reviews_section",
+    "related_collections_carousel_1",
+    "product_faq_MwLHRb",
+    "bundle_builder_WtWY4i"
+  ]
+}

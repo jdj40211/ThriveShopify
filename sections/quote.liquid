@@ -1,82 +1,165 @@
 {% comment %}
   Quote Section
-  Features:
-  - Centered quote layout
-  - Rich text content with customizable formatting
-  - Subtle border lines
-  - Customizable colors and styling
-  - Responsive design
+  Enhancements:
+  - Unlimited quotes through blocks
+  - Optional marquee animation for infinite scroll behaviour
+  - Rich text quotes with customizable typography
 {% endcomment %}
 
+{%- liquid
+  assign blocks_count = section.blocks.size
+  assign has_blocks = false
+  if blocks_count > 0
+    assign has_blocks = true
+  endif
+  assign fallback_quote = section.settings.quote_text
+  if fallback_quote == blank
+    assign fallback_quote = '<p>"Curating luxury fragrances with sincerity&mdash;not for profit, <strong><em>but so everyone can smell unforgettable.</em></strong>"</p>'
+  endif
+  assign enable_marquee = false
+  if section.settings.enable_marquee and has_blocks
+    assign enable_marquee = true
+  endif
+-%}
+
 <div
-  class="quote-section  py-12  lg:px-8"
-  style="background-color: {{ section.settings.background_color | default: '#ffffff' }};"
+  class="quote-section py-12 lg:px-8"
+  style="
+    background-color: {{ section.settings.background_color | default: '#ffffff' }};
+    padding-top: {{ section.settings.padding | default: 3 }}rem;
+    padding-bottom: {{ section.settings.padding | default: 3 }}rem;
+    --quote-text-color: {{ section.settings.text_color | default: '#6b7280' }};
+    --quote-emphasis-color: {{ section.settings.emphasis_color | default: '#1f2937' }};
+    --quote-text-size: {{ section.settings.text_size | default: 1.5 }}rem;
+  "
 >
-  <div class="max-w-4xl mx-auto">
-    <div class="relative">
-      <!-- Quote content -->
-      <div class="relative z-10 text-center py-12 lg:py-12 md:py-8 sm:py-6">
-        {% if section.settings.quote_text != blank %}
-          <blockquote
-            class="leading-relaxed font-normal m-0"
-            style="color: {{ section.settings.text_color | default: '#6b7280' }}; font-size: {{ section.settings.text_size | default: 1.5 }}rem;"
-          >
-            {{ section.settings.quote_text }}
-          </blockquote>
-        {% else %}
-          <blockquote
-            class="leading-relaxed font-normal m-0"
-            style="color: {{ section.settings.text_color | default: '#6b7280' }}; font-size: {{ section.settings.text_size | default: 1.5 }}rem;"
-          >
-            <p class="m-0">
-              "Curating luxury fragrances with sincerity—not for profit,
-              <strong class="font-bold" style="color: {{ section.settings.emphasis_color | default: '#1f2937' }};"
-                ><em class="italic">but so everyone can smell unforgettable.</em></strong
-              >"
-            </p>
-          </blockquote>
-        {% endif %}
+  <div class="max-w-5xl mx-auto">
+    {% if enable_marquee %}
+      <div
+        class="quote-marquee"
+        style="--quote-marquee-speed: {{ section.settings.marquee_speed | default: 28 }}s;"
+      >
+        <div class="quote-track">
+          {% for block in section.blocks %}
+            {% if block.type == 'quote_item' and block.settings.text != blank %}
+              <div class="quote-item" {{ block.shopify_attributes }}>
+                <blockquote class="quote-block leading-relaxed font-normal m-0">
+                  {{ block.settings.text }}
+                </blockquote>
+              </div>
+            {% endif %}
+          {% endfor %}
+          {% for block in section.blocks %}
+            {% if block.type == 'quote_item' and block.settings.text != blank %}
+              <div class="quote-item" aria-hidden="true">
+                <blockquote class="quote-block leading-relaxed font-normal m-0">
+                  {{ block.settings.text }}
+                </blockquote>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
       </div>
-    </div>
+    {% elsif has_blocks %}
+      <div class="quote-static-list">
+        {% for block in section.blocks %}
+          {% if block.type == 'quote_item' and block.settings.text != blank %}
+            <div class="quote-item" {{ block.shopify_attributes }}>
+              <blockquote class="quote-block leading-relaxed font-normal m-0">
+                {{ block.settings.text }}
+              </blockquote>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="quote-static-list">
+        <div class="quote-item">
+          <blockquote class="quote-block leading-relaxed font-normal m-0">
+            {{ fallback_quote }}
+          </blockquote>
+        </div>
+      </div>
+    {% endif %}
   </div>
 </div>
 
 <style>
-  .quote-section blockquote p {
+  .quote-section .quote-static-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    text-align: center;
+  }
+
+  .quote-section .quote-item {
+    display: flex;
+    justify-content: center;
+  }
+
+  .quote-section .quote-block {
+    color: var(--quote-text-color, #6b7280);
+    font-size: var(--quote-text-size, 1.5rem);
+    text-align: center;
+  }
+
+  .quote-section .quote-block p {
     margin: 0;
   }
 
-  .quote-section blockquote strong {
-    color: {{ section.settings.emphasis_color | default: '#1f2937' }};
+  .quote-section .quote-block strong,
+  .quote-section .quote-block strong em {
+    color: var(--quote-emphasis-color, #1f2937);
     font-weight: 700;
   }
 
-  .quote-section blockquote em {
+  .quote-section .quote-block em {
     font-style: italic;
   }
 
-  .quote-section blockquote strong em {
-    color: {{ section.settings.emphasis_color | default: '#1f2937' }};
-    font-weight: 700;
-    font-style: italic;
+  .quote-section .quote-marquee {
+    overflow: hidden;
+    width: 100%;
   }
 
-  /* Responsive text size adjustments */
+  .quote-section .quote-track {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    width: max-content;
+    animation: quote-marquee linear infinite;
+    animation-duration: var(--quote-marquee-speed, 28s);
+  }
+
+  .quote-section .quote-track .quote-item {
+    flex: 0 0 auto;
+    min-width: min(80vw, 42rem);
+  }
+
+  @keyframes quote-marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
   @media screen and (max-width: 1023px) {
-    .quote-section blockquote {
-      font-size: calc({{ section.settings.text_size | default: 1.5 }}rem * 0.9) !important;
+    .quote-section .quote-block {
+      font-size: calc(var(--quote-text-size, 1.5rem) * 0.9);
     }
   }
 
   @media screen and (max-width: 767px) {
-    .quote-section blockquote {
-      font-size: calc({{ section.settings.text_size | default: 1.5 }}rem * 0.8) !important;
+    .quote-section .quote-block {
+      font-size: calc(var(--quote-text-size, 1.5rem) * 0.8);
     }
   }
 
   @media screen and (max-width: 480px) {
-    .quote-section blockquote {
-      font-size: calc({{ section.settings.text_size | default: 1.5 }}rem * 0.7) !important;
+    .quote-section .quote-block {
+      font-size: calc(var(--quote-text-size, 1.5rem) * 0.7);
     }
   }
 </style>
@@ -92,11 +175,29 @@
       "content": "Content Settings"
     },
     {
+      "type": "checkbox",
+      "id": "enable_marquee",
+      "label": "Enable infinite scroll animation",
+      "default": false,
+      "info": "Loops the quotes horizontally like a ticker. Requires at least one quote block."
+    },
+    {
+      "type": "range",
+      "id": "marquee_speed",
+      "min": 10,
+      "max": 60,
+      "step": 1,
+      "unit": "s",
+      "label": "Animation duration",
+      "default": 28,
+      "info": "Lower numbers move faster. Applies when infinite scroll is enabled."
+    },
+    {
       "type": "richtext",
       "id": "quote_text",
-      "label": "Quote Text",
-      "default": "<p>\"Curating luxury fragrances with sincerity—not for profit, <strong><em>but so everyone can smell unforgettable.</em></strong>\"</p>",
-      "info": "Use <strong> for bold text and <em> for italic text. The quote marks are included in the default text."
+      "label": "Fallback quote",
+      "default": "<p>\"Curating luxury fragrances with sincerity&mdash;not for profit, <strong><em>but so everyone can smell unforgettable.</em></strong>\"</p>",
+      "info": "Used when no quote blocks are configured."
     },
     {
       "type": "header",
@@ -127,7 +228,7 @@
       "id": "border_color",
       "label": "Border Color",
       "default": "#3b82f6",
-      "info": "Color for the top and bottom border lines"
+      "info": "Reserved for future styling hooks"
     },
     {
       "type": "range",
@@ -149,20 +250,32 @@
       "unit": "rem",
       "label": "Vertical Padding",
       "default": 3,
-      "info": "Padding above and below the quote"
+      "info": "Padding above and below the quotes"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "quote_item",
+      "name": "Quote",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Quote text",
+          "default": "<p>\"Curating luxury fragrances with sincerity&mdash;not for profit, <strong><em>but so everyone can smell unforgettable.</em></strong>\"</p>"
+        }
+      ]
     }
   ],
   "presets": [
     {
       "name": "Quote",
       "category": "Content",
-      "settings": {
-        "quote_text": "<p>\"Curating luxury fragrances with sincerity—not for profit, <strong><em>but so everyone can smell unforgettable.</em></strong>\"</p>",
-        "background_color": "#ffffff",
-        "text_color": "#6b7280",
-        "emphasis_color": "#1f2937",
-        "border_color": "#3b82f6"
-      }
+      "blocks": [
+        {
+          "type": "quote_item"
+        }
+      ]
     }
   ]
 }

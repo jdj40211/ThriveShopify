@@ -46,8 +46,12 @@
           {% if show_size_guide %}
             <div class="flex items-center gap-1">
               {% render 'size-chart', class: 'w-4 h-4' %}
-              <button class="text-sm text-black/50 underline hover:text-gray-900 transition-colors ">
-                Guía de tallas
+              <button
+                type="button"
+                class="text-sm text-black/60 underline hover:text-gray-900 transition-colors"
+                @click="openSizeGuide()"
+              >
+                Gu&iacute;a de tallas
               </button>
             </div>
           {% endif %}

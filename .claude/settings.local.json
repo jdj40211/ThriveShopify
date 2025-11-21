@@ -7,7 +7,12 @@
       "Bash(git push:*)",
       "Bash(git commit:*)",
       "Bash(margin-right: -{{ gap_half }}px)",
-      "Bash(\">\n  <div class=\"swiper-slide\" style=\"padding: 0 {{ gap_half }}px)"
+      "Bash(\">\n  <div class=\"swiper-slide\" style=\"padding: 0 {{ gap_half }}px)",
+      "Bash(dir /b templatespage.*.json 2)",
+      "Bash(nul)",
+      "Bash(if not exist \"content\\pages\" mkdir \"content\\pages\")",
+      "Bash(shopify theme list:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
