@@ -306,28 +306,17 @@
         {% render 'menu-icon' %}
       </button>
 
-      <h2 class="header__title flex items-center justify-center">
+      <h2 class="header__title flex lg:hidden items-center justify-center">
         <a href="{{ routes.root_url }}">
           {% if section.settings.logo != blank %}
             <img
               src="{{ section.settings.logo | image_url: width: 300 }}"
               alt="{{ shop.name }}"
-              class=""
-              :class="(forceSolid || (solidOnDesktop && isDesktop) || (solidOnMobile && !isDesktop) || isScrolled) ? 'invert-0' : (solidDesktopTransparentMobile && isDesktop) ? 'invert-0' : (solidDesktopTransparentMobile && !isDesktop) ? 'invert-0' : 'invert-100'"
+              :class="(forceSolid || (solidOnDesktop && isDesktop) || (solidOnMobile && !isDesktop) || isScrolled) ? 'invert-0' : 'invert-100'"
               style="height: {{ section.settings.logo_height | default: 40 }}px; width: auto;"
               loading="eager"
               width="700"
               height="400"
-            >
-          {% else %}
-            <img
-              src="{{ 'logo.png' | asset_url }}"
-              alt="Logo"
-              class=""
-              :class="(forceSolid || (solidOnDesktop && isDesktop) || (solidOnMobile && !isDesktop) || isScrolled) ? 'invert-0' : (solidDesktopTransparentMobile && isDesktop) ? 'invert-0' : (solidDesktopTransparentMobile && !isDesktop) ? 'invert-0' : 'invert-100'"
-              style="height: {{ section.settings.logo_height | default: 40 }}px; width: auto;"
-              width="400"
-              height="700"
             >
           {% endif %}
         </a>
@@ -341,22 +330,11 @@
           <img
             src="{{ section.settings.logo | image_url: width: 300 }}"
             alt="{{ shop.name }}"
-            class=""
-            :class="(forceSolid || (solidOnDesktop && isDesktop) || (solidOnMobile && !isDesktop) || isScrolled) ? 'invert-0' : (solidDesktopTransparentMobile && isDesktop) ? 'invert-0' : (solidDesktopTransparentMobile && !isDesktop) ? 'invert-0' : 'invert-100'"
+            :class="(forceSolid || (solidOnDesktop && isDesktop) || (solidOnMobile && !isDesktop) || isScrolled) ? 'invert-0' : 'invert-100'"
             style="height: {{ section.settings.logo_height | default: 40 }}px; width: auto;"
             loading="eager"
-            width="400"
-            height="700"
-          >
-        {% else %}
-          <img
-            src="{{ 'logo.png' | asset_url }}"
-            alt="Logo"
-            class=""
-            :class="(forceSolid || (solidOnDesktop && isDesktop) || (solidOnMobile && !isDesktop) || isScrolled) ? 'invert-0' : (solidDesktopTransparentMobile && isDesktop) ? 'invert-0' : (solidDesktopTransparentMobile && !isDesktop) ? 'invert-0' : 'invert-100'"
-            style="height: {{ section.settings.logo_height | default: 40 }}px; width: auto;"
-            width="400"
-            height="700"
+            width="700"
+            height="400"
           >
         {% endif %}
       </a>
@@ -560,6 +538,42 @@
             </a>
           {% endunless %}
         {% endfor %}
+      </div>
+
+      {% comment %} Security Icons Section {% endcomment %}
+      <div class="mt-8 pt-6 space-y-6">
+        <div class="flex items-center justify-center gap-4 text-center">
+          <div class="flex flex-col items-center gap-2 flex-1">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <p class="text-xs font-medium">Pago Seguro</p>
+            <p class="text-xs text-gray-500">100% Protegido</p>
+          </div>
+          <div class="flex flex-col items-center gap-2 flex-1">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+            </svg>
+            <p class="text-xs font-medium">Productos 100% Originales</p>
+            <p class="text-xs text-gray-500">Autenticidad garantizada</p>
+          </div>
+          <div class="flex flex-col items-center gap-2 flex-1">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-xs font-medium">Garantía</p>
+            <p class="text-xs text-gray-500">45 días</p>
+          </div>
+        </div>
+      </div>
+
+      {% comment %} Contact Section {% endcomment %}
+      <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+        <p class="text-sm font-semibold mb-2">¿Necesitas ayuda?</p>
+        <p class="text-xs text-gray-600 mb-4">Nuestro equipo está listo para ayudarte con cualquier pregunta.</p>
+        <a href="#" class="inline-block bg-black text-white px-6 py-3 rounded-lg text-sm font-medium">
+          Contáctanos
+        </a>
       </div>
     </div>
 
@@ -777,10 +791,20 @@
       "info": "Default variant for this header instance; can be overridden by resource metafield custom.header_variant"
     },
     {
+      "type": "header",
+      "content": "Logo Settings"
+    },
+    {
       "type": "image_picker",
       "id": "logo",
-      "label": "Logo",
-      "info": "Upload your logo image. If no logo is uploaded, the default logo from assets will be used."
+      "label": "Logo (Dark)",
+      "info": "Logo shown when header is solid/white background. Upload your dark logo image."
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_white",
+      "label": "Logo (White/Light)",
+      "info": "Logo shown when header is transparent. Upload your white/light logo image."
     },
     {
       "type": "range",

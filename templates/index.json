@@ -25,23 +25,10 @@
             "button_link": "",
             "button_style": ""
           }
-        },
-        "slide_3VPgVR": {
-          "type": "slide",
-          "settings": {
-            "media_type": "image",
-            "image_url": "",
-            "title": "Viste el espíritu",
-            "description": "Creemos que la moda no es solo ropa es la historia que cuentas cada vez que te vistes",
-            "button_text": "Descubrelos",
-            "button_link": "",
-            "button_style": "h-11 px-6 border border-1 border-white capitalize"
-          }
         }
       },
       "block_order": [
-        "slide_kF6V7J",
-        "slide_3VPgVR"
+        "slide_kF6V7J"
       ],
       "settings": {
         "min_height": 100,

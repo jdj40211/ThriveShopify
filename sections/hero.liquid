@@ -456,16 +456,16 @@
       });
 
     } else if (slideCount === 1) {
-      // Handle single slide case
-      heroElement.classList.remove('swiper');
+      // Handle single slide case - keep structure but don't initialize swiper
       const wrapper = heroElement.querySelector('.swiper-wrapper');
       const slide = heroElement.querySelector('.swiper-slide');
 
       if (wrapper && slide) {
-        wrapper.classList.remove('swiper-wrapper');
-        slide.classList.remove('swiper-slide');
-        heroElement.appendChild(slide);
-        wrapper.remove();
+        // Ensure single slide displays correctly without swiper
+        wrapper.style.transform = 'none';
+        wrapper.style.height = '100%';
+        slide.style.height = '100%';
+        slide.style.width = '100%';
       }
 
       // Auto-start single slide if bullet exists

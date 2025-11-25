@@ -70,8 +70,9 @@
         "mobile_card_VnyCjh"
       ],
       "settings": {
-        "header_variant_default": "auto",
+        "header_variant_default": "transparent",
         "logo": "shopify://shop_images/logoSinFondoThrive.svg",
+        "logo_white": "shopify://shop_images/LogoBlancoActualizadoThrive.svg",
         "logo_height": 38,
         "menu": "",
         "mobile_subcollections_count": 4

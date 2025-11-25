@@ -12,7 +12,8 @@
       "Bash(nul)",
       "Bash(if not exist \"content\\pages\" mkdir \"content\\pages\")",
       "Bash(shopify theme list:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []

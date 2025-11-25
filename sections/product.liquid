@@ -16,6 +16,15 @@
   else
     assign size_guide_image_url = 'https://cdn.shopify.com/s/files/1/0671/2285/6119/files/NEW_SIZE_GUIDE_WFC.svg?v=1748007079'
   endif
+
+  assign size_guide_model_text = ''
+  if product.metafields.custom.model_reference != blank
+    assign size_guide_model_text = product.metafields.custom.model_reference
+  elsif section.settings.size_guide_model_info != blank
+    assign size_guide_model_text = section.settings.size_guide_model_info
+  endif
+
+  assign size_guide_notes_text = section.settings.size_guide_notes
 %}
 
 <style>
@@ -239,6 +248,18 @@
           show_main_label: true,
           show_size_guide: true
         %}
+        {% if size_guide_model_text != blank or size_guide_notes_text != blank %}
+          <div class="text-sm text-black/60 space-y-1">
+            {% if size_guide_model_text != blank %}
+              <p>{{ size_guide_model_text }}</p>
+            {% endif %}
+            {% if size_guide_notes_text != blank %}
+              <div class="space-y-1">
+                {{ size_guide_notes_text }}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
 
       <!-- Purchase Options Logic -->
@@ -458,6 +479,63 @@
         </div>
       {% endif %}
 
+      {% assign row_one_enabled = section.settings.collapsible_row_1_title != blank or section.settings.collapsible_row_1_content != blank %}
+      {% assign row_two_enabled = section.settings.collapsible_row_2_title != blank or section.settings.collapsible_row_2_content != blank %}
+      {% if row_one_enabled or row_two_enabled %}
+        <div class="border border-black/10 divide-y divide-black/10 rounded-md">
+          {% if row_one_enabled %}
+            <div x-data="{ open: false }">
+              <button
+                type="button"
+                class="w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium text-black hover:bg-black/5 transition"
+                @click="open = !open"
+                :aria-expanded="open"
+              >
+                <span>{{ section.settings.collapsible_row_1_title | default: 'Detalles' }}</span>
+                <svg
+                  class="w-4 h-4 transition-transform duration-200"
+                  :class="open ? 'rotate-180' : 'rotate-0'"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              <div x-show="open" x-transition x-cloak class="px-4 pb-4 text-sm text-black/70 space-y-2">
+                {{ section.settings.collapsible_row_1_content }}
+              </div>
+            </div>
+          {% endif %}
+          {% if row_two_enabled %}
+            <div x-data="{ open: false }">
+              <button
+                type="button"
+                class="w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium text-black hover:bg-black/5 transition"
+                @click="open = !open"
+                :aria-expanded="open"
+              >
+                <span>{{ section.settings.collapsible_row_2_title | default: 'Detalles' }}</span>
+                <svg
+                  class="w-4 h-4 transition-transform duration-200"
+                  :class="open ? 'rotate-180' : 'rotate-0'"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              <div x-show="open" x-transition x-cloak class="px-4 pb-4 text-sm text-black/70 space-y-2">
+                {{ section.settings.collapsible_row_2_content }}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
       {% assign video_count = 0 %}
       {% for media in product.media %}
         {% if media.media_type == 'video' %}
@@ -623,14 +701,14 @@
             loading="lazy"
           >
         </div>
-        {% if section.settings.size_guide_model_info != blank %}
+        {% if size_guide_model_text != blank %}
           <p class="text-sm text-black/70 text-center">
-            {{ section.settings.size_guide_model_info }}
+            {{ size_guide_model_text }}
           </p>
         {% endif %}
-        {% if section.settings.size_guide_notes != blank %}
+        {% if size_guide_notes_text != blank %}
           <div class="text-sm text-black/70 space-y-2">
-            {{ section.settings.size_guide_notes }}
+            {{ size_guide_notes_text }}
           </div>
         {% endif %}
       </div>
@@ -1992,6 +2070,34 @@
     },
     {
       "type": "header",
+      "content": "Collapsible Rows"
+    },
+    {
+      "type": "text",
+      "id": "collapsible_row_1_title",
+      "label": "Row 1 title",
+      "default": "Envíos, cambios y devoluciones"
+    },
+    {
+      "type": "richtext",
+      "id": "collapsible_row_1_content",
+      "label": "Row 1 content",
+      "default": "<p>Información sobre envíos, cambios y devoluciones.</p>"
+    },
+    {
+      "type": "text",
+      "id": "collapsible_row_2_title",
+      "label": "Row 2 title",
+      "default": "Detalles"
+    },
+    {
+      "type": "richtext",
+      "id": "collapsible_row_2_content",
+      "label": "Row 2 content",
+      "default": "<p>Comparte detalles adicionales del producto.</p>"
+    },
+    {
+      "type": "header",
       "content": "Size Guide Drawer"
     },
     {
@@ -2077,6 +2183,14 @@
           "id": "answer",
           "label": "Answer",
           "default": "<p>Información detallada sobre el producto...</p>"
+        }
+      ]
+    },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "<p>Comparte información sobre envíos, cambios o cualquier detalle adicional.</p>"
         }
       ]
     },

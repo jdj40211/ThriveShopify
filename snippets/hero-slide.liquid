@@ -12,14 +12,15 @@
 
 {% if slide_image or slide.title or slide.description or slide.button_text or is_video %}
   <div
-    class="absolute top-0 z-5 left-0 right-0 bottom-0 bg-gradient-to-t from-black/60 via-transparent to-black/60 pointer-events-none"
-  ></div>
-  <li
-    class="glide__slide h-full w-full relative"
+    class="h-full w-full relative"
     {% if is_video %}
       data-video-slide="true"
     {% endif %}
   >
+    <div
+      class="absolute top-0 z-5 left-0 right-0 bottom-0 bg-gradient-to-t from-black/60 via-transparent to-black/60 pointer-events-none"
+    ></div>
+
     {% if is_video %}
       {% if has_mobile_video %}
         <!-- Desktop Video (hidden on mobile) -->
@@ -139,5 +140,5 @@
         {% endif %}
       </div>
     {% endif %}
-  </li>
+  </div>
 {% endif %}
