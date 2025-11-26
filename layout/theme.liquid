@@ -37,6 +37,9 @@
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css?v={{ cache_buster }}">
     </noscript>
 
+    <!-- Swiper.js JS - Load early for iOS compatibility -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js?v={{ cache_buster }}"></script>
+
     <!-- HLS.js for video streaming -->
     <script defer src="https://cdn.jsdelivr.net/npm/hls.js@latest?v={{ cache_buster }}"></script>
 
@@ -58,8 +61,5 @@
 
     <!-- Search Drawer -->
     {% sections 'search-drawer-group' %}
-
-    <!-- Swiper.js JS -->
-    <script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js?v={{ cache_buster }}"></script>
   </body>
 </html>

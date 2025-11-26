@@ -27,8 +27,20 @@
 >
   <!-- Product Image Container -->
   <div class="relative {% if mobile_layout %}aspect-[3/4]{% else %}aspect-[3/4.5]{% endif %} w-full overflow-hidden  max-w-full">
-    <!-- Unified Product Image Carousel (handles 1, 2, or many images) -->
-    <div class="h-full" x-show="currentImages && currentImages.length >= 1" x-cloak>
+    <!-- Mobile: Static single image (no swiper) -->
+    <div class="h-full lg:hidden" x-show="currentImages && currentImages.length >= 1" x-cloak>
+      <img
+        :src="currentImages[0] || '{{ product.featured_image | image_url: width: 1800 }}'"
+        alt="{{ product.title }}"
+        class="w-full h-full object-cover"
+        width="1800"
+        height="1800"
+        loading="lazy"
+      >
+    </div>
+
+    <!-- Desktop: Product Image Carousel with hover/swipe -->
+    <div class="h-full hidden lg:block" x-show="currentImages && currentImages.length >= 1" x-cloak>
       <div
         class="product-image-carousel group block!important swiper-product-images-{{ product.id }}-{{ section.id }} w-full h-full"
         data-section-id="{{ section.id }}"
@@ -61,7 +73,7 @@
             "
             :key="slide.type === 'overlay' ? 'overlay' : slide.src"
           >
-            <div class="swiper-slide w-full h-full " @click="window.location.href = '{{ product.url }}'">
+            <div class="swiper-slide w-full h-full ">
               <template x-if="slide.type === 'overlay'">
                 <div class="relative w-full h-full">
                   <img
@@ -136,6 +148,7 @@
           </button>
         </div>
       </div>
+    </div>
     </div>
 
     {% if wishlist_mode != true and show_wishlist != false %}
@@ -1537,7 +1550,7 @@
                 if (!swiperInstance.isBeginning) {
                   swiperInstance.slidePrev();
                 }
-              });
+              }, { passive: true });
             }
 
             if (nextArrow) {
@@ -1545,16 +1558,83 @@
                 if (!swiperInstance.isEnd) {
                   swiperInstance.slideNext();
                 }
-              });
+              }, { passive: true });
             }
+
+            // Track pointer movement so swipes do not trigger unwanted navigation
+            let pointerMoved = false;
+            let pointerStartX = 0;
+            let pointerStartY = 0;
+            const DRAG_THRESHOLD = 12;
+
+            const logPrefix = 'Card {{ product.id }}';
+
+            const setPointerStart = (x, y) => {
+              pointerStartX = x;
+              pointerStartY = y;
+              pointerMoved = false;
+              console.log(logPrefix, 'pointer start', { x, y });
+            };
+
+            const detectPointerMove = (x, y) => {
+              if (!pointerMoved) {
+                const deltaX = Math.abs(x - pointerStartX);
+                const deltaY = Math.abs(y - pointerStartY);
+                if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
+                  pointerMoved = true;
+                  console.log(logPrefix, 'pointer moved', { deltaX, deltaY });
+                }
+              }
+            };
+
+            carouselElement.addEventListener('touchstart', (event) => {
+              const touch = event.touches[0];
+              if (touch) {
+                setPointerStart(touch.clientX, touch.clientY);
+              }
+              console.log(logPrefix, 'touchstart', { pointerMoved });
+            }, { passive: true });
+
+            carouselElement.addEventListener('touchmove', (event) => {
+              const touch = event.touches[0];
+              if (touch) {
+                detectPointerMove(touch.clientX, touch.clientY);
+              }
+              console.log(logPrefix, 'touchmove', { pointerMoved });
+            }, { passive: true });
+
+            carouselElement.addEventListener('touchend', () => {
+              console.log(logPrefix, 'touchend', { pointerMoved });
+            }, { passive: true });
+
+            carouselElement.addEventListener('mousedown', (event) => {
+              setPointerStart(event.clientX, event.clientY);
+              console.log(logPrefix, 'mousedown');
+            });
+
+            carouselElement.addEventListener('mousemove', (event) => {
+              if (event.buttons === 1) {
+                detectPointerMove(event.clientX, event.clientY);
+                console.log(logPrefix, 'mousemove drag', { pointerMoved });
+              }
+            });
 
             // Add click event to go to product page (only if not clicking on controls)
             carouselElement.addEventListener('click', (e) => {
+              // Ignore clicks that started as swipes
+              if (pointerMoved) {
+                console.log(logPrefix, 'click ignored due to swipe');
+                pointerMoved = false;
+                return;
+              }
+              console.log(logPrefix, 'click navigation');
+
               // Check if click is on navigation buttons or size selector
               if (e.target.closest('.product-prev') ||
                   e.target.closest('.product-next') ||
                   e.target.closest('.size-selector-hover') ||
                   e.target.closest('[data-carousel-id]')) {
+                console.log(logPrefix, 'click ignored on control');
                 return; // Don't navigate if clicking on controls
               }
 
