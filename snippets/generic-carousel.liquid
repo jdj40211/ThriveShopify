@@ -59,15 +59,14 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const carouselElement = document.querySelector('.swiper-{{ carousel_id }}');
+    if (!carouselElement) return;
 
-    if (carouselElement && typeof Swiper !== 'undefined') {
-      // Check if this carousel is already initialized
-      if (carouselElement.swiper) {
-        return;
-      }
+    const initializeCarousel = () => {
+      if (carouselElement.dataset.carouselInitialized === 'true') return;
+      if (carouselElement.swiper) return;
+      if (typeof Swiper === 'undefined') return;
 
-      const totalItems = {{ total_items }};
-      const enableDesktopCarousel = totalItems > {{ slides_per_view_desktop }};
+      carouselElement.dataset.carouselInitialized = 'true';
 
       const swiper = new Swiper(carouselElement, {
         slidesPerView: {{ slides_per_view_mobile | json }},
@@ -123,31 +122,31 @@
         {% if show_arrows %}
         on: {
           init: function() {
-            updateGenericArrowStates(this, '{{ carousel_id }}');
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
           },
           afterInit: function() {
-            updateGenericArrowStates(this, '{{ carousel_id }}');
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
           },
           slideChange: function() {
-            updateGenericArrowStates(this, '{{ carousel_id }}');
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
           },
           activeIndexChange: function() {
-            updateGenericArrowStates(this, '{{ carousel_id }}');
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
           },
           reachBeginning: function() {
-            updateGenericArrowStates(this, '{{ carousel_id }}');
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
           },
           reachEnd: function() {
-            updateGenericArrowStates(this, '{{ carousel_id }}');
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
           },
           fromEdge: function() {
-            updateGenericArrowStates(this, '{{ carousel_id }}');
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
           },
           slideChangeTransitionEnd: function() {
-            updateGenericArrowStates(this, '{{ carousel_id }}');
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
           },
           transitionEnd: function() {
-            updateGenericArrowStates(this, '{{ carousel_id }}');
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
           },
         },
         {% endif %}
@@ -155,77 +154,78 @@
 
       // Store the swiper instance on the element to avoid conflicts
       carouselElement.swiper = swiper;
+
+      {% if show_arrows %}
+      // Ensure the desktop arrows are synced after layout settles
+      setTimeout(() => {
+        updateGenericArrowStates(swiper, carouselElement, '{{ carousel_id }}');
+      }, 200);
+      {% endif %}
+    };
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            initializeCarousel();
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '200px 0px' });
+
+      observer.observe(carouselElement);
+    } else {
+      initializeCarousel();
     }
 
     {% if show_arrows %}
     // Function to update arrow states for carousel (desktop only)
-    function updateGenericArrowStates(swiper, carouselId) {
-      // Only update arrows on desktop (1024px and above)
+    function updateGenericArrowStates(swiper, carouselEl, carouselId) {
       if (window.innerWidth < 1024) {
         return;
       }
 
-      // Try to find carousel specific arrows in order of priority
       let prevArrow = document.querySelector(`.product-carousel-prev[data-carousel-id="${carouselId}"]`) ||
                       document.querySelector(`.look-fit-carousel-prev[data-carousel-id="${carouselId}"]`);
       let nextArrow = document.querySelector(`.product-carousel-next[data-carousel-id="${carouselId}"]`) ||
                       document.querySelector(`.look-fit-carousel-next[data-carousel-id="${carouselId}"]`);
-      
-      // Fallback to generic arrows if specific arrows not found
-      if (!prevArrow || !nextArrow) {
-        const sectionContainer = document.querySelector(`[data-carousel-id="${carouselId}"]`).closest('section, div');
+
+      if ((!prevArrow || !nextArrow) && carouselEl) {
+        const sectionContainer = carouselEl.closest('section, div');
         if (sectionContainer) {
           prevArrow = prevArrow || sectionContainer.querySelector('.carousel-prev');
           nextArrow = nextArrow || sectionContainer.querySelector('.carousel-next');
         }
       }
 
-      console.log('Carousel', carouselId, '- isBeginning:', swiper.isBeginning, 'isEnd:', swiper.isEnd, 'activeIndex:', swiper.activeIndex, 'slides:', swiper.slides.length);
-
       if (prevArrow) {
         if (swiper.isBeginning) {
-          // At the beginning - disable left arrow (gray state)
           prevArrow.disabled = true;
           prevArrow.classList.remove('bg-primary', 'text-white', 'cursor-pointer');
           prevArrow.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-          // Remove hover effects when disabled
           prevArrow.style.pointerEvents = 'none';
         } else {
-          // Not at beginning - enable left arrow (blue state)
           prevArrow.disabled = false;
           prevArrow.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
           prevArrow.classList.add('bg-primary', 'text-white', 'cursor-pointer');
-          // Re-enable hover effects when enabled
           prevArrow.style.pointerEvents = 'auto';
         }
       }
 
       if (nextArrow) {
         if (swiper.isEnd) {
-          // At the end - disable right arrow (gray state)
           nextArrow.disabled = true;
           nextArrow.classList.remove('bg-primary', 'text-white', 'cursor-pointer');
           nextArrow.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-          // Remove hover effects when disabled
           nextArrow.style.pointerEvents = 'none';
         } else {
-          // Not at end - enable right arrow (blue state)
           nextArrow.disabled = false;
           nextArrow.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
           nextArrow.classList.add('bg-primary', 'text-white', 'cursor-pointer');
-          // Re-enable hover effects when enabled
           nextArrow.style.pointerEvents = 'auto';
         }
       }
     }
-
-    // Ensure arrows are properly initialized with a longer delay
-    setTimeout(() => {
-      const carouselElement = document.querySelector('.swiper-{{ carousel_id }}');
-      if (carouselElement && carouselElement.swiper) {
-        updateGenericArrowStates(carouselElement.swiper, '{{ carousel_id }}');
-      }
-    }, 200);
     {% endif %}
   });
 </script>
