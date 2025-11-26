@@ -28,9 +28,10 @@
   <!-- Product Image Container -->
   <div class="relative {% if mobile_layout %}aspect-[3/4]{% else %}aspect-[3/4.5]{% endif %} w-full overflow-hidden  max-w-full">
     <!-- Mobile: Static single image (no swiper) -->
-    <div class="h-full lg:hidden" x-show="currentImages && currentImages.length >= 1" x-cloak>
+    <div class="h-full w-full lg:hidden">
       <img
-        :src="currentImages[0] || '{{ product.featured_image | image_url: width: 1800 }}'"
+        x-data
+        :src="currentImages && currentImages[0] ? currentImages[0] : '{{ product.featured_image | image_url: width: 1800 }}'"
         alt="{{ product.title }}"
         class="w-full h-full object-cover"
         width="1800"
