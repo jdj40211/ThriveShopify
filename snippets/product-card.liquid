@@ -28,7 +28,7 @@
   <!-- Product Image Container -->
   <div class="relative {% if mobile_layout %}aspect-[3/4]{% else %}aspect-[3/4.5]{% endif %} w-full overflow-hidden  max-w-full">
     <!-- Product Image Carousel (swiper only on desktop) -->
-    <div class="h-full flex items-center justify-center" x-show="currentImages && currentImages.length >= 1" x-cloak>
+    <div class="h-full" x-show="currentImages && currentImages.length >= 1" x-cloak>
       <div
         class="product-image-carousel group swiper-product-images-{{ product.id }}-{{ section.id }} w-full h-full"
         data-section-id="{{ section.id }}"
