@@ -27,27 +27,13 @@
 >
   <!-- Product Image Container -->
   <div class="relative {% if mobile_layout %}aspect-[3/4]{% else %}aspect-[3/4.5]{% endif %} w-full overflow-hidden  max-w-full">
-    <!-- Mobile: Static single image (no swiper) -->
-    <div class="h-full w-full lg:hidden">
-      <img
-        x-data
-        :src="currentImages && currentImages[0] ? currentImages[0] : '{{ product.featured_image | image_url: width: 1800 }}'"
-        alt="{{ product.title }}"
-        class="w-full h-full object-cover"
-        width="1800"
-        height="1800"
-        loading="lazy"
-      >
-    </div>
-
-    <!-- Desktop: Product Image Carousel with hover/swipe -->
-    <div class="h-full hidden lg:block" x-show="currentImages && currentImages.length >= 1" x-cloak>
+    <!-- Product Image Carousel (swiper only on desktop) -->
+    <div class="h-full" x-show="currentImages && currentImages.length >= 1" x-cloak>
       <div
         class="product-image-carousel group block!important swiper-product-images-{{ product.id }}-{{ section.id }} w-full h-full"
         data-section-id="{{ section.id }}"
         data-carousel-type="product-images"
         id="product-images-carousel-{{ product.id }}-{{ section.id }}"
-        style="touch-action: pan-y; overscroll-behavior: contain;"
       >
         <div class="swiper-wrapper h-full" @mouseenter="imageHovered = true" @mouseleave="imageHovered = false">
           <!-- Build slides: overlay for first two, then remaining singles -->
@@ -149,7 +135,6 @@
           </button>
         </div>
       </div>
-    </div>
     </div>
 
     {% if wishlist_mode != true and show_wishlist != false %}
@@ -887,6 +872,12 @@
         // Update isDesktop on window resize
         window.addEventListener('resize', () => {
           this.isDesktop = window.innerWidth >= 1024;
+          if (this.carouselSwiper) {
+            const allowInnerSwipe = this.isDesktop;
+            this.carouselSwiper.allowTouchMove = allowInnerSwipe;
+            this.carouselSwiper.params.allowTouchMove = allowInnerSwipe;
+            this.carouselSwiper.params.simulateTouch = allowInnerSwipe;
+          }
         });
 
         // Ensure size selector is hidden by default on desktop
@@ -1467,6 +1458,8 @@
       },
 
       initializeCarousel() {
+        // Don't initialize image carousel on mobile to avoid conflicts
+        if (!this.isDesktop) return;
 
         this.$nextTick(() => {
           const carouselElement = this.$el.querySelector('.product-image-carousel');
@@ -1478,17 +1471,19 @@
               return;
             }
 
+            const allowInnerSwipe = this.isDesktop;
+
             // Create swiper instance
             const swiperInstance = new Swiper(carouselElement, {
               slidesPerView: 1,
               spaceBetween: 0,
-              allowTouchMove: true,
+              allowTouchMove: allowInnerSwipe,
               resistanceRatio: 0,
               nested: true,
               grabCursor: false,
-              touchRatio: 1,
+              touchRatio: allowInnerSwipe ? 1 : 0,
               touchAngle: 45,
-              simulateTouch: true,
+              simulateTouch: allowInnerSwipe,
               touchStartPreventDefault: false,
               touchStartForcePreventDefault: false,
               touchMoveStopPropagation: false,
