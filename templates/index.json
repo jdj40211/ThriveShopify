@@ -340,11 +340,16 @@
         "view_all_link": "",
         "view_all_link_collections": "",
         "show_arrows": true,
-        "product_source": "collection",
+        "product_source": "manual",
         "collection": "",
         "collections": [],
         "product_tags": "",
-        "products": [],
+        "products": [
+          "anniversary-edition-hoodie",
+          "anniversary-edition-t-shirt",
+          "be-a-traveller-t-shirt",
+          "dolce-vita-hoodie"
+        ],
         "max_products": 12,
         "show_badges": true,
         "show_rating": true,

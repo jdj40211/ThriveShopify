@@ -46,28 +46,58 @@
     "header": {
       "type": "header",
       "blocks": {
-        "mobile_card_7GXENa": {
+        "mobile_card_MBtLja": {
           "type": "mobile_card",
           "settings": {
-            "title": "",
-            "link": "",
-            "aspect_ratio": "landscape",
+            "collection": "all-roads-lead-to-thrive",
+            "custom_title": "",
+            "aspect_ratio": "portrait",
             "text_position": "bottom-left"
           }
         },
-        "mobile_card_VnyCjh": {
+        "mobile_card_V4h9XT": {
           "type": "mobile_card",
           "settings": {
-            "title": "",
-            "link": "",
-            "aspect_ratio": "landscape",
+            "collection": "pre-sale",
+            "custom_title": "",
+            "aspect_ratio": "portrait",
+            "text_position": "bottom-left"
+          }
+        },
+        "mobile_card_EJxEqz": {
+          "type": "mobile_card",
+          "settings": {
+            "collection": "like-it-s-the-last-one",
+            "custom_title": "",
+            "aspect_ratio": "portrait",
+            "text_position": "bottom-left"
+          }
+        },
+        "mobile_card_EPkYHe": {
+          "type": "mobile_card",
+          "settings": {
+            "collection": "hoodies",
+            "custom_title": "",
+            "aspect_ratio": "portrait",
+            "text_position": "bottom-left"
+          }
+        },
+        "mobile_card_CzFdmw": {
+          "type": "mobile_card",
+          "settings": {
+            "collection": "tees-1",
+            "custom_title": "",
+            "aspect_ratio": "portrait",
             "text_position": "bottom-left"
           }
         }
       },
       "block_order": [
-        "mobile_card_7GXENa",
-        "mobile_card_VnyCjh"
+        "mobile_card_MBtLja",
+        "mobile_card_V4h9XT",
+        "mobile_card_EJxEqz",
+        "mobile_card_EPkYHe",
+        "mobile_card_CzFdmw"
       ],
       "settings": {
         "header_variant_default": "transparent",

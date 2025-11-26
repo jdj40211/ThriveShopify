@@ -42,19 +42,50 @@
     class="absolute right-0 top-0 h-full   w-[88vw] lg:w-[{{ section.settings.drawer_width | default: 420 }}px] bg-white shadow-xl flex flex-col overflow-hidden"
   >
     <!-- Header - Sticky at top -->
-    <div class="sticky top-0 lg:px-5 px-4 z-10 bg-white flex items-center justify-between ">
-      <h2 class="text-lg font-semibold text-gray-900">
-        {{ section.settings.cart_title | default: 'Tu Carrito' }}
-        <span class="opacity-50" x-text="cartItems.length"></span>
-      </h2>
-      <button
-        @click="closeDrawer()"
-        class="text-black p-4 h-full transition-colors -mr-4"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
+    <div class="sticky top-0 z-10 bg-white">
+      <div class="lg:px-5 px-4 flex items-center justify-between border-b border-gray-100">
+        <h2 class="text-lg font-semibold text-gray-900 py-3">
+          {{ section.settings.cart_title | default: 'Tu Carrito' }}
+          <span class="opacity-50" x-text="cartItems.length"></span>
+        </h2>
+        <button
+          @click="closeDrawer()"
+          class="text-black p-4 h-full transition-colors -mr-4"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <!-- Free Shipping Progress Bar -->
+      <div class="px-4 lg:px-5 py-3 bg-gray-50 border-b border-gray-100">
+        <p
+          class="text-xs font-semibold uppercase tracking-wide text-gray-600 mb-2"
+          x-show="cartTotal < {{ section.settings.free_shipping_threshold_pen | default: 18000 }}"
+        >
+          {{ section.settings.free_shipping_pending_text | default: 'Estás a Punto de desbloquear el envío Gratis' }}
+        </p>
+        <p
+          class="text-xs font-semibold uppercase tracking-wide text-green-600 mb-2"
+          x-show="cartTotal >= {{ section.settings.free_shipping_threshold_pen | default: 18000 }}"
+        >
+          {{ section.settings.free_shipping_unlocked_text | default: '¡Has desbloqueado el envío gratis!' }}
+        </p>
+        <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            class="h-full rounded-full transition-all duration-500 ease-out"
+            :class="cartTotal >= {{ section.settings.free_shipping_threshold_pen | default: 18000 }} ? 'bg-green-600' : 'bg-green-500'"
+            :style="`width: ${Math.min((cartTotal / {{ section.settings.free_shipping_threshold_pen | default: 18000 }}) * 100, 100)}%`"
+          ></div>
+        </div>
+        <p
+          class="text-xs text-gray-500 mt-1.5 text-right"
+          x-show="cartTotal < {{ section.settings.free_shipping_threshold_pen | default: 18000 }}"
+        >
+          <span class="font-semibold" x-text="'S/ ' + formatMoney({{ section.settings.free_shipping_threshold_pen | default: 18000 }} - cartTotal)"></span>
+          para envío gratis
+        </p>
+      </div>
     </div>
 
     <!-- Cart Items -->
@@ -453,11 +484,11 @@
       cartTotal: 0,
       originalTotal: 0,
       cartSavings: 0,
-      // Reactive wishlist state
       wishlistHandles: [],
       loading: false,
       scrollY: 0, // Store scroll position for drawer
-      freeShippingThreshold: {{ section.settings.free_shipping_threshold | default: 150000 }}, // Free shipping threshold in COP
+      freeShippingThreshold: {{ section.settings.free_shipping_threshold | default: 150000 }}, // Legacy thresholds in cents
+      freeShippingGoal: {{ section.settings.free_shipping_goal | default: 18000 }}, // Goal in cents (180 soles = 18,000 cents)
 
       // Add-on state
       addonSelected: false,
@@ -552,12 +583,12 @@
           const response = await fetch('/cart.js');
           const cart = await response.json();
 
-          this.cartItems = cart.items;
+          this.cartItems = cart.items || [];
 
           // Store cart totals for discount calculation
-          this.cartTotal = cart.total_price;
-          this.originalTotal = cart.original_total_price || cart.total_price;
-          this.cartSavings = this.originalTotal - this.cartTotal;
+          this.cartTotal = cart.total_price || 0;
+          this.originalTotal = cart.original_total_price || cart.total_price || 0;
+          this.cartSavings = Math.max(this.originalTotal - this.cartTotal, 0);
 
         } catch (error) {
           console.error('Error loading cart:', error);
@@ -1001,7 +1032,12 @@
         }
       },
 
-
+      formatMoney(cents) {
+        return (cents / 100).toLocaleString('es-CO', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        });
+      },
     };
    }
 </script>
@@ -1177,6 +1213,29 @@
       "label": "Free Shipping Threshold (COP)",
       "default": "150000",
       "info": "Amount needed for free shipping in Colombian Pesos"
+    },
+    {
+      "type": "header",
+      "content": "Free Shipping Progress (PEN)"
+    },
+    {
+      "type": "number",
+      "id": "free_shipping_threshold_pen",
+      "label": "Free Shipping Threshold (Soles Peruanos)",
+      "default": 18000,
+      "info": "Amount in cents needed for free shipping (180 soles = 18000 cents)"
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_pending_text",
+      "label": "Pending Text",
+      "default": "Estás a Punto de desbloquear el envío Gratis"
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_unlocked_text",
+      "label": "Unlocked Text",
+      "default": "¡Has desbloqueado el envío gratis!"
     }
   ],
   "blocks": [

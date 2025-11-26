@@ -13,7 +13,8 @@
       "Bash(if not exist \"content\\pages\" mkdir \"content\\pages\")",
       "Bash(shopify theme list:*)",
       "Bash(ls:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []

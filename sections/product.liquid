@@ -479,9 +479,19 @@
         </div>
       {% endif %}
 
-      {% assign row_one_enabled = section.settings.collapsible_row_1_title != blank or section.settings.collapsible_row_1_content != blank %}
-      {% assign row_two_enabled = section.settings.collapsible_row_2_title != blank or section.settings.collapsible_row_2_content != blank %}
-      {% if row_one_enabled or row_two_enabled %}
+      {% assign row_one_enabled = false %}
+      {% if section.settings.collapsible_row_1_title != blank or section.settings.collapsible_row_1_content != blank %}
+        {% assign row_one_enabled = true %}
+      {% endif %}
+      {% assign row_two_enabled = false %}
+      {% if section.settings.collapsible_row_2_title != blank or section.settings.collapsible_row_2_content != blank %}
+        {% assign row_two_enabled = true %}
+      {% endif %}
+      {% assign row_three_enabled = false %}
+      {% if section.settings.collapsible_row_3_title != blank or section.settings.collapsible_row_3_content != blank %}
+        {% assign row_three_enabled = true %}
+      {% endif %}
+      {% if row_one_enabled or row_two_enabled or row_three_enabled %}
         <div class="border border-black/10 divide-y divide-black/10 rounded-md">
           {% if row_one_enabled %}
             <div x-data="{ open: false }">
@@ -530,6 +540,31 @@
               </button>
               <div x-show="open" x-transition x-cloak class="px-4 pb-4 text-sm text-black/70 space-y-2">
                 {{ section.settings.collapsible_row_2_content }}
+              </div>
+            </div>
+          {% endif %}
+          {% if row_three_enabled %}
+            <div x-data="{ open: false }">
+              <button
+                type="button"
+                class="w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium text-black hover:bg-black/5 transition"
+                @click="open = !open"
+                :aria-expanded="open"
+              >
+                <span>{{ section.settings.collapsible_row_3_title | default: 'Detalles' }}</span>
+                <svg
+                  class="w-4 h-4 transition-transform duration-200"
+                  :class="open ? 'rotate-180' : 'rotate-0'"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              <div x-show="open" x-transition x-cloak class="px-4 pb-4 text-sm text-black/70 space-y-2">
+                {{ section.settings.collapsible_row_3_content }}
               </div>
             </div>
           {% endif %}
@@ -2076,13 +2111,13 @@
       "type": "text",
       "id": "collapsible_row_1_title",
       "label": "Row 1 title",
-      "default": "Envíos, cambios y devoluciones"
+      "default": "Envios, cambios y devoluciones"
     },
     {
       "type": "richtext",
       "id": "collapsible_row_1_content",
       "label": "Row 1 content",
-      "default": "<p>Información sobre envíos, cambios y devoluciones.</p>"
+      "default": "<p>Informacion sobre envios, cambios y devoluciones.</p>"
     },
     {
       "type": "text",
@@ -2095,6 +2130,18 @@
       "id": "collapsible_row_2_content",
       "label": "Row 2 content",
       "default": "<p>Comparte detalles adicionales del producto.</p>"
+    },
+    {
+      "type": "text",
+      "id": "collapsible_row_3_title",
+      "label": "Row 3 title",
+      "default": "Instrucciones de Lavado"
+    },
+    {
+      "type": "richtext",
+      "id": "collapsible_row_3_content",
+      "label": "Row 3 content",
+      "default": "<p>Wash inside out &mdash; Lava por el reves.<br>Cold water only &mdash; Solo con agua fria.<br>No dryer &mdash; No usar secadora.<br>No fast spin &mdash; No centrifugado rapido.<br>Separate colors &mdash; Separar por colores.<br><br>That&rsquo;s all. It&rsquo;s not complicated.</p>"
     },
     {
       "type": "header",
@@ -2186,14 +2233,6 @@
         }
       ]
     },
-        {
-          "type": "richtext",
-          "id": "content",
-          "label": "Content",
-          "default": "<p>Comparte información sobre envíos, cambios o cualquier detalle adicional.</p>"
-        }
-      ]
-    },
     {
       "type": "product_gallery",
       "name": "Product Gallery",
@@ -2223,3 +2262,5 @@
   }
 }
 {% endschema %}
+
+

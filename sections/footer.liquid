@@ -1,6 +1,6 @@
 <footer class="w-full px-4 lg:space-y-10  lg:px-12 pt-10 pb-5  bg-primary text-white" x-data="{ openItem: null }">
   <div class="flex w-full flex-col lg:justify-between lg:flex-row ">
-    <div class="flex flex-col gap-4 w-full">
+      <div class="flex flex-col gap-6 w-full">
       <div class="flex flex-col gap-8">
         <div class="lg:w-[385px]">
           <p class="body-sm font-semibold uppercase text-white/50 mb-4">NEWSLETTER</p>
@@ -218,7 +218,28 @@
       {% endif %}
     </a>
     <!-- Bottom Section with Logo and Payment Icons -->
-    <div class=" w-full  flex flex-col lg:flex-row lg:items-end lg:justify-end gap-6">
+    <div class="w-full flex flex-col gap-6 border-t border-white/10 pt-6">
+      <div class="flex flex-col gap-2 text-sm text-white/60 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex flex-wrap gap-4">
+          <a href="{{ shop.privacy_policy.url | default: routes.root_url }}" class="hover:text-white transition-colors duration-150">
+            Política de Privacidad
+          </a>
+          <a href="{{ shop.terms_of_service.url | default: routes.root_url }}" class="hover:text-white transition-colors duration-150">
+            Términos y Servicios
+          </a>
+          <a href="{{ shop.shipping_policy.url | default: '/policies/shipping-policy' }}" class="hover:text-white transition-colors duration-150">
+            Envíos y Devoluciones
+          </a>
+        </div>
+        <div class="text-xs">
+          &copy; {{ 'now' | date: '%Y' }}
+          {{ shop.name }}
+          {% if section.settings.credit_text != blank %}
+            <span class="mx-1">&middot;</span>{{ section.settings.credit_text }}
+          {% endif %}
+        </div>
+      </div>
+
       <!-- Copyright Text with Trust Badges -->
       <div class="text-sm lg:text-end text-white/50 flex flex-col lg:flex-row lg:items-center gap-2">
         <!-- Trust Badges -->
@@ -252,13 +273,6 @@
           </div>
         {% endif %}
 
-        <div>
-          &copy; {{ 'now' | date: '%Y' }}
-          {{ shop.name }}
-          {% if section.settings.credit_text != blank %}
-            <span class="mx-1">&middot;</span>{{ section.settings.credit_text }}
-          {% endif %}
-        </div>
       </div>
 
       <!-- Payment Icons -->
@@ -421,3 +435,5 @@
   ]
 }
 {% endschema %}
+
+

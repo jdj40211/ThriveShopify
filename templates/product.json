@@ -37,11 +37,17 @@
           "baby-tank-p70082"
         ],
         "duo_eligible_collections": [],
-        "free_shipping_text": "Envios Gratis Por Compras Mayores a S/.120",
+        "free_shipping_text": "Envios Gratis Por Compras Mayores a S/.180",
         "free_returns_text": "Devoluciones o cambios simples",
         "shipping_icon_alt": "Shipping Icon",
         "returns_icon_alt": "Returns Icon",
         "show_shipping_returns": true,
+        "collapsible_row_1_title": "Envíos, cambios y devoluciones",
+        "collapsible_row_1_content": "<p>🕐 Tiempo estimado de llegada en Lima: 1 a 3 días útiles desde el despacho (miércoles o viernes)</p><p><br/>🚛 Provincias: depende de la zona, pero usualmente 3 a 7 días útiles.<br/><br/>¿Se aceptan devoluciones/cambios?<br/>Queremos asegurarnos que la talla sea la ideal para tí, si no lo es puedes realizar el cambio durante 48h desde la entrega. Y si tu producto fallado, te lo cambiamos sin problema. Escríbenos por WhatsApp o Instagram.</p>",
+        "collapsible_row_2_title": "Detalles",
+        "collapsible_row_2_content": "<p>Corte ligeramente oversized con hombros caídos y cuello reforzado para durar. Prelavado para mantener su forma y evitar el encogimiento, con acabado anti-pilling que conserva la textura limpia y suave con el tiempo. Cada prenda cuenta con serigrafía real — en tacto cero o alto relieve — pensada para envejecer con carácter. Diseñada para el día a día, hecha para perdurar.</p>",
+        "collapsible_row_3_title": "Instrucciones de Lavado",
+        "collapsible_row_3_content": "<p>Wash inside out &mdash; Lava por el reves.<br>Cold water only &mdash; Solo con agua fria.<br>No dryer &mdash; No usar secadora.<br>No fast spin &mdash; No centrifugado rapido.<br>Separate colors &mdash; Separar por colores.<br><br>That&rsquo;s all. It&rsquo;s not complicated.</p>",
         "size_guide_image_alt": "Guia de tallas",
         "size_guide_model_info": "La modelo mide 1.75 m y usa talla M.",
         "size_guide_notes": "<p>Consulta la tabla para encontrar tu ajuste ideal.</p>",
@@ -50,6 +56,70 @@
         "show_reviews_count": true,
         "show_slide_counter": true,
         "show_mobile_navigation": true
+      }
+    },
+    "bundle_builder_6Yp99w": {
+      "type": "bundle-builder",
+      "blocks": {
+        "bundle_step_6aei3x": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 1 - Save 5%",
+            "discount_percentage": 5,
+            "discount_code": ""
+          }
+        },
+        "bundle_step_RGkKLe": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 2 - Save 10%",
+            "discount_percentage": 10,
+            "discount_code": ""
+          }
+        },
+        "bundle_step_9KaMkP": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 3 - Save 15%",
+            "discount_percentage": 15,
+            "discount_code": ""
+          }
+        },
+        "bundle_step_Mt3t8C": {
+          "type": "bundle_step",
+          "settings": {
+            "step_text": "Buy 4 or More - Save 20%",
+            "discount_percentage": 20,
+            "discount_code": ""
+          }
+        }
+      },
+      "block_order": [
+        "bundle_step_6aei3x",
+        "bundle_step_RGkKLe",
+        "bundle_step_9KaMkP",
+        "bundle_step_Mt3t8C"
+      ],
+      "name": "Bundle Builder",
+      "settings": {
+        "title": "Crea Tu Bundle Personalizado",
+        "description": "Selecciona productos y ahorra más mientras más compres",
+        "products_title": "Productos Disponibles",
+        "bundle_title": "Tu Bundle",
+        "bundle_collection": "all-roads-lead-to-thrive",
+        "products_limit": 20,
+        "no_products_text": "No hay productos disponibles para el bundle",
+        "enable_free_gift": false,
+        "free_gift_product": "",
+        "free_gift_title": "REGALO GRATIS",
+        "free_gift_description": "Valor: $",
+        "total_text": "Total",
+        "discount_text": "Descuento",
+        "final_total_text": "Total Final",
+        "add_to_cart_text": "Añadir Bundle al Carrito",
+        "adding_text": "Añadiendo...",
+        "show_guarantee": true,
+        "guarantee_text": "100-Day Money Back Guarantee"
       }
     },
     "product_reviews_section": {
@@ -67,71 +137,211 @@
         "max_products": 12
       }
     },
-    "product_faq_MwLHRb": {
-      "type": "product-faq",
+    "faq_cPi94J": {
+      "type": "faq",
       "blocks": {
-        "category_NmYUFA": {
-          "type": "category",
+        "faq_item_4kNHcK": {
+          "type": "faq_item",
           "settings": {
-            "category_name": "Polos",
-            "category_description": ""
+            "question": "¿Cuanto tiempo tarda el envio?",
+            "answer": "<p>El tiempo de envío depende de tu ubicación y el método de envío seleccionado. Generalmente, los pedidos se procesan en 1-2 días hábiles y el envío tarda entre 3-7 días hábiles para envíos nacionales.</p>"
           }
         },
-        "question_UDgkXY": {
-          "type": "question",
+        "faq_item_UXW9BA": {
+          "type": "faq_item",
           "settings": {
-            "category": "",
-            "question": "¿Cómo es el calce de los polos?",
-            "answer": "<p>Nuestros polos tienen un calce regular que favorece a todos los tipos de cuerpo.</p>"
+            "question": "¿Como funciona la garantia?",
+            "answer": "<p>Ofrecemos una garantía de 30 días en todos nuestros productos. Si no estás satisfecho con tu compra, puedes devolver el producto en su estado original para un reembolso completo o cambio.</p>"
           }
         },
-        "question_n3B48w": {
-          "type": "question",
+        "faq_item_HeEMrK": {
+          "type": "faq_item",
           "settings": {
-            "category": "",
-            "question": "¿Los polos encogen al lavar?",
-            "answer": "<p>Nuestros polos están pre-encogidos y no deberían tener cambios significativos si sigues las instrucciones de lavado.</p>"
-          }
-        },
-        "category_B66krC": {
-          "type": "category",
-          "settings": {
-            "category_name": "Hoodies",
-            "category_description": ""
-          }
-        },
-        "question_cNxBgN": {
-          "type": "question",
-          "settings": {
-            "category": "",
-            "question": "¿Los hoodies tienen bolsillo canguro?",
-            "answer": "<p>Sí, todos nuestros hoodies incluyen un bolsillo canguro espacioso.</p>"
-          }
-        },
-        "category_kwzcxJ": {
-          "type": "category",
-          "settings": {
-            "category_name": "Longsleeves",
-            "category_description": ""
-          }
-        },
-        "question_FAnHA8": {
-          "type": "question",
-          "settings": {
-            "category": "",
-            "question": "¿Las mangas son largas?",
-            "answer": "<p>Las mangas tienen largo estándar. Revisa nuestra guía de tallas para más detalles.</p>"
+            "question": "¿Es seguro comprar en la tienda online?",
+            "answer": "<p>Sí, es completamente seguro. Utilizamos tecnología SSL de encriptación para proteger toda la información personal y de pago. Además, nunca almacenamos los datos de tu tarjeta de crédito en nuestros servidores.</p>"
           }
         }
       },
       "block_order": [
-        "category_NmYUFA",
-        "question_UDgkXY",
-        "question_n3B48w",
-        "category_B66krC",
-        "question_cNxBgN",
-        "category_kwzcxJ",
-        "question_FAnHA8"
+        "faq_item_4kNHcK",
+        "faq_item_UXW9BA",
+        "faq_item_HeEMrK"
+      ],
+      "name": "FAQ",
+      "settings": {
+        "title": "Preguntas Frecuentes",
+        "background_color": "#ffffff",
+        "title_color": "#1f2937",
+        "question_color": "#1f2937",
+        "answer_color": "#374151",
+        "border_color": "#e5e7eb",
+        "accent_color": "#3B2E10"
+      }
+    },
+    "product_faq_MwLHRb": {
+      "type": "product-faq",
+      "blocks": {
+        "category_compras_envios": {
+          "type": "category",
+          "settings": {
+            "category_name": "Compras y envios",
+            "category_description": ""
+          }
+        },
+        "question_envios_internacionales": {
+          "type": "question",
+          "settings": {
+            "category": "category_compras_envios",
+            "question": "Realizan envios internacionales?",
+            "answer": "<p>Por ahora solo realizamos envios dentro de Peru.</p>"
+          }
+        },
+        "question_tiempo_pedido": {
+          "type": "question",
+          "settings": {
+            "category": "category_compras_envios",
+            "question": "Cuanto tarda en llegar mi pedido?",
+            "answer": "<p>Envios a Lima: 1 a 2 dias habiles.</p><p>Envios a provincias: entre 3 y 6 dias habiles.</p>"
+          }
+        },
+        "question_devoluciones": {
+          "type": "question",
+          "settings": {
+            "category": "category_compras_envios",
+            "question": "Puedo devolver o cambiar una prenda?",
+            "answer": "<p>Si. Puedes solicitar un cambio o devolucion dentro de los primeros 7 dias desde que recibes tu pedido. La prenda debe estar sin uso, en perfectas condiciones y con su empaque original.</p>"
+          }
+        },
+        "question_metodos_pago": {
+          "type": "question",
+          "settings": {
+            "category": "category_compras_envios",
+            "question": "Que metodos de pago aceptan?",
+            "answer": "<p>Aceptamos tarjetas de debito y credito (Visa, Mastercard, American Express), transferencias bancarias, Yape, Plin y Mercado Pago.</p>"
+          }
+        },
+        "question_promociones": {
+          "type": "question",
+          "settings": {
+            "category": "category_compras_envios",
+            "question": "Tienen descuentos o promociones activas?",
+            "answer": "<p>Si, en algunos drops activamos promociones por tiempo limitado. Toda promo se comunica en nuestra web y redes oficiales.</p>"
+          }
+        },
+        "question_lavado": {
+          "type": "question",
+          "settings": {
+            "category": "category_compras_envios",
+            "question": "La ropa se destine o daña con el lavado?",
+            "answer": "<p>No. Todas las prendas estan prelavadas y tienen acabado antipilling. Recomendamos lavarlas del reves, con agua fria y sin secadora para asegurar su duracion.</p>"
+          }
+        },
+        "question_tienda_fisica": {
+          "type": "question",
+          "settings": {
+            "category": "category_compras_envios",
+            "question": "Cuentan con tienda fisica?",
+            "answer": "<p>No por ahora. Vendemos exclusivamente por nuestra tienda online, pero ocasionalmente activamos pop-ups o eventos que anunciamos por redes.</p>"
+          }
+        },
+        "category_producto_calidad": {
+          "type": "category",
+          "settings": {
+            "category_name": "Producto y calidad",
+            "category_description": ""
+          }
+        },
+        "question_calidad": {
+          "type": "question",
+          "settings": {
+            "category": "category_producto_calidad",
+            "question": "Que tan buena es la calidad de sus prendas?",
+            "answer": "<p>Trabajamos con algodon peruano pesado, entre 280 y 320 gsm, pensado para durar, resistir y mantenerse con el tiempo.</p>"
+          }
+        },
+        "question_materiales": {
+          "type": "question",
+          "settings": {
+            "category": "category_producto_calidad",
+            "question": "De que materiales estan hechas sus prendas?",
+            "answer": "<p>Usamos 100% algodon peruano, con procesos de prelavado, antipilling y serigrafia de alta calidad.</p>"
+          }
+        },
+        "question_disenos": {
+          "type": "question",
+          "settings": {
+            "category": "category_producto_calidad",
+            "question": "Quien disena sus productos?",
+            "answer": "<p>Todo se disena internamente, desde los conceptos hasta los detalles finales. Cada drop representa una historia y una intencion.</p>"
+          }
+        },
+        "question_fabricacion": {
+          "type": "question",
+          "settings": {
+            "category": "category_producto_calidad",
+            "question": "Donde fabrican la ropa?",
+            "answer": "<p>Todo se produce en Lima, Peru, en talleres locales con altos estandares de calidad.</p>"
+          }
+        },
+        "question_restock": {
+          "type": "question",
+          "settings": {
+            "category": "category_producto_calidad",
+            "question": "Vuelven a lanzar los modelos que se agotan?",
+            "answer": "<p>Solo en casos puntuales reponemos productos, y unicamente si son best sellers del drop. En la mayoria de casos, lo que se agota no vuelve.</p>"
+          }
+        },
+        "category_marca_comunidad": {
+          "type": "category",
+          "settings": {
+            "category_name": "Marca y comunidad",
+            "category_description": ""
+          }
+        },
+        "question_historia": {
+          "type": "question",
+          "settings": {
+            "category": "category_marca_comunidad",
+            "question": "Como nacio Thrive?",
+            "answer": "<p>Thrive nacio con una idea clara: hacer ropa con mensaje y proposito, que represente la mejora continua, la autenticidad y una comunidad real. Todo comenzo en Lima.</p>"
+          }
+        },
+        "question_nombre": {
+          "type": "question",
+          "settings": {
+            "category": "category_marca_comunidad",
+            "question": "Por que el nombre Thrive?",
+            "answer": "<p>Porque representa lo que creemos: prosperar, mejorar y avanzar. No se trata solo de como te vistes, sino de como vives.</p>"
+          }
+        },
+        "question_contacto": {
+          "type": "question",
+          "settings": {
+            "category": "category_marca_comunidad",
+            "question": "Como los contacto si tengo dudas?",
+            "answer": "<p>Puedes escribirnos por WhatsApp al +51 959 456 772, por Instagram en @thrive.pe_, o por correo a thrive.pe@gmail.com.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "category_compras_envios",
+        "question_envios_internacionales",
+        "question_tiempo_pedido",
+        "question_devoluciones",
+        "question_metodos_pago",
+        "question_promociones",
+        "question_lavado",
+        "question_tienda_fisica",
+        "category_producto_calidad",
+        "question_calidad",
+        "question_materiales",
+        "question_disenos",
+        "question_fabricacion",
+        "question_restock",
+        "category_marca_comunidad",
+        "question_historia",
+        "question_nombre",
+        "question_contacto"
       ],
       "name": "FAQ's del Producto",
       "settings": {
@@ -211,70 +421,6 @@
         "show_guarantee": true,
         "guarantee_text": "100-Day Money Back Guarantee"
       }
-    },
-    "bundle_builder_6Yp99w": {
-      "type": "bundle-builder",
-      "blocks": {
-        "bundle_step_6aei3x": {
-          "type": "bundle_step",
-          "settings": {
-            "step_text": "Buy 1 - Save 5%",
-            "discount_percentage": 5,
-            "discount_code": ""
-          }
-        },
-        "bundle_step_RGkKLe": {
-          "type": "bundle_step",
-          "settings": {
-            "step_text": "Buy 2 - Save 10%",
-            "discount_percentage": 10,
-            "discount_code": ""
-          }
-        },
-        "bundle_step_9KaMkP": {
-          "type": "bundle_step",
-          "settings": {
-            "step_text": "Buy 3 - Save 15%",
-            "discount_percentage": 15,
-            "discount_code": ""
-          }
-        },
-        "bundle_step_Mt3t8C": {
-          "type": "bundle_step",
-          "settings": {
-            "step_text": "Buy 4 or More - Save 20%",
-            "discount_percentage": 20,
-            "discount_code": ""
-          }
-        }
-      },
-      "block_order": [
-        "bundle_step_6aei3x",
-        "bundle_step_RGkKLe",
-        "bundle_step_9KaMkP",
-        "bundle_step_Mt3t8C"
-      ],
-      "name": "Bundle Builder",
-      "settings": {
-        "title": "Crea Tu Bundle Personalizado",
-        "description": "Selecciona productos y ahorra más mientras más compres",
-        "products_title": "Productos Disponibles",
-        "bundle_title": "Tu Bundle",
-        "bundle_collection": "all-roads-lead-to-thrive",
-        "products_limit": 20,
-        "no_products_text": "No hay productos disponibles para el bundle",
-        "enable_free_gift": false,
-        "free_gift_product": "",
-        "free_gift_title": "REGALO GRATIS",
-        "free_gift_description": "Valor: $",
-        "total_text": "Total",
-        "discount_text": "Descuento",
-        "final_total_text": "Total Final",
-        "add_to_cart_text": "Añadir Bundle al Carrito",
-        "adding_text": "Añadiendo...",
-        "show_guarantee": true,
-        "guarantee_text": "100-Day Money Back Guarantee"
-      }
     }
   },
   "order": [
@@ -282,6 +428,7 @@
     "bundle_builder_6Yp99w",
     "product_reviews_section",
     "related_collections_carousel_1",
+    "faq_cPi94J",
     "product_faq_MwLHRb",
     "bundle_builder_WtWY4i"
   ]
