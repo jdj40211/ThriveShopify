@@ -39,57 +39,15 @@
     class="swiper-{{ carousel_id }} {{ carousel_class }}"
     data-carousel-id="{{ carousel_id }}"
     data-carousel-type="generic-carousel"
-    style="padding-left: {{ padding_left_mobile }}px; padding-right: {{ padding_right_mobile }}px; -webkit-overflow-scrolling: touch; will-change: transform;"
+    style="padding-left: {{ padding_left_mobile }}px; padding-right: {{ padding_right_mobile }}px;"
   >
-    <div class="swiper-wrapper" style="will-change: transform;">
+    <div class="swiper-wrapper">
       {{ content }}
     </div>
   </div>
 </div>
 
 <style>
-  /* iOS-specific optimizations */
-  .swiper-{{ carousel_id }} {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-  }
-
-  /* Ensure slides display horizontally */
-  .swiper-{{ carousel_id }} .swiper-wrapper {
-    display: flex !important;
-    flex-direction: row !important;
-  }
-
-  .swiper-{{ carousel_id }} .swiper-slide {
-    will-change: transform;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    flex-shrink: 0 !important;
-    width: auto !important;
-    height: auto !important;
-  }
-
-  /* Critical: Disable unnecessary pointer events on mobile to prevent iOS crash */
-  @media (max-width: 1023px) {
-    .swiper-{{ carousel_id }} .swiper-slide {
-      touch-action: pan-x pan-y !important;
-      -webkit-touch-callout: none;
-    }
-
-    /* Disable pointer move tracking on product cards in carousel */
-    .swiper-{{ carousel_id }} .product-card {
-      pointer-events: none !important;
-    }
-
-    /* Re-enable pointer events only for interactive elements */
-    .swiper-{{ carousel_id }} .product-card a,
-    .swiper-{{ carousel_id }} .product-card button {
-      pointer-events: auto !important;
-    }
-  }
-
   @media (min-width: 1024px) {
     .swiper-{{ carousel_id }} {
       padding-left: {{ padding_left_desktop }}px !important;
@@ -99,254 +57,144 @@
 </style>
 
 <script>
-  (function() {
-    // Debug logger for iPhone - Shows errors on screen
-    const debugLog = (message, type = 'info') => {
-      console.log(`[Carousel {{ carousel_id }}] ${message}`);
+  document.addEventListener('DOMContentLoaded', function () {
+    const carouselElement = document.querySelector('.swiper-{{ carousel_id }}');
 
-      // Show critical errors on screen for mobile debugging
-      if (type === 'error' && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;z-index:99999;font-size:12px';
-        errorDiv.textContent = `Carousel Error: ${message}`;
-        document.body.appendChild(errorDiv);
-        setTimeout(() => errorDiv.remove(), 5000);
+    if (carouselElement && typeof Swiper !== 'undefined') {
+      // Check if this carousel is already initialized
+      if (carouselElement.swiper) {
+        return;
       }
-    };
 
-    const initCarouselSafely = () => {
-      try {
-        const carouselElement = document.querySelector('.swiper-{{ carousel_id }}');
-        if (!carouselElement) {
-          debugLog('Carousel element not found', 'error');
-          return;
-        }
+      const totalItems = {{ total_items }};
+      const enableDesktopCarousel = totalItems > {{ slides_per_view_desktop }};
 
-        debugLog('Starting initialization');
-
-        const initializeCarousel = () => {
-          try {
-            if (carouselElement.dataset.carouselInitialized === 'true') {
-              debugLog('Already initialized');
-              return;
-            }
-            if (carouselElement.swiper) {
-              debugLog('Swiper instance already exists');
-              return;
-            }
-            if (typeof Swiper === 'undefined') {
-              debugLog('Swiper not loaded yet, retrying...');
-              setTimeout(initializeCarousel, 100);
-              return;
-            }
-
-            debugLog('Initializing Swiper');
-            carouselElement.dataset.carouselInitialized = 'true';
-
-            const swiperConfig = {
-              slidesPerView: {{ slides_per_view_mobile | json }},
-              spaceBetween: {{ space_between_mobile }},
-              {% if centered_slides %}
-              centeredSlides: true,
-              centeredSlidesBounds: true,
-              {% endif %}
-              {% if free_mode %}
-              freeMode: {
-                enabled: true,
-                sticky: false,
-                momentum: true,
-                momentumRatio: 0.5,
-                momentumVelocityRatio: 1,
-                momentumBounce: false,
-              },
-              {% endif %}
-              // Critical iOS-friendly settings to prevent crash
-              touchEventsTarget: 'container',
-              simulateTouch: true,
-              touchStartPreventDefault: false,
-              touchStartForcePreventDefault: false,
-              touchMoveStopPropagation: true,
-              touchReleaseOnEdges: true,
-              passiveListeners: true,
-              resistance: true,
-              resistanceRatio: 0.85,
-              watchSlidesProgress: true,
-              updateOnWindowResize: false,
-              observer: false,
-              observeParents: false,
-              observeSlideChildren: false,
-              // Reduce touch ratio for smoother iOS performance
-              touchRatio: 1,
-              touchAngle: 45,
-              longSwipesRatio: 0.5,
-              longSwipesMs: 300,
-              followFinger: true,
-              threshold: 5,
-              // Prevent iOS memory issues
-              preventInteractionOnTransition: false,
-              runCallbacksOnInit: false,
-              breakpoints: {
-                1024: {
-                  slidesPerView: {{ slides_per_view_desktop | json }},
-                  spaceBetween: {{ space_between_desktop }},
-                  centeredSlides: false,
-                  {% if show_arrows %}
-                  navigation: {
-                    nextEl: '.product-carousel-next, .look-fit-carousel-next, .carousel-next',
-                    prevEl: '.product-carousel-prev, .look-fit-carousel-prev, .carousel-prev',
-                  },
-                  {% endif %}
-                  {% if free_mode %}
-                  freeMode: {
-                    enabled: true,
-                    sticky: false,
-                    momentum: true,
-                    momentumRatio: 0.5,
-                    momentumVelocityRatio: 1,
-                    momentumBounce: false,
-                  },
-                  {% endif %}
-                }
-              },
-              {% if show_arrows %}
-              on: {
-                init: function() {
-                  try {
-                    updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
-                  } catch(e) {
-                    debugLog('Error in init: ' + e.message, 'error');
-                  }
-                },
-                slideChange: function() {
-                  try {
-                    if (window.innerWidth >= 1024) {
-                      updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
-                    }
-                  } catch(e) {
-                    debugLog('Error in slideChange: ' + e.message, 'error');
-                  }
-                },
-                reachBeginning: function() {
-                  try {
-                    if (window.innerWidth >= 1024) {
-                      updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
-                    }
-                  } catch(e) {
-                    debugLog('Error in reachBeginning: ' + e.message, 'error');
-                  }
-                },
-                reachEnd: function() {
-                  try {
-                    if (window.innerWidth >= 1024) {
-                      updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
-                    }
-                  } catch(e) {
-                    debugLog('Error in reachEnd: ' + e.message, 'error');
-                  }
-                },
-              },
-              {% endif %}
-            };
-
-            debugLog('Creating Swiper instance');
-            const swiper = new Swiper(carouselElement, swiperConfig);
-
-            // Store the swiper instance on the element to avoid conflicts
-            carouselElement.swiper = swiper;
-            debugLog('Swiper instance created successfully');
-
-            {% if show_arrows %}
-            // Ensure the desktop arrows are synced after layout settles
-            setTimeout(() => {
-              try {
-                updateGenericArrowStates(swiper, carouselElement, '{{ carousel_id }}');
-              } catch(e) {
-                debugLog('Error updating arrows: ' + e.message, 'error');
-              }
-            }, 200);
-            {% endif %}
-          } catch(e) {
-            debugLog('Error initializing carousel: ' + e.message, 'error');
-            carouselElement.dataset.carouselInitialized = 'false';
-          }
-        };
-
-        if ('IntersectionObserver' in window) {
-          const observer = new IntersectionObserver((entries, obs) => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting) {
-                debugLog('Carousel visible, initializing');
-                initializeCarousel();
-                obs.unobserve(entry.target);
-              }
-            });
-          }, { rootMargin: '200px 0px' });
-
-          observer.observe(carouselElement);
-        } else {
-          debugLog('No IntersectionObserver, initializing immediately');
-          initializeCarousel();
-        }
-
-        {% if show_arrows %}
-        // Function to update arrow states for carousel (desktop only)
-        function updateGenericArrowStates(swiper, carouselEl, carouselId) {
-          if (window.innerWidth < 1024) {
-            return;
-          }
-
-          let prevArrow = document.querySelector(`.product-carousel-prev[data-carousel-id="${carouselId}"]`) ||
-                          document.querySelector(`.look-fit-carousel-prev[data-carousel-id="${carouselId}"]`);
-          let nextArrow = document.querySelector(`.product-carousel-next[data-carousel-id="${carouselId}"]`) ||
-                          document.querySelector(`.look-fit-carousel-next[data-carousel-id="${carouselId}"]`);
-
-          if ((!prevArrow || !nextArrow) && carouselEl) {
-            const sectionContainer = carouselEl.closest('section, div');
-            if (sectionContainer) {
-              prevArrow = prevArrow || sectionContainer.querySelector('.carousel-prev');
-              nextArrow = nextArrow || sectionContainer.querySelector('.carousel-next');
-            }
-          }
-
-          if (prevArrow) {
-            if (swiper.isBeginning) {
-              prevArrow.disabled = true;
-              prevArrow.classList.remove('bg-primary', 'text-white', 'cursor-pointer');
-              prevArrow.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-              prevArrow.style.pointerEvents = 'none';
-            } else {
-              prevArrow.disabled = false;
-              prevArrow.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-              prevArrow.classList.add('bg-primary', 'text-white', 'cursor-pointer');
-              prevArrow.style.pointerEvents = 'auto';
-            }
-          }
-
-          if (nextArrow) {
-            if (swiper.isEnd) {
-              nextArrow.disabled = true;
-              nextArrow.classList.remove('bg-primary', 'text-white', 'cursor-pointer');
-              nextArrow.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-              nextArrow.style.pointerEvents = 'none';
-            } else {
-              nextArrow.disabled = false;
-              nextArrow.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
-              nextArrow.classList.add('bg-primary', 'text-white', 'cursor-pointer');
-              nextArrow.style.pointerEvents = 'auto';
-            }
-          }
-        }
+      const swiper = new Swiper(carouselElement, {
+        slidesPerView: {{ slides_per_view_mobile | json }},
+        spaceBetween: {{ space_between_mobile }},
+        {% if centered_slides %}
+        centeredSlides: true,
+        centeredSlidesBounds: true,
         {% endif %}
-      } catch(e) {
-        debugLog('Critical error: ' + e.message, 'error');
-      }
-    };
+        {% if free_mode %}
+        freeMode: {
+          enabled: true,
+          sticky: false,
+          momentum: true,
+          momentumRatio: 0.25,
+          momentumVelocityRatio: 0.5,
+          momentumBounce: true,
+          momentumBounceRatio: 0.3,
+        },
+        {% endif %}
+        grabCursor: false,
+        resistance: true,
+        resistanceRatio: 0.85,
+        watchSlidesProgress: true,
+        breakpoints: {
+          1024: {
+            slidesPerView: {{ slides_per_view_desktop | json }},
+            spaceBetween: {{ space_between_desktop }},
+            centeredSlides: false,
+            {% if show_arrows %}
+            navigation: {
+              nextEl: '.product-carousel-next, .look-fit-carousel-next, .carousel-next',
+              prevEl: '.product-carousel-prev, .look-fit-carousel-prev, .carousel-prev',
+            },
+            {% endif %}
+            {% if free_mode %}
+            freeMode: {
+              enabled: true,
+              sticky: false,
+              momentum: true,
+              momentumRatio: 0.25,
+              momentumVelocityRatio: 0.5,
+              momentumBounce: true,
+              momentumBounceRatio: 0.3,
+            },
+            {% endif %}
+          }
+        },
+        {% if show_arrows %}
+        on: {
+          init: function() {
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
+          },
+          afterInit: function() {
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
+          },
+          slideChange: function() {
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
+          },
+          reachBeginning: function() {
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
+          },
+          reachEnd: function() {
+            updateGenericArrowStates(this, carouselElement, '{{ carousel_id }}');
+          },
+        },
+        {% endif %}
+      });
 
-    // Wait for both DOM and Swiper library
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initCarouselSafely);
-    } else {
-      initCarouselSafely();
+      // Store the swiper instance on the element to avoid conflicts
+      carouselElement.swiper = swiper;
+
+      {% if show_arrows %}
+      // Ensure the desktop arrows are synced after layout settles
+      setTimeout(() => {
+        updateGenericArrowStates(swiper, carouselElement, '{{ carousel_id }}');
+      }, 200);
+      {% endif %}
     }
-  })();
+
+    {% if show_arrows %}
+    // Function to update arrow states for carousel (desktop only)
+    function updateGenericArrowStates(swiper, carouselEl, carouselId) {
+      if (window.innerWidth < 1024) {
+        return;
+      }
+
+      let prevArrow = document.querySelector(`.product-carousel-prev[data-carousel-id="${carouselId}"]`) ||
+                      document.querySelector(`.look-fit-carousel-prev[data-carousel-id="${carouselId}"]`);
+      let nextArrow = document.querySelector(`.product-carousel-next[data-carousel-id="${carouselId}"]`) ||
+                      document.querySelector(`.look-fit-carousel-next[data-carousel-id="${carouselId}"]`);
+
+      if ((!prevArrow || !nextArrow) && carouselEl) {
+        const sectionContainer = carouselEl.closest('section, div');
+        if (sectionContainer) {
+          prevArrow = prevArrow || sectionContainer.querySelector('.carousel-prev');
+          nextArrow = nextArrow || sectionContainer.querySelector('.carousel-next');
+        }
+      }
+
+      if (prevArrow) {
+        if (swiper.isBeginning) {
+          prevArrow.disabled = true;
+          prevArrow.classList.remove('bg-primary', 'text-white', 'cursor-pointer');
+          prevArrow.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+          prevArrow.style.pointerEvents = 'none';
+        } else {
+          prevArrow.disabled = false;
+          prevArrow.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+          prevArrow.classList.add('bg-primary', 'text-white', 'cursor-pointer');
+          prevArrow.style.pointerEvents = 'auto';
+        }
+      }
+
+      if (nextArrow) {
+        if (swiper.isEnd) {
+          nextArrow.disabled = true;
+          nextArrow.classList.remove('bg-primary', 'text-white', 'cursor-pointer');
+          nextArrow.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+          nextArrow.style.pointerEvents = 'none';
+        } else {
+          nextArrow.disabled = false;
+          nextArrow.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+          nextArrow.classList.add('bg-primary', 'text-white', 'cursor-pointer');
+          nextArrow.style.pointerEvents = 'auto';
+        }
+      }
+    }
+    {% endif %}
+  });
 </script>
