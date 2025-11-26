@@ -1,27 +1,48 @@
 <!doctype html>
 <html lang="{{ request.locale.iso_code }}">
   <head>
+    {% # Cache busting variable %}
+    {% assign cache_buster = 'now' | date: '%s' %}
+
     {% # Inlined CSS Variables %}
     {% render 'css-variables' %}
 
-    {% # Load and preload the critical CSS %}
-    {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
-    {{ 'styles.css' | asset_url | stylesheet_tag: preload: true }}
+    {% # Meta tags para control de caché %}
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    {% # Establish early connections for critical CDNs %}
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.shopifycloud.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+    {% # Load and preload the critical CSS with cache busting %}
+    <link rel="stylesheet" href="{{ 'critical.css' | asset_url }}?v={{ cache_buster }}" data-preload>
+    <link rel="stylesheet" href="{{ 'styles.css' | asset_url }}?v={{ cache_buster }}" data-preload>
 
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
 
     {{ content_for_header }}
 
-    <!-- Swiper.js CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <!-- Swiper.js CSS (loaded without blocking rendering) -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css?v={{ cache_buster }}"
+      onload="this.onload=null;this.rel='stylesheet'"
+    >
+    <noscript>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css?v={{ cache_buster }}">
+    </noscript>
 
     <!-- HLS.js for video streaming -->
-    <script defer src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/hls.js@latest?v={{ cache_buster }}"></script>
 
     <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="{{ 'infinite-scroll.js' | asset_url }}" defer="defer"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js?v={{ cache_buster }}"></script>
+    <script src="{{ 'infinite-scroll.js' | asset_url }}?v={{ cache_buster }}" defer="defer"></script>
   </head>
 
   <body>
@@ -39,6 +60,6 @@
     {% sections 'search-drawer-group' %}
 
     <!-- Swiper.js JS -->
-    <script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js?v={{ cache_buster }}"></script>
   </body>
 </html>
