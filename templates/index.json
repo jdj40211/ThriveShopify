@@ -250,7 +250,7 @@
         "video_slide_xygt9E": {
           "type": "video_slide",
           "settings": {
-            "video_file": "shopify://files/videos/Clip_3.mp4",
+            "video_file": "shopify://files/videos/Clip_4.mp4",
             "video_title": "",
             "video_description": "",
             "video_link": "",
@@ -379,7 +379,7 @@
         "view_all_link": "",
         "view_all_link_collections": "",
         "show_arrows": true,
-        "show_swipe_hint": true,
+        "show_swipe_hint": false,
         "band_swipe_hint": "Desliza la banda para ver más productos.",
         "card_swipe_hint": "Dentro de cada tarjeta, desliza para ver las fotos del producto.",
         "product_source": "manual",

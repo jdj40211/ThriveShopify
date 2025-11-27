@@ -100,6 +100,7 @@
         "bundle_step_9KaMkP",
         "bundle_step_Mt3t8C"
       ],
+      "disabled": true,
       "name": "Bundle Builder",
       "settings": {
         "title": "Crea Tu Bundle Personalizado",
@@ -135,47 +136,6 @@
       "settings": {
         "carousels_count": 2,
         "max_products": 12
-      }
-    },
-    "faq_cPi94J": {
-      "type": "faq",
-      "blocks": {
-        "faq_item_4kNHcK": {
-          "type": "faq_item",
-          "settings": {
-            "question": "¿Cuanto tiempo tarda el envio?",
-            "answer": "<p>El tiempo de envío depende de tu ubicación y el método de envío seleccionado. Generalmente, los pedidos se procesan en 1-2 días hábiles y el envío tarda entre 3-7 días hábiles para envíos nacionales.</p>"
-          }
-        },
-        "faq_item_UXW9BA": {
-          "type": "faq_item",
-          "settings": {
-            "question": "¿Como funciona la garantia?",
-            "answer": "<p>Ofrecemos una garantía de 30 días en todos nuestros productos. Si no estás satisfecho con tu compra, puedes devolver el producto en su estado original para un reembolso completo o cambio.</p>"
-          }
-        },
-        "faq_item_HeEMrK": {
-          "type": "faq_item",
-          "settings": {
-            "question": "¿Es seguro comprar en la tienda online?",
-            "answer": "<p>Sí, es completamente seguro. Utilizamos tecnología SSL de encriptación para proteger toda la información personal y de pago. Además, nunca almacenamos los datos de tu tarjeta de crédito en nuestros servidores.</p>"
-          }
-        }
-      },
-      "block_order": [
-        "faq_item_4kNHcK",
-        "faq_item_UXW9BA",
-        "faq_item_HeEMrK"
-      ],
-      "name": "FAQ",
-      "settings": {
-        "title": "Preguntas Frecuentes",
-        "background_color": "#ffffff",
-        "title_color": "#1f2937",
-        "question_color": "#1f2937",
-        "answer_color": "#374151",
-        "border_color": "#e5e7eb",
-        "accent_color": "#3B2E10"
       }
     },
     "product_faq_MwLHRb": {
@@ -428,7 +388,6 @@
     "bundle_builder_6Yp99w",
     "product_reviews_section",
     "related_collections_carousel_1",
-    "faq_cPi94J",
     "product_faq_MwLHRb",
     "bundle_builder_WtWY4i"
   ]

@@ -26,7 +26,7 @@
   {% endif %}
 >
   <!-- Product Image Container -->
-  <div class="relative {% if mobile_layout %}aspect-[3/4]{% else %}aspect-[3/4.5]{% endif %} w-full overflow-hidden max-w-full bg-white">
+  <div class="product-image-carousel relative {% if mobile_layout %}aspect-[3/4]{% else %}aspect-[3/4.5]{% endif %} w-full overflow-hidden max-w-full bg-white">
     <!-- Clickeable link to product page -->
     <a href="{{ product.url }}" class="absolute inset-0 z-0" aria-label="{{ product.title }}"></a>
 
@@ -44,75 +44,16 @@
       >
     {% endif %}
 
-    <div class="h-full" x-show="currentImages && currentImages.length >= 1">
-      <div
-        class="product-image-carousel group swiper-product-images-{{ product.id }}-{{ section.id }} w-full h-full"
-        data-section-id="{{ section.id }}"
-        data-carousel-type="product-images"
-        id="product-images-carousel-{{ product.id }}-{{ section.id }}"
+    <template x-if="currentImages && currentImages.length >= 1">
+      <img
+        :src="currentImages[0]"
+        alt="{{ product.title }}"
+        class="w-full h-full object-contain object-center pointer-events-none"
+        width="1800"
+        height="1800"
+        loading="eager"
       >
-        <div class="swiper-wrapper h-full" @mouseenter="imageHovered = true" @mouseleave="imageHovered = false">
-          <!-- Build slides: overlay for first two, then remaining singles -->
-          <template
-            x-for="
-              (slide, index) in (() => {
-                const imgs = currentImages || [];
-                // Mobile: always render all images as single slides (first eager)
-                if (!isDesktop) {
-                  return imgs.map((src, i) => ({ type: 'single', src, eager: i === 0 }));
-                }
-                // Desktop: overlay behavior for first two
-                if (imgs.length <= 1) {
-                  return imgs.length === 1
-                    ? [{ type: 'single', src: imgs[0], eager: true }]
-                    : [];
-                }
-                const slides = [{ type: 'overlay', srcA: imgs[0], srcB: imgs[1], eager: true }];
-                for (let i = 2; i < imgs.length; i++) {
-                  slides.push({ type: 'single', src: imgs[i], eager: false });
-                }
-                return slides;
-              })()
-            "
-            :key="slide.type === 'overlay' ? 'overlay' : slide.src"
-          >
-            <div class="swiper-slide w-full h-full">
-              <template x-if="slide.type === 'overlay'">
-                <div class="relative w-full h-full">
-                  <img
-                    :src="slide.srcA"
-                    alt="{{ product.title }} - Image 1"
-                    class="absolute inset-0 w-full h-full object-contain object-center z-10 pointer-events-none"
-                    width="1800"
-                    height="1800"
-                    :loading="slide.eager ? 'eager' : 'lazy'"
-                  >
-                  <img
-                    :src="slide.srcB"
-                    alt="{{ product.title }} - Image 2"
-                    :class="imageHovered ? 'opacity-100' : 'opacity-0'"
-                    class="absolute inset-0 w-full h-full object-contain object-center z-20 transition-opacity duration-300 ease-in-out pointer-events-none"
-                    width="1800"
-                    height="1800"
-                    loading="lazy"
-                  >
-                </div>
-              </template>
-              <template x-if="slide.type === 'single'">
-                <img
-                  :src="slide.src || '{{ product.featured_image | image_url: width: 1800 }}'"
-                  alt="{{ product.title }}"
-                  class="w-full h-full object-contain object-center pointer-events-none"
-                  width="1800"
-                  height="1800"
-                  :loading="slide.eager ? 'eager' : 'lazy'"
-                >
-              </template>
-            </div>
-          </template>
-        </div>
-      </div>
-    </div>
+    </template>
 
     {% if wishlist_mode != true and show_wishlist != false %}
       <!-- Wishlist Heart Button -->
@@ -803,6 +744,14 @@
       totalSlides: 0,
       currentSlide: 0,
       imageHovered: false,
+      debug(message, payload = undefined) {
+        const prefix = `[ProductCard {{ product.id }} | section {{ section.id }}]`;
+        if (payload === undefined) {
+          console.log(prefix, message);
+        } else {
+          console.log(prefix, message, payload);
+        }
+      },
 
       // Variant data with metafields (same as product page)
       variantData: [
@@ -846,26 +795,17 @@
       ],
 
       init() {
-        console.log('==========================================');
-        console.log('[Product Card {{ product.id }}] INIT START');
-        console.log('==========================================');
-        console.log('Window width:', window.innerWidth);
-        console.log('isDesktop:', this.isDesktop);
-        console.log('currentImages:', this.currentImages);
-        console.log('currentImages type:', typeof this.currentImages);
-        console.log('currentImages is Array:', Array.isArray(this.currentImages));
-        console.log('currentImages length:', this.currentImages ? this.currentImages.length : 'N/A');
-        console.log('productImages fallback:', this.productImages);
-        console.log('productImages length:', this.productImages ? this.productImages.length : 'N/A');
+        this.debug('init:start', {
+          width: window.innerWidth,
+          isDesktop: this.isDesktop,
+          currentImages: this.currentImages ? this.currentImages.length : 0,
+          fallbackImages: this.productImages ? this.productImages.length : 0,
+        });
 
-        // Force currentImages if empty
         if (!this.currentImages || this.currentImages.length === 0) {
-          console.warn('[Product Card {{ product.id }}] currentImages is empty! Using productImages fallback');
+          this.debug('init:fallback-applied');
           this.currentImages = this.productImages;
         }
-
-        console.log('After fallback check - currentImages:', this.currentImages);
-        console.log('==========================================');
 
         // Update isDesktop on window resize
         window.addEventListener('resize', () => {
@@ -889,9 +829,9 @@
             this.showSizeSelector = false;
           }
           this.isInitialized = true;
-          console.log('[Product Card {{ product.id }}] Initialized', {
+          this.debug('init:mounted', {
             isInitialized: this.isInitialized,
-            currentImages: this.currentImages
+            currentImages: this.currentImages ? this.currentImages.length : 0,
           });
         });
 
@@ -899,6 +839,9 @@
         this.initializeColorSelection();
         this.initializeGallery();
         this.initializeCarousel();
+        this.debug('init:galleries-complete', {
+          currentImages: this.currentImages ? this.currentImages.length : 0,
+        });
 
         // Initialize wishlist state from LocalStorage
         this.isInWishlist = this.isProductInWishlist('{{ product.handle }}');
@@ -1042,11 +985,18 @@
           const firstColor = this.selectedColor || (this.variantData.length > 0 ? this.variantData[0].color : null);
           if (firstColor) {
             this.updateGalleryForColor(firstColor);
+            this.debug('gallery:variant-images', {
+              color: firstColor,
+              imageCount: this.currentImages ? this.currentImages.length : 0
+            });
           }
         } else {
           // Product has no color variants - always use product images
           this.currentImages = this.productImages;
           this.totalSlides = this.currentImages.length;
+          this.debug('gallery:product-images', {
+            imageCount: this.currentImages ? this.currentImages.length : 0
+          });
         }
       },
 
@@ -1465,311 +1415,102 @@
       },
 
       initializeCarousel() {
-        // Don't initialize image carousel on mobile to avoid conflicts
-        if (!this.isDesktop) return;
-
         this.$nextTick(() => {
-          const carouselElement = this.$el.querySelector('.product-image-carousel');
-          if (carouselElement && typeof Swiper !== 'undefined') {
-            const carouselId = carouselElement.id;
-
-            // Check if this carousel is already initialized
-            if (carouselElement.swiper) {
-              return;
-            }
-
-            const allowInnerSwipe = this.isDesktop;
-
-            // Create swiper instance
-            const swiperInstance = new Swiper(carouselElement, {
-              slidesPerView: 1,
-              spaceBetween: 0,
-              allowTouchMove: allowInnerSwipe,
-              resistanceRatio: 0,
-              nested: true,
-              grabCursor: false,
-              touchRatio: allowInnerSwipe ? 1 : 0,
-              touchAngle: 45,
-              simulateTouch: allowInnerSwipe,
-              touchStartPreventDefault: false,
-              touchStartForcePreventDefault: false,
-              touchMoveStopPropagation: false,
-              autoHeight: false,
-              centeredSlides: false,
-              loop: false,
-              navigation: {
-                nextEl: carouselElement.querySelector('.product-next'),
-                prevEl: carouselElement.querySelector('.product-prev'),
-              }
+          if (!this.currentImages || this.currentImages.length === 0) {
+            this.currentImages = this.productImages;
+            this.debug('carousel:fallback-applied', {
+              images: this.currentImages ? this.currentImages.length : 0
             });
-
-            // Function to update arrow states
-            const updateArrowStates = () => {
-              const prevArrow = carouselElement.querySelector('.product-prev');
-              const nextArrow = carouselElement.querySelector('.product-next');
-
-              if (prevArrow) {
-                if (swiperInstance.isBeginning) {
-                  prevArrow.style.opacity = '0';
-                  prevArrow.style.pointerEvents = 'none';
-                  prevArrow.style.visibility = 'hidden';
-                } else {
-                  prevArrow.style.opacity = '';
-                  prevArrow.style.pointerEvents = '';
-                  prevArrow.style.visibility = '';
-                }
-              }
-
-              if (nextArrow) {
-                if (swiperInstance.isEnd) {
-                  nextArrow.style.opacity = '0';
-                  nextArrow.style.pointerEvents = 'none';
-                  nextArrow.style.visibility = 'hidden';
-                } else {
-                  nextArrow.style.opacity = '';
-                  nextArrow.style.pointerEvents = '';
-                  nextArrow.style.visibility = '';
-                }
-              }
-            };
-
-            // Set initial state and add event listeners
-            swiperInstance.on('slideChange', () => {
-              this.currentSlide = swiperInstance.activeIndex;
-              updateArrowStates();
+          } else {
+            this.debug('carousel:images-present', {
+              images: this.currentImages.length
             });
-            swiperInstance.on('reachBeginning', updateArrowStates);
-            swiperInstance.on('reachEnd', updateArrowStates);
-
-            // Initial state update
-            setTimeout(updateArrowStates, 100);
-
-            // Add touch event listeners for mobile
-            const prevArrow = carouselElement.querySelector('.product-prev');
-            const nextArrow = carouselElement.querySelector('.product-next');
-
-            if (prevArrow) {
-              prevArrow.addEventListener('touchstart', () => {
-                if (!swiperInstance.isBeginning) {
-                  swiperInstance.slidePrev();
-                }
-              }, { passive: true });
-            }
-
-            if (nextArrow) {
-              nextArrow.addEventListener('touchstart', () => {
-                if (!swiperInstance.isEnd) {
-                  swiperInstance.slideNext();
-                }
-              }, { passive: true });
-            }
-
-            // Track pointer movement so swipes do not trigger unwanted navigation
-            let pointerMoved = false;
-            let pointerStartX = 0;
-            let pointerStartY = 0;
-            const DRAG_THRESHOLD = 12;
-
-            const logPrefix = 'Card {{ product.id }}';
-
-            const setPointerStart = (x, y) => {
-              pointerStartX = x;
-              pointerStartY = y;
-              pointerMoved = false;
-              console.log(logPrefix, 'pointer start', { x, y });
-            };
-
-            const detectPointerMove = (x, y) => {
-              if (!pointerMoved) {
-                const deltaX = Math.abs(x - pointerStartX);
-                const deltaY = Math.abs(y - pointerStartY);
-                if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
-                  pointerMoved = true;
-                  console.log(logPrefix, 'pointer moved', { deltaX, deltaY });
-                }
-              }
-            };
-
-            carouselElement.addEventListener('touchstart', (event) => {
-              const touch = event.touches[0];
-              if (touch) {
-                setPointerStart(touch.clientX, touch.clientY);
-              }
-              console.log(logPrefix, 'touchstart', { pointerMoved });
-            }, { passive: true });
-
-            carouselElement.addEventListener('touchmove', (event) => {
-              const touch = event.touches[0];
-              if (touch) {
-                detectPointerMove(touch.clientX, touch.clientY);
-              }
-              console.log(logPrefix, 'touchmove', { pointerMoved });
-            }, { passive: true });
-
-            carouselElement.addEventListener('touchend', () => {
-              console.log(logPrefix, 'touchend', { pointerMoved });
-            }, { passive: true });
-
-            carouselElement.addEventListener('mousedown', (event) => {
-              setPointerStart(event.clientX, event.clientY);
-              console.log(logPrefix, 'mousedown');
-            });
-
-            carouselElement.addEventListener('mousemove', (event) => {
-              if (event.buttons === 1) {
-                detectPointerMove(event.clientX, event.clientY);
-                console.log(logPrefix, 'mousemove drag', { pointerMoved });
-              }
-            });
-
-            // Add click event to go to product page (only if not clicking on controls)
-            carouselElement.addEventListener('click', (e) => {
-              // Ignore clicks that started as swipes
-              if (pointerMoved) {
-                console.log(logPrefix, 'click ignored due to swipe');
-                pointerMoved = false;
-                return;
-              }
-              console.log(logPrefix, 'click navigation');
-
-              // Check if click is on navigation buttons or size selector
-              if (e.target.closest('.product-prev') ||
-                  e.target.closest('.product-next') ||
-                  e.target.closest('.size-selector-hover') ||
-                  e.target.closest('button[aria-label="Seleccionar talla"]')) {
-                console.log(logPrefix, 'click ignored on control');
-                return; // Don't navigate if clicking on controls
-              }
-
-              // Navigate to product page
-              console.log(logPrefix, 'NAVIGATING TO:', '{{ product.url }}');
-              window.location.href = '{{ product.url }}';
-            });
-
-            // Store the swiper instance on the element and component to avoid conflicts
-            carouselElement.swiper = swiperInstance;
-            this.carouselSwiper = swiperInstance;
           }
         });
       },
 
       initializeMobileClickHandler() {
         try {
-          // Track pointer movement so swipes do not trigger unwanted navigation
-          let pointerMoved = false;
-          let pointerStartX = 0;
-          let pointerStartY = 0;
-          const DRAG_THRESHOLD = 12;
           const productUrl = '{{ product.url }}';
-          const productId = '{{ product.id }}';
-
-          console.log(`[Mobile Click Handler ${productId}] Initializing for product: ${productUrl}`);
-
-          const setPointerStart = (x, y) => {
-            try {
-              pointerStartX = x;
-              pointerStartY = y;
-              pointerMoved = false;
-              console.log(`[Mobile Click Handler ${productId}] Touch start at:`, { x, y });
-            } catch (e) {
-              console.error(`[Mobile Click Handler ${productId}] Error in setPointerStart:`, e);
-            }
-          };
-
-          const detectPointerMove = (x, y) => {
-            try {
-              if (!pointerMoved) {
-                const deltaX = Math.abs(x - pointerStartX);
-                const deltaY = Math.abs(y - pointerStartY);
-                if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
-                  pointerMoved = true;
-                  console.log(`[Mobile Click Handler ${productId}] Movement detected:`, { deltaX, deltaY, pointerMoved });
-                }
-              }
-            } catch (e) {
-              console.error(`[Mobile Click Handler ${productId}] Error in detectPointerMove:`, e);
-            }
-          };
-
           const imageContainer = this.$el.querySelector('.product-image-carousel') ||
                                  this.$el.querySelector('[class*="aspect-"]');
 
           if (!imageContainer) {
-            console.error(`[Mobile Click Handler ${productId}] Image container not found!`);
+            this.debug('mobileHandler:image-container-missing');
             return;
           }
 
-          console.log(`[Mobile Click Handler ${productId}] Image container found:`, imageContainer);
+          this.debug('mobileHandler:attached', { productUrl });
 
-        imageContainer.addEventListener('touchstart', (event) => {
-          const touch = event.touches[0];
-          if (touch) {
-            setPointerStart(touch.clientX, touch.clientY);
-          }
-          // Prevent pull-to-refresh on iOS
-          if (window.scrollY === 0) {
-            event.preventDefault();
-          }
-        }, { passive: false });
+          let pointerMoved = false;
+          let pointerStartX = 0;
+          let pointerStartY = 0;
+          const DRAG_THRESHOLD = 12;
 
-        imageContainer.addEventListener('touchmove', (event) => {
-          const touch = event.touches[0];
-          if (touch) {
-            detectPointerMove(touch.clientX, touch.clientY);
-          }
-        }, { passive: true });
-
-        imageContainer.addEventListener('touchend', (event) => {
-          console.log(`[Mobile Click Handler ${productId}] Touch end, pointerMoved:`, pointerMoved);
-          // Small delay to ensure click event fires after this
-          setTimeout(() => {
+          const setPointerStart = (x, y) => {
+            pointerStartX = x;
+            pointerStartY = y;
             pointerMoved = false;
-          }, 100);
-        }, { passive: true });
+            this.debug('mobileHandler:touchstart', { x, y });
+          };
 
-        // Add click event to go to product page
-        imageContainer.addEventListener('click', (e) => {
-          console.log(`[Mobile Click Handler ${productId}] Click detected!`, {
-            pointerMoved,
-            target: e.target,
-            currentTarget: e.currentTarget
+          const detectPointerMove = (x, y) => {
+            if (!pointerMoved) {
+              const deltaX = Math.abs(x - pointerStartX);
+              const deltaY = Math.abs(y - pointerStartY);
+              if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
+                pointerMoved = true;
+                this.debug('mobileHandler:movement', { deltaX, deltaY });
+              }
+            }
+          };
+
+          imageContainer.addEventListener('touchstart', (event) => {
+            const touch = event.touches[0];
+            if (touch) {
+              setPointerStart(touch.clientX, touch.clientY);
+            }
+            if (window.scrollY === 0) {
+              event.preventDefault();
+            }
+          }, { passive: false });
+
+          imageContainer.addEventListener('touchmove', (event) => {
+            const touch = event.touches[0];
+            if (touch) {
+              detectPointerMove(touch.clientX, touch.clientY);
+            }
+          }, { passive: true });
+
+          imageContainer.addEventListener('touchend', () => {
+            this.debug('mobileHandler:touchend', { pointerMoved });
+            setTimeout(() => { pointerMoved = false; }, 100);
+          }, { passive: true });
+
+          imageContainer.addEventListener('click', (e) => {
+            this.debug('mobileHandler:click', { pointerMoved });
+            if (pointerMoved) {
+              this.debug('mobileHandler:click-cancelled-swipe');
+              return;
+            }
+
+            const isControl =
+              e.target.closest('.product-prev') ||
+              e.target.closest('.product-next') ||
+              e.target.closest('.size-selector-hover') ||
+              e.target.closest('.wishlist-button') ||
+              e.target.closest('button[aria-label="Seleccionar talla"]');
+
+            if (isControl) {
+              this.debug('mobileHandler:click-cancelled-control');
+              return;
+            }
+
+            this.debug('mobileHandler:navigate', { productUrl });
+            window.location.href = productUrl;
           });
-
-          // Ignore clicks that started as swipes
-          if (pointerMoved) {
-            console.log(`[Mobile Click Handler ${productId}] Click ignored - was a swipe`);
-            return;
-          }
-
-          // Check if click is on navigation buttons, size selector, or wishlist
-          const closestPrev = e.target.closest('.product-prev');
-          const closestNext = e.target.closest('.product-next');
-          const closestSize = e.target.closest('.size-selector-hover');
-          const closestWishlist = e.target.closest('.wishlist-button');
-          const closestPlusButton = e.target.closest('button[aria-label="Seleccionar talla"]');
-
-          console.log(`[Mobile Click Handler ${productId}] Checking control elements:`, {
-            closestPrev,
-            closestNext,
-            closestSize,
-            closestWishlist,
-            closestPlusButton
-          });
-
-          if (closestPrev || closestNext || closestSize || closestWishlist || closestPlusButton) {
-            console.log(`[Mobile Click Handler ${productId}] Click ignored - on control element`);
-            return;
-          }
-
-          // Navigate to product page
-          console.log(`[Mobile Click Handler ${productId}] NAVIGATING TO:`, productUrl);
-          window.location.href = productUrl;
-        });
-
-          console.log(`[Mobile Click Handler ${productId}] Event listeners attached successfully`);
         } catch (error) {
-          console.error(`[Mobile Click Handler ${productId}] CRITICAL ERROR in initializeMobileClickHandler:`, error);
-          console.error('Stack trace:', error.stack);
+          this.debug('mobileHandler:error', { message: error.message, stack: error.stack });
         }
       }
     }
