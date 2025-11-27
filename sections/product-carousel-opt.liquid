@@ -1,259 +1,172 @@
 {% comment %}
-  Product Carousel Opt - Clean, simple, bug-free implementation
-  Built from scratch for optimal performance
+  Product Carousel Opt - Optimized version
+  Based on product-carousel.liquid but cleaner
+  Uses generic-carousel snippet for proven performance
 {% endcomment %}
 
-<div class="py-12 lg:py-10" id="carousel-opt-{{ section.id }}">
-  <div class="max-w-screen-2xl mx-auto">
-
-    {%- comment -%} Header Section {%- endcomment -%}
-    {% if section.settings.title != blank or section.settings.show_view_all %}
-      <div class="flex justify-between items-end mb-6 lg:mb-8 px-4 lg:px-12">
+<div class="py-12 lg:py-10 overflow-x-hidden" id="product-carousel-opt-{{ section.id }}">
+  <div class="w-full flex flex-col gap-8">
+    {% if section.settings.title != blank %}
+      <div class="flex justify-between items-end mx-4 lg:mx-12">
         <div class="flex flex-col gap-2">
-          {% if section.settings.title != blank %}
-            <h2 class="text-2xl lg:text-3xl font-bold">{{ section.settings.title }}</h2>
-          {% endif %}
+          <h2>{{ section.settings.title }}</h2>
           {% if section.settings.rich_text != blank %}
-            <div class="text-sm lg:text-base text-gray-600">
-              {{ section.settings.rich_text }}
+            <div class="rich-text">{{ section.settings.rich_text }}</div>
+          {% endif %}
+        </div>
+        <div class="items-center gap-8 hidden lg:flex">
+          {% if section.settings.show_view_all %}
+            {% assign view_all_url = '' %}
+            {% case section.settings.product_source %}
+              {% when 'collections' %}
+                {% assign view_all_url = section.settings.view_all_link_collections %}
+              {% else %}
+                {% assign view_all_url = section.settings.view_all_link %}
+            {% endcase %}
+
+            {% if view_all_url != blank %}
+              <a
+                href="{{ view_all_url }}"
+                class="text-gray-600 hover:text-gray-900 transition-colors underline"
+              >
+                {{ section.settings.view_all_text | default: 'Ver todos' }}
+              </a>
+            {% endif %}
+          {% endif %}
+          {% if section.settings.show_arrows %}
+            <div class="hidden lg:flex space-x-2" id="product-carousel-opt-arrows-{{ section.id }}">
+              <button
+                class="product-carousel-prev w-8 h-8 rounded-full bg-gray-300 text-gray-500 disabled:hover:bg-gray-300 disabled:hover:text-gray-500 transition-all duration-200 flex items-center justify-center cursor-not-allowed"
+                aria-label="Previous"
+                disabled
+                data-carousel-id="{{ section.id }}"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </button>
+              <button
+                class="product-carousel-next w-8 h-8 rounded-full bg-primary text-white hover:bg-primary/80 disabled:hover:bg-gray-300 disabled:hover:text-gray-500 transition-all duration-200 flex items-center justify-center cursor-pointer"
+                aria-label="Next"
+                data-carousel-id="{{ section.id }}"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
             </div>
           {% endif %}
         </div>
-
-        {%- comment -%} View All Link (desktop only) {%- endcomment -%}
-        {% if section.settings.show_view_all %}
-          {% assign view_all_url = '' %}
-          {% case section.settings.product_source %}
-            {% when 'collections' %}
-              {% assign view_all_url = section.settings.view_all_link_collections %}
-            {% else %}
-              {% assign view_all_url = section.settings.view_all_link %}
-          {% endcase %}
-
-          {% if view_all_url != blank %}
-            <a
-              href="{{ view_all_url }}"
-              class="hidden lg:block text-sm underline hover:no-underline transition-all"
-            >
-              {{ section.settings.view_all_text | default: 'Ver todos' }}
-            </a>
-          {% endif %}
-        {% endif %}
       </div>
     {% endif %}
 
-    {%- comment -%} Build Products Array {%- endcomment -%}
-    {% assign all_products = '' %}
+    {% assign products = '' %}
     {% case section.settings.product_source %}
       {% when 'collection' %}
         {% if section.settings.collection != blank %}
-          {% assign all_products = section.settings.collection.products %}
+          {% assign products = section.settings.collection.products %}
         {% endif %}
-
       {% when 'collections' %}
-        {% if section.settings.collections.size > 0 %}
-          {% for collection in section.settings.collections limit: 10 %}
-            {% assign products_from_collection = 0 %}
+        {% if section.settings.collections.count > 0 %}
+          {% assign products = blank %}
+          {% assign first_collection = true %}
+
+          {% for collection in section.settings.collections %}
+            {% assign products_added = 0 %}
+            {% assign collection_products = blank %}
+
             {% for product in collection.products %}
-              {% if product.available and products_from_collection < 3 %}
-                {% assign all_products = all_products | concat: product %}
-                {% assign products_from_collection = products_from_collection | plus: 1 %}
+              {% if product.available and products_added < 3 %}
+                {% if products_added == 0 %}
+                  {% assign collection_products = collection.products | where: 'id', product.id %}
+                {% else %}
+                  {% assign single_product = collection.products | where: 'id', product.id %}
+                  {% assign collection_products = collection_products | concat: single_product %}
+                {% endif %}
+                {% assign products_added = products_added | plus: 1 %}
               {% endif %}
             {% endfor %}
-          {% endfor %}
-        {% endif %}
 
-      {% when 'tags' %}
-        {% if section.settings.product_tags != blank %}
-          {% assign tags = section.settings.product_tags | split: ',' %}
-          {% for product in collections.all.products limit: 50 %}
-            {% if product.available %}
-              {% for tag in tags %}
-                {% assign clean_tag = tag | strip %}
-                {% if product.tags contains clean_tag %}
-                  {% assign all_products = all_products | concat: product %}
-                  {% break %}
-                {% endif %}
-              {% endfor %}
+            {% if collection_products != blank %}
+              {% if first_collection %}
+                {% assign products = collection_products %}
+                {% assign first_collection = false %}
+              {% else %}
+                {% assign products = products | concat: collection_products %}
+              {% endif %}
             {% endif %}
           {% endfor %}
         {% endif %}
-
+      {% when 'tags' %}
+        {% if section.settings.product_tags != blank %}
+          {% assign tag_array = section.settings.product_tags | split: ',' %}
+          {% assign products = collections.all.products %}
+          {% for tag in tag_array %}
+            {% assign tag_trimmed = tag | strip %}
+            {% assign products = products | where: 'tags', tag_trimmed %}
+          {% endfor %}
+        {% endif %}
       {% when 'manual' %}
-        {% assign all_products = section.settings.products %}
+        {% assign products = section.settings.products %}
     {% endcase %}
 
-    {%- comment -%} Count available products {%- endcomment -%}
-    {% assign count = 0 %}
-    {% for product in all_products %}
+    {% assign available_count = 0 %}
+    {% for product in products %}
       {% if product.available %}
-        {% assign count = count | plus: 1 %}
-        {% if count >= section.settings.max_products %}
-          {% break %}
-        {% endif %}
+        {% assign available_count = available_count | plus: 1 %}
       {% endif %}
     {% endfor %}
 
-    {%- comment -%} Render Products or Empty Message {%- endcomment -%}
-    {% if count > 0 %}
-
-      {%- comment -%} Navigation Arrows (desktop only) {%- endcomment -%}
-      {% if section.settings.show_arrows %}
-        <div class="hidden lg:flex justify-end gap-2 px-12 mb-4">
-          <button
-            class="carousel-prev-{{ section.id }} w-8 h-8 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Previous"
-            disabled
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-            </svg>
-          </button>
-          <button
-            class="carousel-next-{{ section.id }} w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center transition-all hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Next"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-            </svg>
-          </button>
-        </div>
-      {% endif %}
-
-      {%- comment -%} Product Grid/Carousel {%- endcomment -%}
-      <div
-        class="swiper swiper-{{ section.id }}"
-        data-carousel-id="{{ section.id }}"
-      >
-        <div class="swiper-wrapper">
-          {% assign products_shown = 0 %}
-          {% for product in all_products %}
-            {% if product.available and products_shown < section.settings.max_products %}
-              <div class="swiper-slide">
+    {% if available_count > 0 %}
+      {% capture carousel_content %}
+        {% assign products_shown = 0 %}
+        {% for product in products %}
+          {% if product.available and products_shown < section.settings.max_products %}
+            <div class="swiper-slide">
+              <div class="w-full">
                 {% render 'product-card',
                   product: product,
                   show_badges: section.settings.show_badges,
                   show_rating: section.settings.show_rating,
                   show_color_swatches: false,
-                  show_size_selector: section.settings.show_size_selector,
-                  mobile_layout: false
+                  show_size_selector: section.settings.show_size_selector
                 %}
               </div>
-              {% assign products_shown = products_shown | plus: 1 %}
-            {% endif %}
-          {% endfor %}
-        </div>
-      </div>
+            </div>
+            {% assign products_shown = products_shown | plus: 1 %}
+          {% endif %}
+        {% endfor %}
+      {% endcapture %}
 
-      {%- comment -%} Swipe Hint (mobile only) {%- endcomment -%}
+      {% render 'generic-carousel',
+        carousel_id: section.id,
+        carousel_class: 'product-carousel-opt',
+        content: carousel_content,
+        show_arrows: section.settings.show_arrows,
+        slides_per_view_mobile: 1.35,
+        slides_per_view_desktop: 4,
+        space_between_mobile: 2,
+        space_between_desktop: 4,
+        centered_slides: true,
+        free_mode: true,
+        total_items: available_count
+      %}
+
       {% if section.settings.show_swipe_hint %}
-        <div class="lg:hidden text-center mt-4 text-sm text-gray-500 px-4">
+        <div class="text-center mt-4 text-sm text-gray-500 lg:hidden mx-4">
           ← Desliza para ver más →
         </div>
       {% endif %}
 
     {% else %}
-      <div class="text-center py-12 px-4">
+      <div class="text-center py-8">
         <p class="text-gray-600">
-          {{ section.settings.no_products_message | default: 'No hay productos disponibles.' }}
+          {{ section.settings.no_products_message | default: 'No hay productos disponibles en este momento.' }}
         </p>
       </div>
     {% endif %}
-
   </div>
 </div>
-
-<style>
-  .swiper-{{ section.id }} {
-    padding-left: 16px;
-    padding-right: 16px;
-    overflow: visible;
-  }
-
-  @media (min-width: 1024px) {
-    .swiper-{{ section.id }} {
-      padding-left: 48px;
-      padding-right: 48px;
-    }
-  }
-
-  .swiper-{{ section.id }} .swiper-slide {
-    width: auto;
-    max-width: 320px;
-  }
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const sectionId = '{{ section.id }}';
-  const swiperEl = document.querySelector('.swiper-' + sectionId);
-
-  if (!swiperEl || typeof Swiper === 'undefined') return;
-
-  const totalProducts = {{ count }};
-  const prevBtn = document.querySelector('.carousel-prev-' + sectionId);
-  const nextBtn = document.querySelector('.carousel-next-' + sectionId);
-
-  // Initialize Swiper
-  const swiper = new Swiper(swiperEl, {
-    slidesPerView: 'auto',
-    spaceBetween: 16,
-    freeMode: {
-      enabled: true,
-      sticky: false,
-    },
-    navigation: {
-      nextEl: nextBtn,
-      prevEl: prevBtn,
-    },
-    breakpoints: {
-      1024: {
-        spaceBetween: 24,
-      }
-    },
-    on: {
-      init: function() {
-        updateArrows(this);
-      },
-      slideChange: function() {
-        updateArrows(this);
-      },
-      reachBeginning: function() {
-        updateArrows(this);
-      },
-      reachEnd: function() {
-        updateArrows(this);
-      }
-    }
-  });
-
-  function updateArrows(swiperInstance) {
-    if (!prevBtn || !nextBtn) return;
-
-    // Update prev button
-    if (swiperInstance.isBeginning) {
-      prevBtn.disabled = true;
-      prevBtn.classList.remove('bg-primary', 'text-white', 'hover:bg-primary/80');
-      prevBtn.classList.add('bg-gray-300', 'text-gray-500');
-    } else {
-      prevBtn.disabled = false;
-      prevBtn.classList.remove('bg-gray-300', 'text-gray-500');
-      prevBtn.classList.add('bg-primary', 'text-white', 'hover:bg-primary/80');
-    }
-
-    // Update next button
-    if (swiperInstance.isEnd) {
-      nextBtn.disabled = true;
-      nextBtn.classList.remove('bg-primary', 'text-white', 'hover:bg-primary/80');
-      nextBtn.classList.add('bg-gray-300', 'text-gray-500');
-    } else {
-      nextBtn.disabled = false;
-      nextBtn.classList.remove('bg-gray-300', 'text-gray-500');
-      nextBtn.classList.add('bg-primary', 'text-white', 'hover:bg-primary/80');
-    }
-  }
-});
-</script>
 
 {% schema %}
 {
@@ -271,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
       "type": "richtext",
       "id": "rich_text",
       "label": "Rich Text",
-      "info": "Optional description below title"
+      "info": "Optional rich text content below the title"
     },
     {
       "type": "header",
@@ -293,19 +206,19 @@ document.addEventListener('DOMContentLoaded', function() {
       "type": "url",
       "id": "view_all_link",
       "label": "View All Link",
-      "info": "For single collection, tags, or manual"
+      "info": "Used for single collection, tags, and manual selection"
     },
     {
       "type": "url",
       "id": "view_all_link_collections",
-      "label": "View All Link (Multiple Collections)"
+      "label": "View All Link (Multiple Collections)",
+      "info": "Used when multiple collections are selected"
     },
     {
       "type": "checkbox",
       "id": "show_arrows",
       "label": "Show Navigation Arrows",
-      "default": true,
-      "info": "Desktop only"
+      "default": true
     },
     {
       "type": "checkbox",
@@ -345,24 +258,26 @@ document.addEventListener('DOMContentLoaded', function() {
     {
       "type": "collection",
       "id": "collection",
-      "label": "Collection"
+      "label": "Collection",
+      "info": "Select products from this collection"
     },
     {
       "type": "collection_list",
       "id": "collections",
       "label": "Collections",
-      "limit": 10
+      "limit": 10,
+      "info": "Select multiple collections to mix products from"
     },
     {
       "type": "text",
       "id": "product_tags",
       "label": "Product Tags",
-      "info": "Comma-separated (e.g., bestseller,new)"
+      "info": "Comma-separated tags (e.g., 'best-seller,new')"
     },
     {
       "type": "product_list",
       "id": "products",
-      "label": "Manual Products",
+      "label": "Manual Product Selection",
       "limit": 20
     },
     {
@@ -403,13 +318,22 @@ document.addEventListener('DOMContentLoaded', function() {
     {
       "type": "text",
       "id": "no_products_message",
-      "label": "No Products Message",
-      "default": "No hay productos disponibles."
+      "label": "No Products Available Message",
+      "default": "No hay productos disponibles en este momento.",
+      "info": "Message shown when no products are available to display"
+    },
+    {
+      "type": "header",
+      "content": "Carousel Settings"
     }
   ],
   "presets": [
     {
-      "name": "Product Carousel Opt"
+      "name": "Product Carousel Opt",
+      "settings": {
+        "title": "Los más vendidos",
+        "product_source": "collection"
+      }
     }
   ]
 }
