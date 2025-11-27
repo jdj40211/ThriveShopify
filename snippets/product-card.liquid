@@ -1599,12 +1599,13 @@
               if (e.target.closest('.product-prev') ||
                   e.target.closest('.product-next') ||
                   e.target.closest('.size-selector-hover') ||
-                  e.target.closest('[data-carousel-id]')) {
+                  e.target.closest('button[aria-label="Seleccionar talla"]')) {
                 console.log(logPrefix, 'click ignored on control');
                 return; // Don't navigate if clicking on controls
               }
 
               // Navigate to product page
+              console.log(logPrefix, 'NAVIGATING TO:', '{{ product.url }}');
               window.location.href = '{{ product.url }}';
             });
 
@@ -1695,7 +1696,6 @@
           const closestNext = e.target.closest('.product-next');
           const closestSize = e.target.closest('.size-selector-hover');
           const closestWishlist = e.target.closest('.wishlist-button');
-          const closestCarousel = e.target.closest('[data-carousel-id]');
           const closestPlusButton = e.target.closest('button[aria-label="Seleccionar talla"]');
 
           console.log(`[Mobile Click Handler ${productId}] Checking control elements:`, {
@@ -1703,11 +1703,10 @@
             closestNext,
             closestSize,
             closestWishlist,
-            closestCarousel,
             closestPlusButton
           });
 
-          if (closestPrev || closestNext || closestSize || closestWishlist || closestCarousel || closestPlusButton) {
+          if (closestPrev || closestNext || closestSize || closestWishlist || closestPlusButton) {
             console.log(`[Mobile Click Handler ${productId}] Click ignored - on control element`);
             return;
           }
