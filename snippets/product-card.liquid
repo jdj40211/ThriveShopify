@@ -31,6 +31,19 @@
     <a href="{{ product.url }}" class="absolute inset-0 z-0" aria-label="{{ product.title }}"></a>
 
     <!-- Product Image Carousel (swiper only on desktop) -->
+    <!-- Fallback: Always show at least featured image -->
+    {% if product.featured_image %}
+      <img
+        src="{{ product.featured_image | image_url: width: 1800 }}"
+        alt="{{ product.title }}"
+        class="w-full h-full object-contain object-center"
+        width="1800"
+        height="1800"
+        loading="eager"
+        x-show="!currentImages || currentImages.length === 0"
+      >
+    {% endif %}
+
     <div class="h-full" x-show="currentImages && currentImages.length >= 1">
       <div
         class="product-image-carousel group swiper-product-images-{{ product.id }}-{{ section.id }} w-full h-full"
@@ -833,11 +846,26 @@
       ],
 
       init() {
-        console.log('[Product Card {{ product.id }}] Initializing...', {
-          isDesktop: this.isDesktop,
-          currentImages: this.currentImages,
-          imagesLength: this.currentImages ? this.currentImages.length : 0
-        });
+        console.log('==========================================');
+        console.log('[Product Card {{ product.id }}] INIT START');
+        console.log('==========================================');
+        console.log('Window width:', window.innerWidth);
+        console.log('isDesktop:', this.isDesktop);
+        console.log('currentImages:', this.currentImages);
+        console.log('currentImages type:', typeof this.currentImages);
+        console.log('currentImages is Array:', Array.isArray(this.currentImages));
+        console.log('currentImages length:', this.currentImages ? this.currentImages.length : 'N/A');
+        console.log('productImages fallback:', this.productImages);
+        console.log('productImages length:', this.productImages ? this.productImages.length : 'N/A');
+
+        // Force currentImages if empty
+        if (!this.currentImages || this.currentImages.length === 0) {
+          console.warn('[Product Card {{ product.id }}] currentImages is empty! Using productImages fallback');
+          this.currentImages = this.productImages;
+        }
+
+        console.log('After fallback check - currentImages:', this.currentImages);
+        console.log('==========================================');
 
         // Update isDesktop on window resize
         window.addEventListener('resize', () => {
@@ -1626,43 +1654,52 @@
       },
 
       initializeMobileClickHandler() {
-        // Track pointer movement so swipes do not trigger unwanted navigation
-        let pointerMoved = false;
-        let pointerStartX = 0;
-        let pointerStartY = 0;
-        const DRAG_THRESHOLD = 12;
-        const productUrl = '{{ product.url }}';
-        const productId = '{{ product.id }}';
+        try {
+          // Track pointer movement so swipes do not trigger unwanted navigation
+          let pointerMoved = false;
+          let pointerStartX = 0;
+          let pointerStartY = 0;
+          const DRAG_THRESHOLD = 12;
+          const productUrl = '{{ product.url }}';
+          const productId = '{{ product.id }}';
 
-        console.log(`[Mobile Click Handler ${productId}] Initializing for product: ${productUrl}`);
+          console.log(`[Mobile Click Handler ${productId}] Initializing for product: ${productUrl}`);
 
-        const setPointerStart = (x, y) => {
-          pointerStartX = x;
-          pointerStartY = y;
-          pointerMoved = false;
-          console.log(`[Mobile Click Handler ${productId}] Touch start at:`, { x, y });
-        };
-
-        const detectPointerMove = (x, y) => {
-          if (!pointerMoved) {
-            const deltaX = Math.abs(x - pointerStartX);
-            const deltaY = Math.abs(y - pointerStartY);
-            if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
-              pointerMoved = true;
-              console.log(`[Mobile Click Handler ${productId}] Movement detected:`, { deltaX, deltaY, pointerMoved });
+          const setPointerStart = (x, y) => {
+            try {
+              pointerStartX = x;
+              pointerStartY = y;
+              pointerMoved = false;
+              console.log(`[Mobile Click Handler ${productId}] Touch start at:`, { x, y });
+            } catch (e) {
+              console.error(`[Mobile Click Handler ${productId}] Error in setPointerStart:`, e);
             }
+          };
+
+          const detectPointerMove = (x, y) => {
+            try {
+              if (!pointerMoved) {
+                const deltaX = Math.abs(x - pointerStartX);
+                const deltaY = Math.abs(y - pointerStartY);
+                if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
+                  pointerMoved = true;
+                  console.log(`[Mobile Click Handler ${productId}] Movement detected:`, { deltaX, deltaY, pointerMoved });
+                }
+              }
+            } catch (e) {
+              console.error(`[Mobile Click Handler ${productId}] Error in detectPointerMove:`, e);
+            }
+          };
+
+          const imageContainer = this.$el.querySelector('.product-image-carousel') ||
+                                 this.$el.querySelector('[class*="aspect-"]');
+
+          if (!imageContainer) {
+            console.error(`[Mobile Click Handler ${productId}] Image container not found!`);
+            return;
           }
-        };
 
-        const imageContainer = this.$el.querySelector('.product-image-carousel') ||
-                               this.$el.querySelector('[class*="aspect-"]');
-
-        if (!imageContainer) {
-          console.error(`[Mobile Click Handler ${productId}] Image container not found!`);
-          return;
-        }
-
-        console.log(`[Mobile Click Handler ${productId}] Image container found:`, imageContainer);
+          console.log(`[Mobile Click Handler ${productId}] Image container found:`, imageContainer);
 
         imageContainer.addEventListener('touchstart', (event) => {
           const touch = event.touches[0];
@@ -1729,7 +1766,11 @@
           window.location.href = productUrl;
         });
 
-        console.log(`[Mobile Click Handler ${productId}] Event listeners attached successfully`);
+          console.log(`[Mobile Click Handler ${productId}] Event listeners attached successfully`);
+        } catch (error) {
+          console.error(`[Mobile Click Handler ${productId}] CRITICAL ERROR in initializeMobileClickHandler:`, error);
+          console.error('Stack trace:', error.stack);
+        }
       }
     }
   }
