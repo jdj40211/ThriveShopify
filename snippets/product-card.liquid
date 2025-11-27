@@ -87,7 +87,7 @@
     <!-- Price Overlay - positioned in bottom left corner -->
     {% if show_price_overlay %}
       <div class="absolute left-2 bottom-2  z-10">
-        <span class="body-xs lg:body-sm font-semibold text-black"> ${{ product.price | money_without_currency }} </span>
+        <span class="body-xs lg:body-sm font-semibold text-black"> S/ {{ product.price | money_without_currency }} </span>
       </div>
     {% endif %}
 
@@ -668,11 +668,11 @@
         <!-- Price Section -->
         <div class="flex {% if mobile_layout %}flex-col{% else %}lg:flex-row-reverse{% endif %} gap-2 items-end">
           <span class="{% if mobile_layout %}body-xs lg:body-sm{% else %}body-sm lg:body{% endif %} font-semibold"
-            >${{ product.price | money_without_currency -}}
+            >S/ {{ product.price | money_without_currency -}}
           </span>
           {% if product.compare_at_price > product.price %}
             <span class="{% if mobile_layout %}body-xs lg:body-sm{% else %}body-sm lg:body{% endif %} text-black/40 line-through">
-              ${{ product.compare_at_price | money_without_currency }}
+              S/ {{ product.compare_at_price | money_without_currency }}
             </span>
           {% endif %}
         </div>

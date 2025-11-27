@@ -116,7 +116,7 @@
                         {{ product.title }}
                       </h3>
                       <p class="text-xl font-bold text-gray-900">
-                        {{ product.selected_or_first_available_variant.price | money }}
+                        S/ {{ product.selected_or_first_available_variant.price | money_without_currency }}
                       </p>
                     </a>
 

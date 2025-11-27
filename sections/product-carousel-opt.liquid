@@ -108,7 +108,7 @@
               </button>
 
               <div class="absolute left-2 bottom-2 bg-white/90 rounded-full px-3 py-1 text-xs font-semibold text-gray-900">
-                {{ product.price | money }}
+                S/ {{ product.price | money_without_currency }}
               </div>
 
               {% if section.settings.show_size_selector %}
@@ -128,9 +128,9 @@
                 {{ product.title }}
               </a>
               <div class="flex gap-2 items-baseline text-sm lg:text-base">
-                <span class="font-semibold">{{ product.price | money }}</span>
+                <span class="font-semibold">S/ {{ product.price | money_without_currency }}</span>
                 {% if product.compare_at_price > product.price %}
-                  <span class="text-gray-400 line-through text-xs lg:text-sm">{{ product.compare_at_price | money }}</span>
+                  <span class="text-gray-400 line-through text-xs lg:text-sm">S/ {{ product.compare_at_price | money_without_currency }}</span>
                 {% endif %}
               </div>
               {% if section.settings.show_rating %}

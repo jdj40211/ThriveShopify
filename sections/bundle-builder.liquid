@@ -103,7 +103,7 @@
                             <div class="mt-1">
                               <span
                                 class="text-sm font-semibold text-gray-900"
-                                x-text="'$' + (product.price / 100).toFixed(2)"
+                                x-text="'S/ ' + (product.price / 100).toFixed(2)"
                               ></span>
                             </div>
                           </div>
@@ -225,8 +225,8 @@
                   <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-900 truncate">{{ free_gift_product.title }}</p>
                     <p class="text-xs text-gray-500">
-                      {{ section.settings.free_gift_description | default: 'Valor: $' -}}
-                      {{- free_gift_product.price | money_without_currency }}
+                      {{ section.settings.free_gift_description | default: 'Valor: S/ ' -}}
+                      S/ {{- free_gift_product.price | money_without_currency }}
                     </p>
                   </div>
                 </div>
@@ -659,7 +659,7 @@
       },
 
       formatPrice(price) {
-        return '$' + (price / 100).toFixed(2);
+        return 'S/ ' + (price / 100).toFixed(2);
       }
     }
   }
@@ -880,7 +880,7 @@
       "type": "text",
       "id": "free_gift_description",
       "label": "Descripción del Regalo",
-      "default": "Valor: $"
+      "default": "Valor: S/"
     },
     {
       "type": "header",

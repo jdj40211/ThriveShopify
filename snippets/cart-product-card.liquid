@@ -32,11 +32,11 @@
         
         <div class="text-right pl-2">
           <div class="flex items-center justify-end space-x-2">
-            <span class="font-semibold text-gray-900 text-sm" x-text="'$' + formatMoney(item.final_line_price)"></span>
+            <span class="font-semibold text-gray-900 text-sm" x-text="'S/ ' + formatMoney(item.final_line_price)"></span>
             <span
               class="text-xs text-gray-400 line-through"
               x-show="item.original_line_price && item.original_line_price > item.final_line_price"
-              x-text="'$' + formatMoney(item.original_line_price)"
+              x-text="'S/ ' + formatMoney(item.original_line_price)"
             ></span>
           </div>
         </div>

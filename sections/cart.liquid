@@ -34,7 +34,7 @@
               <div class="flex-1">
                 <h3 class="font-semibold text-lg">{{ item.product.title }}</h3>
                 <p class="text-gray-600">{{ item.variant.title }}</p>
-                <p class="text-lg font-bold mt-2">{{ item.final_line_price | money }}</p>
+                <p class="text-lg font-bold mt-2">S/ {{ item.final_line_price | money_without_currency }}</p>
               </div>
 
               <!-- Quantity Controls -->
@@ -92,7 +92,7 @@
         <div class="mt-8 p-6 bg-gray-50 rounded-lg">
           <div class="flex justify-between items-center mb-4">
             <span class="text-lg font-semibold">Subtotal:</span>
-            <span class="text-lg font-bold">{{ cart.total_price | money }}</span>
+            <span class="text-lg font-bold">S/ {{ cart.total_price | money_without_currency }}</span>
           </div>
 
           <div class="flex gap-4">

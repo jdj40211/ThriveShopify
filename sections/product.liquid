@@ -25,6 +25,7 @@
   endif
 
   assign size_guide_notes_text = section.settings.size_guide_notes
+  assign show_duo_option = false
 %}
 
 <style>
@@ -196,11 +197,11 @@
             {% endif %}
           </div>
           <div class="flex flex-col items-end gap-0.5">
-            <h6 class=" {%if product.compare_at_price > product.price %} text-red-700  {% else %} text-black {% endif %} ">
-              ${{ product.price | money_without_currency }}
+            <h6 class=" {%if product.compare_at_price > product.price %} text-green-600  {% else %} text-black {% endif %} ">
+              S/ {{ product.price | money_without_currency }}
             </h6>
             {% if product.compare_at_price > product.price %}
-              <p class="body line-through text-neutral-400">${{ product.compare_at_price | money_without_currency }}</p>
+              <p class="body line-through text-neutral-400">S/ {{ product.compare_at_price | money_without_currency }}</p>
             {% endif %}
           </div>
         </div>
@@ -262,126 +263,6 @@
         {% endif %}
       </div>
 
-      <!-- Purchase Options Logic -->
-      {% comment %} Check if current product is eligible for duo discount {% endcomment %}
-      {% assign duo_eligible = false %}
-      {% assign has_sufficient_stock = false %}
-
-      {% comment %} Check stock availability (need more than 1 item) {% endcomment %}
-      {% assign total_stock = 0 %}
-      {% for variant in product.variants %}
-        {% if variant.available %}
-          {% assign total_stock = total_stock | plus: variant.inventory_quantity %}
-        {% endif %}
-      {% endfor %}
-      {% if total_stock > 1 %}
-        {% assign has_sufficient_stock = true %}
-      {% endif %}
-
-      {% comment %} Check if product is in eligible products list {% endcomment %}
-
-      {% for eligible_product in section.settings.duo_eligible_products %}
-        {% if eligible_product.id == product.id %}
-          {% assign duo_eligible = true %}
-          {% break %}
-        {% endif %}
-      {% endfor %}
-
-      {% comment %} Check if product belongs to eligible collections {% endcomment %}
-      {% if duo_eligible == false %}
-        {% for collection in product.collections %}
-          {% for eligible_collection in section.settings.duo_eligible_collections %}
-            {% if eligible_collection.id == collection.id %}
-              {% assign duo_eligible = true %}
-              {% break %}
-            {% endif %}
-          {% endfor %}
-          {% if duo_eligible %}
-            {% break %}
-          {% endif %}
-        {% endfor %}
-      {% endif %}
-
-      {% comment %} If no specific products or collections are selected, make all products eligible {% endcomment %}
-      {% if section.settings.duo_eligible_products.size == 0 and section.settings.duo_eligible_collections.size == 0 %}
-        {% assign duo_eligible = true %}
-      {% endif %}
-
-      {% comment %} Final eligibility check: must be eligible AND have sufficient stock {% endcomment %}
-      {% assign show_duo_option = false %}
-      {% if duo_eligible and has_sufficient_stock %}
-        {% assign show_duo_option = true %}
-      {% endif %}
-
-      <!-- Purchase Options - Only show if duo option is available -->
-      {% if show_duo_option %}
-        <div class="flex flex-col gap-2">
-          <!-- Single Purchase Option -->
-          <label
-            class="flex items-center  cursor-pointer p-3 gap-2 border border-gray-900  bg-white hover:bg-gray-50 transition-colors"
-            :class="purchaseOption === 'single' ? 'bg-primary/10' : ''"
-          >
-            <input
-              type="radio"
-              name="purchase_option"
-              value="single"
-              x-model="purchaseOption"
-              class="w-4 h-4 "
-            >
-            <div class="flex-1">
-              <h6 class="font-semibold">
-                {{ section.settings.single_option_title | default: 'Único' }}
-              </h6>
-              <div class="body-sm text-black/80">
-                {{ section.settings.single_option_subtitle | default: 'Standard price' }}
-              </div>
-            </div>
-            <h6>${{ product.price | money_without_currency }}</h6>
-          </label>
-
-          <!-- Duo Purchase Option -->
-          <div
-            class="border border-gray-900 p-3  bg-white hover:bg-gray-50 transition-colors relative"
-            :class="purchaseOption === 'duo' ? 'bg-primary/10' : ''"
-          >
-            <label class="flex items-center gap-2 cursor-pointer ">
-              <input
-                type="radio"
-                name="purchase_option"
-                value="duo"
-                x-model="purchaseOption"
-                class="w-4 h-4 "
-              >
-              <div class="flex-1">
-                <div class="flex items-center gap-2">
-                  <h6 class="font-semibold">
-                    {{- section.settings.duo_option_title | default: 'Duo' -}}
-                  </h6>
-                  <span class="bg-green body-sm text-white  uppercase py-1 px-2 rounded-sm font-semibold absolute -top-1 right-0">
-                    {{- section.settings.best_value_text | default: 'BEST VALUE' -}}
-                  </span>
-                </div>
-                <div class="body-sm text-black/80">
-                  {{ section.settings.duo_option_subtitle | default: 'Compra más y ahorra' }}
-                </div>
-              </div>
-              {% render 'duo-price-display',
-                product: product,
-                discount_percentage: section.settings.duo_discount_percentage
-              %}
-            </label>
-            <!-- Duo Selection Interface -->
-            <div x-show="purchaseOption === 'duo'" x-transition class="divide-y divide-black/15">
-              <!-- Product 1 Selection -->
-              {% render 'duo-product-selector', product: product, product_number: 1, product_title: 'Primera prenda' %}
-
-              <!-- Product 2 Selection -->
-              {% render 'duo-product-selector', product: product, product_number: 2, product_title: 'Segunda prenda' %}
-            </div>
-          </div>
-        </div>
-      {% endif %}
-
       <div class="space-y-2">
         <!-- Availability and Delivery -->
         <div class="w-full flex justify-between items-center">
@@ -399,10 +280,10 @@
           </div>
         </div>
         <!-- Add to Cart Button -->
-        <button
+                <button
           @click="addToCart"
-          :disabled="!isReadyToAddToCart || isAddingToCart || (purchaseOption === 'duo' && (!duoProduct1.color || !duoProduct1.size || !duoProduct2.color || !duoProduct2.size))"
-          :class="(isReadyToAddToCart && !isAddingToCart && !(purchaseOption === 'duo' && (!duoProduct1.color || !duoProduct1.size || !duoProduct2.color || !duoProduct2.size))) ? 'w-full bg-primary text-white py-4 px-6 font-semibold body border border-primary hover:bg-transparent hover:border-black hover:text-black transition-colors duration-300' : 'w-full bg-gray-300 text-gray-500 py-4 px-6 font-semibold body border border-gray-300 cursor-not-allowed transition-colors duration-300'"
+          :disabled="!isReadyToAddToCart || isAddingToCart"
+          :class="(isReadyToAddToCart && !isAddingToCart) ? 'w-full bg-primary text-white py-4 px-6 font-semibold body border border-primary hover:bg-transparent hover:border-black hover:text-black transition-colors duration-300' : 'w-full bg-gray-300 text-gray-500 py-4 px-6 font-semibold body border border-gray-300 cursor-not-allowed transition-colors duration-300'"
         >
           <!-- Loading State -->
           <span x-show="isAddingToCart" x-cloak class="flex items-center justify-center gap-2">
@@ -410,33 +291,18 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>Añadiendo...</span>
+            <span>A�adiendo...</span>
           </span>
 
-          <!-- Normal State with Ready to Add -->
+          <!-- Normal State -->
           <span x-show="isReadyToAddToCart && !isAddingToCart" x-cloak>
-            <span x-show="purchaseOption === 'single'">
-              {{ section.settings.cta_button_text | default: 'Paga de forma segura' }} - $
-              {{- product.price | money_without_currency }}
-            </span>
-            <span x-show="purchaseOption === 'duo'">
-              Comprar Duo - $
-              {% assign duo_discount = section.settings.duo_discount_percentage | default: 5 %}
-              {% assign duo_original_price = product.price | plus: product.price %}
-              {% assign duo_discount_amount = duo_original_price | times: duo_discount | divided_by: 100 %}
-              {% assign duo_discounted_price = duo_original_price | minus: duo_discount_amount %}
-              {{ duo_discounted_price | money_without_currency }}
-            </span>
+            {{ section.settings.cta_button_text | default: 'A�adir al carrito' }}
           </span>
 
-          <!-- Not Ready to Add -->
+          <!-- State when not ready to add -->
           <span x-show="!isReadyToAddToCart && !isAddingToCart" x-cloak>
-            <span x-show="purchaseOption === 'single'"> Elije tu talla </span>
-            <span x-show="purchaseOption === 'duo'"> Completa ambas prendas </span>
+            Selecciona una talla para continuar
           </span>
-
-          <!-- Fallback text before Alpine.js loads -->
-          <span class="alpine-fallback"> Elije tu talla </span>
         </button>
       </div>
       <!-- Shipping and Returns -->
@@ -778,7 +644,7 @@
       isInWishlist: false,
       deliveryDate: '',
       purchaseOption: 'single',
-      duoAvailable: {{ show_duo_option | json }},
+      duoAvailable: false,
       showMobileGallery: false,
       sizeGuideOpen: false,
       descriptionExpanded: false,
@@ -789,26 +655,11 @@
       
       // Computed total price
       get totalPrice() {
-        if (this.purchaseOption === 'duo' && this.duoAvailable) {
-          // Calculate duo total price (2 items with discount)
-          const basePrice = {{ product.price | money_without_currency }};
-          const discountPercentage = {{ section.settings.duo_discount_percentage | default: 5 }};
-          const discountedPrice = basePrice * (1 - discountPercentage / 100);
-          const totalDuoPrice = discountedPrice * 2; // Two items
-          return Math.round(totalDuoPrice * 100) / 100; // Round to 2 decimal places
-        } else {
-          // Return normal price
-          return {{ product.price | money_without_currency }};
-        }
+        return {{ product.price | money_without_currency }};
       },
 
       get isReadyToAddToCart() {
-        if (this.purchaseOption === 'single') {
-          return !!this.selectedSize;
-        } else if (this.purchaseOption === 'duo' && this.duoAvailable) {
-          return !!(this.duoProduct1.variantId && this.duoProduct2.variantId);
-        }
-        return false;
+        return !!this.selectedSize;
       },
       
       // Variant data with metafields
@@ -865,15 +716,7 @@
       selectColor(color, imageUrl, variantId) {
         this.selectedColor = color;
         this.selectedVariantId = variantId;
-        
-        // Always sync with first duo product
-        this.duoProduct1.color = color;
-        this.duoProduct1.variantId = variantId;
-        
-        // Only update gallery if we're in single purchase mode (not duo)
-        if (this.purchaseOption === 'single') {
-          this.updateGalleryForColor(color);
-        }
+        this.updateGalleryForColor(color);
       },
 
       toggleDescription() {
@@ -1425,11 +1268,12 @@
         
         this.initializeMobileCarousel();
         
-        // Set up watcher for purchase option changes
-        this.setupPurchaseOptionWatcher();
-        
-        // Make duo functions globally available
-        this.setupGlobalDuoFunctions();
+        if (this.duoAvailable) {
+          // Set up watcher for purchase option changes
+          this.setupPurchaseOptionWatcher();
+          // Make duo functions globally available
+          this.setupGlobalDuoFunctions();
+        }
       },
 
       // Set up watcher for purchase option changes
