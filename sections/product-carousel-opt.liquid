@@ -73,9 +73,9 @@
             {% break %}
           {% endif %}
         {% endfor %}
-        <div class="snap-start shrink-0 w-[calc(100vw-3rem)] sm:w-[45%] lg:w-[23%] pr-4">
+        <div class="snap-start shrink-0 w-[85vw] sm:w-[60vw] lg:w-[24%] pr-4 lg:pr-6">
           <article class="w-full h-full flex flex-col">
-            <div class="relative w-full aspect-[3/4.5] overflow-hidden bg-gray-50 rounded-lg">
+            <div class="relative w-full aspect-[3/4.5] overflow-hidden bg-gray-50">
               {% if featured_image %}
                 <img
                   src="{{ featured_image | image_url: width: 1800 }}"
@@ -148,21 +148,27 @@
 
           <div
             id="quick-add-{{ section.id }}-{{ product.id }}"
-            class="fixed inset-0 bg-black/50 hidden items-center justify-center z-40"
-            role="dialog"
-            aria-modal="true"
+            class="fixed inset-0 bg-black/50 hidden z-50"
             data-quick-add-modal
           >
-            <div class="bg-white rounded-2xl shadow-2xl w-11/12 max-w-sm p-6 relative">
-              <button
-                class="absolute top-3 right-3 text-gray-500 hover:text-black"
-                data-close-modal
-                type="button"
-                aria-label="Cerrar"
-              >
-                &times;
-              </button>
-              <h3 class="text-lg font-semibold mb-4">Anadir a la cesta</h3>
+            <div
+              class="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl transform translate-y-full transition-transform duration-300 ease-out max-h-[80vh] overflow-y-auto"
+              data-drawer-content
+            >
+              <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center rounded-t-3xl">
+                <h3 class="text-lg font-semibold">Selecciona tu talla</h3>
+                <button
+                  class="text-gray-500 hover:text-black w-8 h-8 flex items-center justify-center"
+                  data-close-modal
+                  type="button"
+                  aria-label="Cerrar"
+                >
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="p-6">
               {% if size_option_index != nil %}
                 <p class="text-sm text-gray-500 mb-3">{{ size_title | default: 'Tallas' }}</p>
                 <div class="flex flex-col gap-2">
@@ -193,7 +199,7 @@
                   Anadir {{ product.title }}
                 </button>
               {% endif %}
-              <p class="text-xs text-gray-400 mt-4">Selecciona una talla para anadir el producto.</p>
+              </div>
             </div>
           </div>
         {% assign products_shown = products_shown | plus: 1 %}
@@ -333,9 +339,13 @@
       if (openBtn) {
         const modal = document.getElementById(openBtn.dataset.openModal);
         if (modal) {
+          const drawer = modal.querySelector('[data-drawer-content]');
           modal.classList.remove('hidden');
-          modal.classList.add('flex');
           document.body.classList.add('overflow-hidden');
+          setTimeout(() => {
+            drawer?.classList.remove('translate-y-full');
+            drawer?.classList.add('translate-y-0');
+          }, 10);
         }
         return;
       }
@@ -343,17 +353,25 @@
       const closeBtn = event.target.closest('[data-close-modal]');
       if (closeBtn) {
         const modal = closeBtn.closest('[data-quick-add-modal]');
-        modal?.classList.add('hidden');
-        modal?.classList.remove('flex');
-        document.body.classList.remove('overflow-hidden');
+        const drawer = modal?.querySelector('[data-drawer-content]');
+        drawer?.classList.add('translate-y-full');
+        drawer?.classList.remove('translate-y-0');
+        setTimeout(() => {
+          modal?.classList.add('hidden');
+          document.body.classList.remove('overflow-hidden');
+        }, 300);
         return;
       }
 
       const modalOverlay = event.target.closest('[data-quick-add-modal]');
       if (modalOverlay && event.target === modalOverlay) {
-        modalOverlay.classList.add('hidden');
-        modalOverlay.classList.remove('flex');
-        document.body.classList.remove('overflow-hidden');
+        const drawer = modalOverlay.querySelector('[data-drawer-content]');
+        drawer?.classList.add('translate-y-full');
+        drawer?.classList.remove('translate-y-0');
+        setTimeout(() => {
+          modalOverlay.classList.add('hidden');
+          document.body.classList.remove('overflow-hidden');
+        }, 300);
         return;
       }
 
@@ -370,9 +388,13 @@
             body: JSON.stringify({ id: parseInt(variantId, 10), quantity: 1 }),
           });
           const modal = addBtn.closest('[data-quick-add-modal]');
-          modal?.classList.add('hidden');
-          modal?.classList.remove('flex');
-          document.body.classList.remove('overflow-hidden');
+          const drawer = modal?.querySelector('[data-drawer-content]');
+          drawer?.classList.add('translate-y-full');
+          drawer?.classList.remove('translate-y-0');
+          setTimeout(() => {
+            modal?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+          }, 300);
           document.dispatchEvent(new CustomEvent('cart:updated'));
         } catch (error) {
           console.error('Add to cart failed', error);
