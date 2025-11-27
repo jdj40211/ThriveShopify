@@ -26,12 +26,12 @@
   {% endif %}
 >
   <!-- Product Image Container -->
-  <div class="relative {% if mobile_layout %}aspect-[3/4]{% else %}aspect-[3/4.5]{% endif %} w-full overflow-hidden max-w-full">
+  <div class="relative {% if mobile_layout %}aspect-[3/4]{% else %}aspect-[3/4.5]{% endif %} w-full overflow-hidden max-w-full bg-white">
     <!-- Clickeable link to product page -->
     <a href="{{ product.url }}" class="absolute inset-0 z-0" aria-label="{{ product.title }}"></a>
 
     <!-- Product Image Carousel (swiper only on desktop) -->
-    <div class="h-full" x-show="currentImages && currentImages.length >= 1" x-cloak>
+    <div class="h-full" x-show="currentImages && currentImages.length >= 1">
       <div
         class="product-image-carousel group swiper-product-images-{{ product.id }}-{{ section.id }} w-full h-full"
         data-section-id="{{ section.id }}"
@@ -833,6 +833,11 @@
       ],
 
       init() {
+        console.log('[Product Card {{ product.id }}] Initializing...', {
+          isDesktop: this.isDesktop,
+          currentImages: this.currentImages,
+          imagesLength: this.currentImages ? this.currentImages.length : 0
+        });
 
         // Update isDesktop on window resize
         window.addEventListener('resize', () => {
@@ -856,6 +861,10 @@
             this.showSizeSelector = false;
           }
           this.isInitialized = true;
+          console.log('[Product Card {{ product.id }}] Initialized', {
+            isInitialized: this.isInitialized,
+            currentImages: this.currentImages
+          });
         });
 
         // Initialize other components
@@ -1660,7 +1669,11 @@
           if (touch) {
             setPointerStart(touch.clientX, touch.clientY);
           }
-        }, { passive: true });
+          // Prevent pull-to-refresh on iOS
+          if (window.scrollY === 0) {
+            event.preventDefault();
+          }
+        }, { passive: false });
 
         imageContainer.addEventListener('touchmove', (event) => {
           const touch = event.touches[0];
