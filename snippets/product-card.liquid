@@ -849,7 +849,7 @@
         if (this.isDesktop) {
           this.showSizeSelector = false;
         }
-        
+
         // Ensure mobile drawer starts in proper state and mark as initialized
         this.$nextTick(() => {
           if (!this.isDesktop) {
@@ -865,6 +865,11 @@
 
         // Initialize wishlist state from LocalStorage
         this.isInWishlist = this.isProductInWishlist('{{ product.handle }}');
+
+        // Add click handler for mobile (where carousel is not initialized)
+        if (!this.isDesktop) {
+          this.initializeMobileClickHandler();
+        }
       },
 
 
@@ -1607,6 +1612,76 @@
             carouselElement.swiper = swiperInstance;
             this.carouselSwiper = swiperInstance;
           }
+        });
+      },
+
+      initializeMobileClickHandler() {
+        // Track pointer movement so swipes do not trigger unwanted navigation
+        let pointerMoved = false;
+        let pointerStartX = 0;
+        let pointerStartY = 0;
+        const DRAG_THRESHOLD = 12;
+
+        const setPointerStart = (x, y) => {
+          pointerStartX = x;
+          pointerStartY = y;
+          pointerMoved = false;
+        };
+
+        const detectPointerMove = (x, y) => {
+          if (!pointerMoved) {
+            const deltaX = Math.abs(x - pointerStartX);
+            const deltaY = Math.abs(y - pointerStartY);
+            if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
+              pointerMoved = true;
+            }
+          }
+        };
+
+        const imageContainer = this.$el.querySelector('.product-image-carousel') ||
+                               this.$el.querySelector('[class*="aspect-"]');
+
+        if (!imageContainer) return;
+
+        imageContainer.addEventListener('touchstart', (event) => {
+          const touch = event.touches[0];
+          if (touch) {
+            setPointerStart(touch.clientX, touch.clientY);
+          }
+        }, { passive: true });
+
+        imageContainer.addEventListener('touchmove', (event) => {
+          const touch = event.touches[0];
+          if (touch) {
+            detectPointerMove(touch.clientX, touch.clientY);
+          }
+        }, { passive: true });
+
+        imageContainer.addEventListener('touchend', () => {
+          // Small delay to ensure click event fires after this
+          setTimeout(() => {
+            pointerMoved = false;
+          }, 100);
+        }, { passive: true });
+
+        // Add click event to go to product page
+        imageContainer.addEventListener('click', (e) => {
+          // Ignore clicks that started as swipes
+          if (pointerMoved) {
+            return;
+          }
+
+          // Check if click is on navigation buttons, size selector, or wishlist
+          if (e.target.closest('.product-prev') ||
+              e.target.closest('.product-next') ||
+              e.target.closest('.size-selector-hover') ||
+              e.target.closest('.wishlist-button') ||
+              e.target.closest('[data-carousel-id]')) {
+            return; // Don't navigate if clicking on controls
+          }
+
+          // Navigate to product page
+          window.location.href = '{{ product.url }}';
         });
       }
     }
