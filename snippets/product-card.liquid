@@ -1621,11 +1621,16 @@
         let pointerStartX = 0;
         let pointerStartY = 0;
         const DRAG_THRESHOLD = 12;
+        const productUrl = '{{ product.url }}';
+        const productId = '{{ product.id }}';
+
+        console.log(`[Mobile Click Handler ${productId}] Initializing for product: ${productUrl}`);
 
         const setPointerStart = (x, y) => {
           pointerStartX = x;
           pointerStartY = y;
           pointerMoved = false;
+          console.log(`[Mobile Click Handler ${productId}] Touch start at:`, { x, y });
         };
 
         const detectPointerMove = (x, y) => {
@@ -1634,6 +1639,7 @@
             const deltaY = Math.abs(y - pointerStartY);
             if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
               pointerMoved = true;
+              console.log(`[Mobile Click Handler ${productId}] Movement detected:`, { deltaX, deltaY, pointerMoved });
             }
           }
         };
@@ -1641,7 +1647,12 @@
         const imageContainer = this.$el.querySelector('.product-image-carousel') ||
                                this.$el.querySelector('[class*="aspect-"]');
 
-        if (!imageContainer) return;
+        if (!imageContainer) {
+          console.error(`[Mobile Click Handler ${productId}] Image container not found!`);
+          return;
+        }
+
+        console.log(`[Mobile Click Handler ${productId}] Image container found:`, imageContainer);
 
         imageContainer.addEventListener('touchstart', (event) => {
           const touch = event.touches[0];
@@ -1657,7 +1668,8 @@
           }
         }, { passive: true });
 
-        imageContainer.addEventListener('touchend', () => {
+        imageContainer.addEventListener('touchend', (event) => {
+          console.log(`[Mobile Click Handler ${productId}] Touch end, pointerMoved:`, pointerMoved);
           // Small delay to ensure click event fires after this
           setTimeout(() => {
             pointerMoved = false;
@@ -1666,23 +1678,46 @@
 
         // Add click event to go to product page
         imageContainer.addEventListener('click', (e) => {
+          console.log(`[Mobile Click Handler ${productId}] Click detected!`, {
+            pointerMoved,
+            target: e.target,
+            currentTarget: e.currentTarget
+          });
+
           // Ignore clicks that started as swipes
           if (pointerMoved) {
+            console.log(`[Mobile Click Handler ${productId}] Click ignored - was a swipe`);
             return;
           }
 
           // Check if click is on navigation buttons, size selector, or wishlist
-          if (e.target.closest('.product-prev') ||
-              e.target.closest('.product-next') ||
-              e.target.closest('.size-selector-hover') ||
-              e.target.closest('.wishlist-button') ||
-              e.target.closest('[data-carousel-id]')) {
-            return; // Don't navigate if clicking on controls
+          const closestPrev = e.target.closest('.product-prev');
+          const closestNext = e.target.closest('.product-next');
+          const closestSize = e.target.closest('.size-selector-hover');
+          const closestWishlist = e.target.closest('.wishlist-button');
+          const closestCarousel = e.target.closest('[data-carousel-id]');
+          const closestPlusButton = e.target.closest('button[aria-label="Seleccionar talla"]');
+
+          console.log(`[Mobile Click Handler ${productId}] Checking control elements:`, {
+            closestPrev,
+            closestNext,
+            closestSize,
+            closestWishlist,
+            closestCarousel,
+            closestPlusButton
+          });
+
+          if (closestPrev || closestNext || closestSize || closestWishlist || closestCarousel || closestPlusButton) {
+            console.log(`[Mobile Click Handler ${productId}] Click ignored - on control element`);
+            return;
           }
 
           // Navigate to product page
-          window.location.href = '{{ product.url }}';
+          console.log(`[Mobile Click Handler ${productId}] NAVIGATING TO:`, productUrl);
+          window.location.href = productUrl;
         });
+
+        console.log(`[Mobile Click Handler ${productId}] Event listeners attached successfully`);
       }
     }
   }
