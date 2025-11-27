@@ -43,42 +43,21 @@
     {% endif %}
 
     {%- comment -%} Build Products Array {%- endcomment -%}
-    {% assign products = blank %}
+    {% assign all_products = '' %}
     {% case section.settings.product_source %}
       {% when 'collection' %}
         {% if section.settings.collection != blank %}
-          {% assign products = section.settings.collection.products %}
+          {% assign all_products = section.settings.collection.products %}
         {% endif %}
 
       {% when 'collections' %}
         {% if section.settings.collections.size > 0 %}
-          {% assign all_products = blank %}
           {% for collection in section.settings.collections limit: 10 %}
-            {% for product in collection.products limit: 3 %}
-              {% if product.available %}
-                {% unless all_products contains product.id %}
-                  {% if all_products == blank %}
-                    {% assign all_products = product.id | append: ',' %}
-                  {% else %}
-                    {% assign all_products = all_products | append: product.id | append: ',' %}
-                  {% endif %}
-                {% endunless %}
-              {% endif %}
-            {% endfor %}
-          {% endfor %}
-
-          {%- comment -%} Now get actual products from IDs {%- endcomment -%}
-          {% assign product_ids = all_products | split: ',' %}
-          {% assign products = blank %}
-          {% for collection in section.settings.collections %}
+            {% assign products_from_collection = 0 %}
             {% for product in collection.products %}
-              {% if product_ids contains product.id %}
-                {% if products == blank %}
-                  {% assign products = product | split: '|' %}
-                {% else %}
-                  {% assign temp_product = product | split: '|' %}
-                  {% assign products = products | concat: temp_product %}
-                {% endif %}
+              {% if product.available and products_from_collection < 3 %}
+                {% assign all_products = all_products | concat: product %}
+                {% assign products_from_collection = products_from_collection | plus: 1 %}
               {% endif %}
             {% endfor %}
           {% endfor %}
@@ -87,18 +66,12 @@
       {% when 'tags' %}
         {% if section.settings.product_tags != blank %}
           {% assign tags = section.settings.product_tags | split: ',' %}
-          {% assign products = blank %}
-          {% for product in collections.all.products %}
+          {% for product in collections.all.products limit: 50 %}
             {% if product.available %}
               {% for tag in tags %}
                 {% assign clean_tag = tag | strip %}
                 {% if product.tags contains clean_tag %}
-                  {% if products == blank %}
-                    {% assign products = product | split: '|' %}
-                  {% else %}
-                    {% assign temp_product = product | split: '|' %}
-                    {% assign products = products | concat: temp_product %}
-                  {% endif %}
+                  {% assign all_products = all_products | concat: product %}
                   {% break %}
                 {% endif %}
               {% endfor %}
@@ -107,21 +80,17 @@
         {% endif %}
 
       {% when 'manual' %}
-        {% assign products = section.settings.products %}
+        {% assign all_products = section.settings.products %}
     {% endcase %}
 
-    {%- comment -%} Filter and count available products {%- endcomment -%}
-    {% assign available_products = blank %}
+    {%- comment -%} Count available products {%- endcomment -%}
     {% assign count = 0 %}
-    {% for product in products %}
-      {% if product.available and count < section.settings.max_products %}
-        {% if available_products == blank %}
-          {% assign available_products = product | split: '|' %}
-        {% else %}
-          {% assign temp = product | split: '|' %}
-          {% assign available_products = available_products | concat: temp %}
-        {% endif %}
+    {% for product in all_products %}
+      {% if product.available %}
         {% assign count = count | plus: 1 %}
+        {% if count >= section.settings.max_products %}
+          {% break %}
+        {% endif %}
       {% endif %}
     {% endfor %}
 
@@ -157,17 +126,21 @@
         data-carousel-id="{{ section.id }}"
       >
         <div class="swiper-wrapper">
-          {% for product in available_products limit: section.settings.max_products %}
-            <div class="swiper-slide">
-              {% render 'product-card',
-                product: product,
-                show_badges: section.settings.show_badges,
-                show_rating: section.settings.show_rating,
-                show_color_swatches: false,
-                show_size_selector: section.settings.show_size_selector,
-                mobile_layout: false
-              %}
-            </div>
+          {% assign products_shown = 0 %}
+          {% for product in all_products %}
+            {% if product.available and products_shown < section.settings.max_products %}
+              <div class="swiper-slide">
+                {% render 'product-card',
+                  product: product,
+                  show_badges: section.settings.show_badges,
+                  show_rating: section.settings.show_rating,
+                  show_color_swatches: false,
+                  show_size_selector: section.settings.show_size_selector,
+                  mobile_layout: false
+                %}
+              </div>
+              {% assign products_shown = products_shown | plus: 1 %}
+            {% endif %}
           {% endfor %}
         </div>
       </div>
