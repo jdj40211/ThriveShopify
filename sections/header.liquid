@@ -1,5 +1,7 @@
 {% assign header_mode = '' %}
-{% if template.name == 'product' or template.name == 'look_fit' %}
+{% if template.name == 'product' %}
+  {% assign header_mode = 'solid' %}
+{% elsif template.name == 'look_fit' %}
   {% assign header_mode = 'solid-desktop-transparent-mobile' %}
 {% endif %}
 {% if template.name == 'search' %}
