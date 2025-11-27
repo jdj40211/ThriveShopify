@@ -50,6 +50,9 @@
         "view_all_link": "shopify://collections",
         "view_all_link_collections": "shopify://collections",
         "show_arrows": true,
+        "show_swipe_hint": false,
+        "band_swipe_hint": "Desliza la banda para ver más productos.",
+        "card_swipe_hint": "Dentro de cada tarjeta, desliza para ver las fotos del producto.",
         "product_source": "collections",
         "collection": "mas-buscados-vendidos",
         "collections": [
@@ -241,23 +244,59 @@
         "transition_speed": 800
       }
     },
-    "image_with_text_gxhgP9": {
-      "type": "image-with-text",
-      "name": "Image with Text",
+    "video_carousel_Tp93wg": {
+      "type": "video-carousel",
+      "blocks": {
+        "video_slide_xygt9E": {
+          "type": "video_slide",
+          "settings": {
+            "video_file": "shopify://files/videos/Clip_3.mp4",
+            "video_title": "",
+            "video_description": "",
+            "video_link": "",
+            "link_text": "Watch Full Video"
+          }
+        },
+        "video_slide_NzgjTP": {
+          "type": "video_slide",
+          "settings": {
+            "video_file": "shopify://files/videos/Clip_2.mp4",
+            "video_title": "",
+            "video_description": "",
+            "video_link": "",
+            "link_text": "Watch Full Video"
+          }
+        },
+        "video_slide_6YqjQd": {
+          "type": "video_slide",
+          "settings": {
+            "video_file": "shopify://files/videos/Clip_5.mp4",
+            "video_title": "",
+            "video_description": "",
+            "video_link": "",
+            "link_text": "Watch Full Video"
+          }
+        }
+      },
+      "block_order": [
+        "video_slide_xygt9E",
+        "video_slide_NzgjTP",
+        "video_slide_6YqjQd"
+      ],
+      "name": "Video Carousel",
       "settings": {
-        "layout_direction": "image_first",
-        "image_style": "full_width",
-        "image_alt": "",
-        "use_product_image": false,
-        "title": "",
-        "rich_text": "",
-        "button_text": "",
-        "button_link": "",
-        "button_style": "background",
-        "background_color": "#ffffff",
-        "title_color": "#000000",
-        "subtitle_color": "#000000",
-        "text_color": "#000000"
+        "title": "Un poco de lo que creemos…",
+        "subtitle": "Nuestra historia",
+        "slides_mobile": 1,
+        "slides_tablet": 2,
+        "slides_desktop": 3,
+        "slides_large_desktop": 4,
+        "slide_spacing": 20,
+        "loop": true,
+        "show_pagination": true,
+        "autoplay": false,
+        "autoplay_delay": 5000,
+        "transition_speed": 800
       }
     },
     "category_grid_tiJRNW": {
@@ -340,6 +379,9 @@
         "view_all_link": "",
         "view_all_link_collections": "",
         "show_arrows": true,
+        "show_swipe_hint": true,
+        "band_swipe_hint": "Desliza la banda para ver más productos.",
+        "card_swipe_hint": "Dentro de cada tarjeta, desliza para ver las fotos del producto.",
         "product_source": "manual",
         "collection": "",
         "collections": [],
@@ -580,7 +622,7 @@
     "category-grid",
     "content_carousel_cLW93K",
     "video_carousel_9mVAQj",
-    "image_with_text_gxhgP9",
+    "video_carousel_Tp93wg",
     "category_grid_tiJRNW",
     "quote_E6r7tE",
     "product_carousel_VNfNQL",
