@@ -24,6 +24,15 @@
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
 
+    {% # Favicon %}
+    {% if settings.favicon %}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32 }}">
+      <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180 }}">
+    {% else %}
+      <link rel="icon" type="image/png" href="https://cdn.shopify.com/s/files/1/0671/2285/6119/files/faviconThrive.png?v=1764212304">
+      <link rel="apple-touch-icon" href="https://cdn.shopify.com/s/files/1/0671/2285/6119/files/faviconThrive.png?v=1764212304">
+    {% endif %}
+
     {{ content_for_header }}
 
     <!-- Swiper.js CSS (loaded without blocking rendering) -->
