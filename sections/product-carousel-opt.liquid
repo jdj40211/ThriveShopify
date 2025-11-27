@@ -1,412 +1,171 @@
 {% comment %}
   Product Carousel Opt - Optimized lightweight product carousel
-  Focus: Performance, simplicity, quick purchasing
+  Uses product-card snippet for consistency, simplified structure
 {% endcomment %}
 
-{% liquid
-  assign product_source = section.settings.product_source
-  assign max_products = section.settings.max_products
-  assign show_badges = section.settings.show_product_badges
-  assign show_rating = section.settings.show_product_rating
-  assign show_size_selector = section.settings.show_size_selector
-  assign show_arrows = section.settings.show_navigation_arrows
-  assign show_swipe_hint = section.settings.show_swipe_hint
+<div class="py-12 lg:py-10 overflow-x-hidden" id="product-carousel-opt-{{ section.id }}">
+  <div class="w-full flex flex-col gap-8">
+    {% if section.settings.title != blank %}
+      <div class="flex justify-between items-end mx-4 lg:mx-12">
+        <div class="flex flex-col gap-2">
+          <h2>{{ section.settings.title }}</h2>
+          {% if section.settings.rich_text != blank %}
+            <div class="rich-text">{{ section.settings.rich_text }}</div>
+          {% endif %}
+        </div>
+        <div class="items-center gap-8 hidden lg:flex">
+          {% if section.settings.show_view_all %}
+            {% assign view_all_url = '' %}
+            {% case section.settings.product_source %}
+              {% when 'collections' %}
+                {% assign view_all_url = section.settings.view_all_link_collections %}
+              {% else %}
+                {% assign view_all_url = section.settings.view_all_link %}
+            {% endcase %}
 
-  # Build products array based on source
-  assign products = blank
-  case product_source
-    when 'single_collection'
-      if section.settings.collection != blank
-        assign products = section.settings.collection.products | slice: 0, max_products
-      endif
-    when 'multiple_collections'
-      if section.settings.collections != blank
-        assign products = '' | split: ''
-        for collection in section.settings.collections
-          assign products = products | concat: collection.products
-          if products.size >= max_products
-            break
-          endif
-        endfor
-        assign products = products | slice: 0, max_products
-      endif
-    when 'product_tags'
-      if section.settings.product_tags != blank
-        assign tag_list = section.settings.product_tags | split: ','
-        assign products = '' | split: ''
-        for product in collections.all.products limit: 100
-          for tag in tag_list
-            assign clean_tag = tag | strip
-            if product.tags contains clean_tag
-              assign products = products | push: product
-              break
-            endif
-          endfor
-          if products.size >= max_products
-            break
-          endif
-        endfor
-      endif
-    when 'manual'
-      assign products = section.settings.manual_products | slice: 0, max_products
-  endcase
-%}
-
-<section class="product-carousel-opt py-8 lg:py-12" data-section-id="{{ section.id }}">
-  <div class="max-w-screen-2xl mx-auto px-4 lg:px-12">
-
-    {%- comment -%} Header with title, rich text, and view all link {%- endcomment -%}
-    <div class="mb-6 lg:mb-8">
-      <div class="flex items-center justify-between mb-2">
-        {% if section.settings.carousel_title != blank %}
-          <h2 class="text-2xl lg:text-3xl font-bold">{{ section.settings.carousel_title }}</h2>
-        {% endif %}
-
-        {% if section.settings.show_view_all_link %}
-          <a
-            href="{% if product_source == 'multiple_collections' %}{{ section.settings.view_all_link_multiple }}{% else %}{{ section.settings.view_all_link }}{% endif %}"
-            class="text-sm lg:text-base underline hover:no-underline"
-          >
-            {{ section.settings.view_all_text }}
-          </a>
-        {% endif %}
+            {% if view_all_url != blank %}
+              <a
+                href="{{ view_all_url }}"
+                class="text-gray-600 hover:text-gray-900 transition-colors underline"
+              >
+                {{ section.settings.view_all_text | default: 'Ver todos' }}
+              </a>
+            {% endif %}
+          {% endif %}
+          {% if section.settings.show_arrows %}
+            <div class="hidden lg:flex space-x-2" id="product-carousel-opt-arrows-{{ section.id }}">
+              <button
+                class="product-carousel-prev w-8 h-8 rounded-full bg-gray-300 text-gray-500 disabled:hover:bg-gray-300 disabled:hover:text-gray-500 transition-all duration-200 flex items-center justify-center cursor-not-allowed"
+                aria-label="Previous"
+                disabled
+                data-carousel-id="{{ section.id }}"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </button>
+              <button
+                class="product-carousel-next w-8 h-8 rounded-full bg-primary text-white hover:bg-primary/80 disabled:hover:bg-gray-300 disabled:hover:text-gray-500 transition-all duration-200 flex items-center justify-center cursor-pointer"
+                aria-label="Next"
+                data-carousel-id="{{ section.id }}"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
+            </div>
+          {% endif %}
+        </div>
       </div>
+    {% endif %}
 
-      {% if section.settings.rich_text != blank %}
-        <div class="text-sm lg:text-base text-gray-600">
-          {{ section.settings.rich_text }}
+    {% assign products = '' %}
+    {% case section.settings.product_source %}
+      {% when 'collection' %}
+        {% if section.settings.collection != blank %}
+          {% assign products = section.settings.collection.products %}
+        {% endif %}
+      {% when 'collections' %}
+        {% if section.settings.collections.count > 0 %}
+          {% assign products = blank %}
+          {% assign first_collection = true %}
+
+          {% for collection in section.settings.collections %}
+            {% assign products_added = 0 %}
+            {% assign collection_products = blank %}
+
+            {% for product in collection.products %}
+              {% if product.available and products_added < 3 %}
+                {% if products_added == 0 %}
+                  {% assign collection_products = collection.products | where: 'id', product.id %}
+                {% else %}
+                  {% assign single_product = collection.products | where: 'id', product.id %}
+                  {% assign collection_products = collection_products | concat: single_product %}
+                {% endif %}
+                {% assign products_added = products_added | plus: 1 %}
+              {% endif %}
+            {% endfor %}
+
+            {% if collection_products != blank %}
+              {% if first_collection %}
+                {% assign products = collection_products %}
+                {% assign first_collection = false %}
+              {% else %}
+                {% assign products = products | concat: collection_products %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% when 'tags' %}
+        {% if section.settings.product_tags != blank %}
+          {% assign tag_array = section.settings.product_tags | split: ',' %}
+          {% assign products = collections.all.products %}
+          {% for tag in tag_array %}
+            {% assign tag_trimmed = tag | strip %}
+            {% assign products = products | where: 'tags', tag_trimmed %}
+          {% endfor %}
+        {% endif %}
+      {% when 'manual' %}
+        {% assign products = section.settings.products %}
+    {% endcase %}
+
+    {% assign available_count = 0 %}
+    {% for product in products %}
+      {% if product.available %}
+        {% assign available_count = available_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+
+    {% if available_count > 0 %}
+      {% capture carousel_content %}
+        {% assign products_shown = 0 %}
+        {% for product in products %}
+          {% if product.available and products_shown < section.settings.max_products %}
+            <div class="swiper-slide">
+              <div class="w-full">
+                {% render 'product-card',
+                  product: product,
+                  show_badges: section.settings.show_badges,
+                  show_rating: section.settings.show_rating,
+                  show_color_swatches: false,
+                  show_size_selector: section.settings.show_size_selector
+                %}
+              </div>
+            </div>
+            {% assign products_shown = products_shown | plus: 1 %}
+          {% endif %}
+        {% endfor %}
+      {% endcapture %}
+
+      {% render 'generic-carousel',
+        carousel_id: section.id,
+        carousel_class: 'product-carousel-opt',
+        content: carousel_content,
+        show_arrows: section.settings.show_arrows,
+        slides_per_view_mobile: 1.35,
+        slides_per_view_desktop: 4,
+        space_between_mobile: 2,
+        space_between_desktop: 4,
+        centered_slides: true,
+        free_mode: true,
+        total_items: available_count
+      %}
+
+      {% if section.settings.show_swipe_hint %}
+        <div class="text-center mt-4 text-sm text-gray-500 lg:hidden">
+          ← Desliza para ver más →
         </div>
       {% endif %}
-    </div>
 
-    {%- comment -%} Products carousel {%- endcomment -%}
-    {% if products.size > 0 %}
-      <div class="relative">
-        {%- comment -%} Navigation arrows {%- endcomment -%}
-        {% if show_arrows %}
-          <button
-            class="carousel-arrow carousel-prev hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 items-center justify-center bg-white rounded-full shadow-lg hover:shadow-xl transition-shadow"
-            data-carousel-id="carousel-{{ section.id }}"
-            aria-label="Previous"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-          </button>
-
-          <button
-            class="carousel-arrow carousel-next hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 items-center justify-center bg-white rounded-full shadow-lg hover:shadow-xl transition-shadow"
-            data-carousel-id="carousel-{{ section.id }}"
-            aria-label="Next"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
-          </button>
-        {% endif %}
-
-        {%- comment -%} Scrollable container {%- endcomment -%}
-        <div
-          class="carousel-container overflow-x-auto scrollbar-hide snap-x snap-mandatory"
-          data-carousel-id="carousel-{{ section.id }}"
-        >
-          <div class="flex gap-4 lg:gap-6">
-            {% for product in products %}
-              <div class="carousel-item flex-none w-[280px] lg:w-[320px] snap-start">
-                <div class="product-card relative bg-white rounded-lg overflow-hidden group">
-
-                  {%- comment -%} Product image {%- endcomment -%}
-                  <div class="relative aspect-[3/4] overflow-hidden bg-gray-100">
-                    <a href="{{ product.url }}" class="block w-full h-full">
-                      {% if product.featured_image %}
-                        <img
-                          src="{{ product.featured_image | image_url: width: 640 }}"
-                          alt="{{ product.title }}"
-                          class="w-full h-full object-cover object-center"
-                          loading="lazy"
-                          width="320"
-                          height="427"
-                        >
-                      {% else %}
-                        <div class="w-full h-full flex items-center justify-center text-gray-400">
-                          Sin imagen
-                        </div>
-                      {% endif %}
-                    </a>
-
-                    {%- comment -%} Wishlist heart {%- endcomment -%}
-                    <button
-                      class="wishlist-btn absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-gray-700 hover:text-red-600 transition-colors z-10"
-                      data-product-handle="{{ product.handle }}"
-                      aria-label="Add to wishlist"
-                    >
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                      </svg>
-                    </button>
-
-                    {%- comment -%} Product badges {%- endcomment -%}
-                    {% if show_badges and product.tags.size > 0 %}
-                      <div class="absolute top-3 left-3 flex flex-col gap-1">
-                        {% for tag in product.tags limit: 2 %}
-                          {% if tag contains 'badge:' %}
-                            {% assign badge_text = tag | remove: 'badge:' | strip %}
-                            <span class="px-2 py-1 text-xs font-medium bg-black text-white rounded">
-                              {{ badge_text }}
-                            </span>
-                          {% endif %}
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-
-                  {%- comment -%} Product info {%- endcomment -%}
-                  <div class="p-4">
-                    <a href="{{ product.url }}" class="block">
-                      <h3 class="text-sm lg:text-base font-medium mb-2 line-clamp-2">{{ product.title }}</h3>
-                    </a>
-
-                    {%- comment -%} Price {%- endcomment -%}
-                    <div class="flex items-center gap-2 mb-3">
-                      <span class="text-lg font-bold">{{ product.price | money }}</span>
-                      {% if product.compare_at_price > product.price %}
-                        <span class="text-sm text-gray-500 line-through">{{ product.compare_at_price | money }}</span>
-                      {% endif %}
-                    </div>
-
-                    {%- comment -%} Quick add button {%- endcomment -%}
-                    {% if show_size_selector and product.has_only_default_variant == false %}
-                      <button
-                        class="quick-add-btn w-full py-2 px-4 bg-black text-white rounded hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-                        data-product-id="{{ product.id }}"
-                        data-product-title="{{ product.title }}"
-                      >
-                        <span>Añadir</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                      </button>
-                    {% else %}
-                      <form action="/cart/add" method="post">
-                        <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
-                        <button
-                          type="submit"
-                          class="w-full py-2 px-4 bg-black text-white rounded hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-                        >
-                          <span>Añadir</span>
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                          </svg>
-                        </button>
-                      </form>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-
-        {%- comment -%} Swipe hint {%- endcomment -%}
-        {% if show_swipe_hint %}
-          <div class="swipe-hint lg:hidden text-center mt-4 text-sm text-gray-500">
-            ← Desliza para ver más →
-          </div>
-        {% endif %}
-      </div>
     {% else %}
-      <p class="text-center text-gray-500 py-8">{{ section.settings.no_products_message }}</p>
+      <div class="text-center py-8">
+        <p class="text-gray-600">
+          {{ section.settings.no_products_message | default: 'No hay productos disponibles en este momento.' }}
+        </p>
+      </div>
     {% endif %}
   </div>
-</section>
-
-{%- comment -%} Size selector modal {%- endcomment -%}
-<div id="size-modal-{{ section.id }}" class="size-modal fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
-  <div class="bg-white rounded-lg max-w-md w-full p-6 relative">
-    <button class="modal-close absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-      </svg>
-    </button>
-
-    <h3 class="text-xl font-bold mb-4">Añadir a la cesta</h3>
-    <p class="modal-product-title text-sm text-gray-600 mb-4"></p>
-
-    <div class="modal-sizes space-y-2">
-      <!-- Populated by JS -->
-    </div>
-  </div>
 </div>
-
-<style>
-  .product-carousel-opt .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .product-carousel-opt .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  .product-carousel-opt .carousel-container {
-    scroll-behavior: smooth;
-  }
-
-  .product-carousel-opt .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .product-carousel-opt .size-modal {
-    display: none;
-  }
-
-  .product-carousel-opt .size-modal.active {
-    display: flex;
-  }
-</style>
-
-<script>
-(function() {
-  const sectionId = '{{ section.id }}';
-  const carousel = document.querySelector(`[data-carousel-id="carousel-${sectionId}"]`);
-  const modal = document.getElementById(`size-modal-${sectionId}`);
-
-  if (!carousel || !modal) return;
-
-  // Carousel navigation
-  const prevBtn = document.querySelector(`.carousel-prev[data-carousel-id="carousel-${sectionId}"]`);
-  const nextBtn = document.querySelector(`.carousel-next[data-carousel-id="carousel-${sectionId}"]`);
-
-  if (prevBtn) {
-    prevBtn.addEventListener('click', () => {
-      carousel.scrollBy({ left: -340, behavior: 'smooth' });
-    });
-  }
-
-  if (nextBtn) {
-    nextBtn.addEventListener('click', () => {
-      carousel.scrollBy({ left: 340, behavior: 'smooth' });
-    });
-  }
-
-  // Quick add button handlers
-  carousel.addEventListener('click', async (e) => {
-    const btn = e.target.closest('.quick-add-btn');
-    if (!btn) return;
-
-    e.preventDefault();
-    const productId = btn.dataset.productId;
-    const productTitle = btn.dataset.productTitle;
-
-    // Fetch product data
-    try {
-      const response = await fetch(`/products/${btn.closest('.product-card').querySelector('a').href.split('/products/')[1].split('?')[0]}.js`);
-      const product = await response.json();
-
-      // Find size variants
-      const sizeOption = product.options.find(opt => opt.name.toLowerCase() === 'talla' || opt.name.toLowerCase() === 'size');
-
-      if (!sizeOption) {
-        // No size option, add first variant
-        addToCart(product.variants[0].id);
-        return;
-      }
-
-      // Show size modal
-      modal.querySelector('.modal-product-title').textContent = productTitle;
-      const sizesContainer = modal.querySelector('.modal-sizes');
-      sizesContainer.innerHTML = '';
-
-      product.variants.forEach(variant => {
-        if (!variant.available) return;
-
-        const sizeBtn = document.createElement('button');
-        sizeBtn.className = 'w-full py-3 px-4 border border-gray-300 rounded hover:border-black hover:bg-gray-50 transition-colors text-left';
-        sizeBtn.textContent = variant.title;
-        sizeBtn.addEventListener('click', () => {
-          addToCart(variant.id);
-          modal.classList.remove('active');
-        });
-        sizesContainer.appendChild(sizeBtn);
-      });
-
-      modal.classList.add('active');
-    } catch (error) {
-      console.error('Error loading product:', error);
-    }
-  });
-
-  // Modal close
-  modal.querySelector('.modal-close').addEventListener('click', () => {
-    modal.classList.remove('active');
-  });
-
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.classList.remove('active');
-    }
-  });
-
-  // Add to cart function
-  async function addToCart(variantId) {
-    try {
-      const response = await fetch('/cart/add.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: variantId, quantity: 1 })
-      });
-
-      if (response.ok) {
-        // Trigger cart update event
-        document.dispatchEvent(new CustomEvent('cart:updated'));
-
-        // Show success feedback (optional)
-        alert('Producto añadido al carrito');
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-    }
-  }
-
-  // Wishlist button handler (basic)
-  carousel.addEventListener('click', (e) => {
-    const btn = e.target.closest('.wishlist-btn');
-    if (!btn) return;
-
-    e.preventDefault();
-    const handle = btn.dataset.productHandle;
-
-    // Toggle heart fill (simple visual feedback)
-    const svg = btn.querySelector('svg');
-    const isFilled = svg.getAttribute('fill') === 'currentColor';
-    svg.setAttribute('fill', isFilled ? 'none' : 'currentColor');
-
-    // Store in localStorage
-    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    const index = wishlist.indexOf(handle);
-
-    if (index > -1) {
-      wishlist.splice(index, 1);
-    } else {
-      wishlist.push(handle);
-    }
-
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
-  });
-
-  // Initialize wishlist hearts
-  const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-  carousel.querySelectorAll('.wishlist-btn').forEach(btn => {
-    const handle = btn.dataset.productHandle;
-    if (wishlist.includes(handle)) {
-      btn.querySelector('svg').setAttribute('fill', 'currentColor');
-    }
-  });
-})();
-</script>
 
 {% schema %}
 {
@@ -416,7 +175,7 @@
   "settings": [
     {
       "type": "text",
-      "id": "carousel_title",
+      "id": "title",
       "label": "Carousel Title",
       "default": "Los más vendidos"
     },
@@ -432,7 +191,7 @@
     },
     {
       "type": "checkbox",
-      "id": "show_view_all_link",
+      "id": "show_view_all",
       "label": "Show View All Link",
       "default": true
     },
@@ -446,17 +205,17 @@
       "type": "url",
       "id": "view_all_link",
       "label": "View All Link",
-      "info": "For single collection, tags, or manual selection"
+      "info": "Used for single collection, tags, and manual selection"
     },
     {
       "type": "url",
-      "id": "view_all_link_multiple",
+      "id": "view_all_link_collections",
       "label": "View All Link (Multiple Collections)",
-      "info": "For multiple collections source"
+      "info": "Used when multiple collections are selected"
     },
     {
       "type": "checkbox",
-      "id": "show_navigation_arrows",
+      "id": "show_arrows",
       "label": "Show Navigation Arrows",
       "default": true
     },
@@ -476,15 +235,15 @@
       "label": "Product Source",
       "options": [
         {
-          "value": "single_collection",
+          "value": "collection",
           "label": "Single Collection"
         },
         {
-          "value": "multiple_collections",
+          "value": "collections",
           "label": "Multiple Collections"
         },
         {
-          "value": "product_tags",
+          "value": "tags",
           "label": "Product Tags"
         },
         {
@@ -492,28 +251,30 @@
           "label": "Manual Selection"
         }
       ],
-      "default": "single_collection"
+      "default": "collection"
     },
     {
       "type": "collection",
       "id": "collection",
-      "label": "Collection"
+      "label": "Collection",
+      "info": "Select products from this collection"
     },
     {
       "type": "collection_list",
       "id": "collections",
       "label": "Collections",
-      "limit": 10
+      "limit": 10,
+      "info": "Select multiple collections to mix products from"
     },
     {
       "type": "text",
       "id": "product_tags",
       "label": "Product Tags",
-      "info": "Enter tags separated by commas (e.g., bestseller, featured)"
+      "info": "Comma-separated tags (e.g., 'best-seller,new')"
     },
     {
       "type": "product_list",
-      "id": "manual_products",
+      "id": "products",
       "label": "Manual Product Selection",
       "limit": 20
     },
@@ -532,22 +293,15 @@
     },
     {
       "type": "checkbox",
-      "id": "show_product_badges",
+      "id": "show_badges",
       "label": "Show Product Badges",
       "default": true
     },
     {
       "type": "checkbox",
-      "id": "show_product_rating",
+      "id": "show_rating",
       "label": "Show Product Rating",
       "default": true
-    },
-    {
-      "type": "checkbox",
-      "id": "show_color_swatches",
-      "label": "Show Color Swatches",
-      "default": false,
-      "info": "Setting available but not implemented"
     },
     {
       "type": "checkbox",
@@ -563,13 +317,21 @@
       "type": "text",
       "id": "no_products_message",
       "label": "No Products Available Message",
-      "default": "No hay productos disponibles en este momento."
+      "default": "No hay productos disponibles en este momento.",
+      "info": "Message shown when no products are available to display"
+    },
+    {
+      "type": "header",
+      "content": "Carousel Settings"
     }
   ],
   "presets": [
     {
       "name": "Product Carousel Opt",
-      "category": "Products"
+      "settings": {
+        "title": "Los más vendidos",
+        "product_source": "collection"
+      }
     }
   ]
 }
