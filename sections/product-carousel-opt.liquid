@@ -73,7 +73,7 @@
             {% break %}
           {% endif %}
         {% endfor %}
-        <div class="snap-start shrink-0 w-[85vw] sm:w-[60vw] lg:w-[24%] pr-4 lg:pr-6">
+        <div class="snap-start shrink-0 w-[85vw] sm:w-[60vw] lg:w-[24%]" style="padding-right: 16px;">
           <article class="w-full h-full flex flex-col">
             <div class="relative w-full aspect-[3/4.5] overflow-hidden bg-gray-50">
               {% if featured_image %}
@@ -170,24 +170,29 @@
               </div>
               <div class="p-6">
               {% if size_option_index != nil %}
-                <p class="text-sm text-gray-500 mb-3">{{ size_title | default: 'Tallas' }}</p>
-                <div class="flex flex-col gap-2">
-                  {% assign used_sizes = '' %}
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                  {% assign displayed_sizes = '' %}
                   {% for variant in product.variants %}
                     {% assign size_value = variant.options[size_option_index] %}
-                    {% if variant.available %}
-                      {% unless used_sizes contains size_value %}
-                        <button
-                          class="border border-gray-200 rounded-lg py-2 px-3 text-left hover:border-gray-900 flex justify-between items-center"
-                          data-add-variant="{{ variant.id }}"
-                          type="button"
-                        >
-                          <span>{{ size_value }}</span>
-                          <span class="text-sm text-gray-400">{{ 'products.product.available' | t }}</span>
-                        </button>
-                        {% assign used_sizes = used_sizes | append: size_value | append: ',' %}
-                      {% endunless %}
-                    {% endif %}
+                    {% unless displayed_sizes contains size_value %}
+                      {% assign displayed_sizes = displayed_sizes | append: size_value | append: ',' %}
+                      {% assign is_available = false %}
+                      {% assign variant_id_for_size = nil %}
+                      {% for v in product.variants %}
+                        {% if v.options[size_option_index] == size_value and v.available %}
+                          {% assign is_available = true %}
+                          {% assign variant_id_for_size = v.id %}
+                          {% break %}
+                        {% endif %}
+                      {% endfor %}
+                      <button
+                        class="border rounded-lg py-3 px-2 text-center font-medium transition-all {% if is_available %}border-gray-300 hover:border-black hover:bg-gray-50{% else %}border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed{% endif %}"
+                        {% if is_available %}data-add-variant="{{ variant_id_for_size }}"{% else %}disabled{% endif %}
+                        type="button"
+                      >
+                        {{ size_value }}
+                      </button>
+                    {% endunless %}
                   {% endfor %}
                 </div>
               {% else %}
